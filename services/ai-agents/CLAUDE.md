@@ -20,6 +20,7 @@ AI agents and tools that answer user requests and emit DSL documents (validated 
 - `<package>/` - <agents, tools, prompts, services>
 
 ## Project context
+- Database safety rules (UR-1): the agent may read definitions of existing stored procedures as schema context but must never call or execute them. Any stored procedure it writes is a script only, and its body must be read-only (no INSERT/UPDATE/DELETE/DDL or other side effects). Generated SQL for execution must be a single SELECT statement. Add evals that fail when an output breaks these rules.
 - Prompts, tool definitions and evaluation data: <file references>
 - API keys and model settings: environment variables only; never commit keys or prompts containing secrets.
 - Non-deterministic behavior: <how it is tested or evaluated>
