@@ -19,7 +19,7 @@ This repository holds several independent projects. Each has its own `CLAUDE.md`
 
 How the projects relate: only through published, versioned artifacts and network APIs (see Architecture rules). `services/contracts` publishes the API contracts; `lib/dsl-schema` publishes the UI DSL schema; `lib/*` packages and the contracts package are published to GitHub Packages (npm) and consumed by version. The AI agents emit DSL, both web apps render it through `lib/dsl-renderer-*`. Other top-level dirs: `docs/` (ADRs, DSL spec, API docs), `infra/` (deployment wiring only), `scripts/`.
 
-Commit/PR `[PROJECT]` codes: `core`, `agents`, `portal`, `assistant`, `lib`.
+Commit/PR `[PROJECT]` codes: `core`, `agents`, `contracts`, `portal`, `assistant`, `lib`.
 
 ## Architecture rules
 Applies to every project; details and templates in the `esi-project-standards` skill.
@@ -29,6 +29,9 @@ Applies to every project; details and templates in the `esi-project-standards` s
 3. **Docker everywhere.** Every project has a multi-stage `Dockerfile`, `.dockerignore`, and a `compose.yaml` for its own local dependencies. Build context is the project directory only. The documented commands must work in the container (CI builds the image). `infra/` only wires already-built images; it never builds from project sources.
 4. **Versioning.** SemVer per project, independent of the others, with the native manifest as the source (`package.json`, `Directory.Build.props`, `pyproject.toml`) and a per-project `CHANGELOG.md`. Release tags are `<project>@vX.Y.Z`; Docker images and published packages use the same version. Versions are derived from Conventional Commits; breaking changes need `!`/`BREAKING CHANGE:` and an ADR when they touch a contract or the DSL.
 5. **lib uses Nx** for build, test, affected runs, module-boundary lint and independent per-package versioning and publishing (`nx release`) to GitHub Packages. Nx is not used outside `lib/`.
+
+## Requirements
+Tickets are labelled `User Requirement` (UR, user-level feature request) and `System Requirement` (SR, a UR analyzed into technical features). When asked to read, analyze or sync requirement tickets, follow the `requirement-review` skill: read tickets read-only, review them against the project skills, then update `docs/requirements/` and, for reusable knowledge, the skills. Never modify tickets unless asked.
 
 ## Commands
 Per project; see its `CLAUDE.md`. A project may set the pre-commit test command in `<dir>/.esi-test-cmd`.
