@@ -28,7 +28,7 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | P0-08 | core | Scaffold core-backend with test SQL Server | P0-02 | API skeleton, migrations, compose with SQL Server | ESI-28 (closed) |
 | P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 (closed) |
 | P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 (closed) |
-| P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` (develop protected; CI checks and `main` pending, see github-setup) | ESI-31 (closed) |
+| P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` (develop and main protected; required CI checks pending, see github-setup) | ESI-31 (closed) |
 | P0-12 | esi | Prove publish and pin flow with a prerelease | P0-06, P0-07, P0-11 | one prerelease package published and installed by a consumer | ESI-32 (closed) |
 | P0-13 | esi | Update skills and project docs after ADRs | P0-02..P0-05 | placeholders filled, DSL skills match ADR-0002 | ESI-33 (closed) |
 | P0-14 | esi | Define test data policy | P0-08, P0-09 | shared understanding of fixtures per project | ESI-34 (closed) |
@@ -115,7 +115,7 @@ Same pattern for each: a human reviews the ADR in [architecture/](../architectur
 - Labels `User Requirement` and `System Requirement` exist; issue and PR templates follow `ESI-<n> [PROJECT] <title>`.
 - Master key for ADR-0003 is created only for deployment environments later; no value is stored in the repo.
 - Done when: a test PR cannot be merged without approval and CI.
-- Status (2026-10-18): registry, tokens and repository variables documented in [github-setup](../process/github-setup.md). The repository is now public and `develop` has rulesets (no deletion or force push, pull request with 1 approval, admin bypass). Required status checks and protection on `main` are not configured yet; see github-setup for the remaining steps.
+- Status (2026-10-18): registry, tokens and repository variables documented in [github-setup](../process/github-setup.md). The repository is now public and `develop` has rulesets (no deletion or force push, pull request with 1 approval, admin bypass). `main` has rulesets too (no deletion or force push, pull request with 1 approval, updates only by admins). Required status checks are not configured yet; see github-setup for the remaining steps.
 
 ### P0-12 `[esi]` Prove publish and pin flow
 - Publish a prerelease of `@dtnam0899/esi-contracts` and one `lib` package (`nx release --preid`), from CI.
