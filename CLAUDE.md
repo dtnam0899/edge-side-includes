@@ -36,6 +36,7 @@ Tickets are labelled `User Requirement` (UR, user-level feature request) and `Sy
 Per project; see its `CLAUDE.md`. A project may set the pre-commit test command in `<dir>/.esi-test-cmd`.
 
 ## Critical project context
+- GitHub setup (package/image registry, `NODE_AUTH_TOKEN`, repository variables, branch protection limits): `docs/process/github-setup.md`.
 - Generated code (API clients, DSL models) is never edited by hand; regenerate it from the pinned contract or schema version.
 
 ## ESI workflow
