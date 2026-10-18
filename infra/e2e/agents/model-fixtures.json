@@ -1,0 +1,213 @@
+{
+  "_comment": "Scripted model answers for the phase 5 scenario (infra/e2e/agents/fixture_model.py). sql-refuse-delete is deliberately unsafe: the agent must reject it and answer kind none.",
+  "rules": [
+    {
+      "id": "sql-revenue-by-customer",
+      "operation": "sql",
+      "contains": [
+        "revenue by customer"
+      ],
+      "output": {
+        "kind": "query",
+        "sql": "SELECT c.Name AS Customer, c.Country AS Country, SUM(l.Quantity * l.UnitPrice) AS Revenue\nFROM dbo.Customers AS c\nJOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId\nJOIN dbo.OrderLines AS l ON l.OrderId = o.OrderId\nGROUP BY c.Name, c.Country\nORDER BY Revenue DESC",
+        "explanation": "Revenue is quantity times unit price per order line, summed per customer through Orders."
+      }
+    },
+    {
+      "id": "sql-total-revenue",
+      "operation": "sql",
+      "contains": [
+        "total revenue"
+      ],
+      "output": {
+        "kind": "query",
+        "sql": "SELECT SUM(l.Quantity * l.UnitPrice) AS TotalRevenue\nFROM dbo.OrderLines AS l",
+        "explanation": "Total revenue is quantity times unit price summed over all order lines."
+      }
+    },
+    {
+      "id": "sql-refuse-delete",
+      "operation": "sql",
+      "contains": [
+        "delete"
+      ],
+      "output": {
+        "kind": "query",
+        "sql": "DELETE FROM dbo.Customers",
+        "explanation": "Deletes customers."
+      }
+    },
+    {
+      "id": "dsl-revenue-table",
+      "operation": "dsl",
+      "contains": [
+        "customer: ",
+        "revenue: ",
+        "table"
+      ],
+      "output": {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by customer",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "h-customer",
+              "h-country",
+              "h-revenue"
+            ]
+          },
+          {
+            "id": "h-customer",
+            "component": "Text",
+            "text": "Customer",
+            "variant": "caption"
+          },
+          {
+            "id": "h-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "h-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "c-customer",
+              "c-country",
+              "c-revenue"
+            ]
+          },
+          {
+            "id": "c-customer",
+            "component": "Text",
+            "text": {
+              "path": "Customer"
+            }
+          },
+          {
+            "id": "c-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "c-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "f-label",
+              "f-remaining"
+            ]
+          },
+          {
+            "id": "f-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "f-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dsl-total-revenue-kpi",
+      "operation": "dsl",
+      "contains": [
+        "totalrevenue: ",
+        "kpi"
+      ],
+      "output": {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "kpi-column"
+          },
+          {
+            "id": "kpi-column",
+            "component": "Column",
+            "children": [
+              "kpi-label",
+              "kpi-value"
+            ]
+          },
+          {
+            "id": "kpi-label",
+            "component": "Text",
+            "text": "Total revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "kpi-value",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "/rows/0/TotalRevenue"
+                },
+                "decimals": 0,
+                "grouping": true
+              },
+              "returnType": "string"
+            },
+            "variant": "h2"
+          }
+        ]
+      }
+    }
+  ]
+}
