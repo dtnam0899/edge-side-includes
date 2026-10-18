@@ -4,7 +4,7 @@ type: process
 status: Active
 updated: 2026-10-18
 projects: [core, agents, portal]
-issues: [ESI-1, ESI-64]
+issues: [ESI-1, ESI-64, ESI-66]
 keywords: [phase 5, integration, end-to-end, e2e, playwright, scenario, gateway, fixture model]
 ---
 
@@ -71,6 +71,5 @@ Resources: SQL Server is amd64 only and needs about 2 GB; on Apple silicon enabl
 
 ## Known gaps found by the scenario
 
-- Query result cells lose the decimal scale in the portal: core returns `275.00`, the table shows `275` (JSON numbers parsed in the browser). The DSL views are not affected because they format with `formatNumber`.
 - `web/esi-portal/compose.yaml` defaults `ESI_PORTAL_API_BASE_URL` to `/api`, which only works behind a gateway like the one here; on its own the container has no `/api`.
 - Real model quality is not tested: evals against a real provider come with the provider ADR.
