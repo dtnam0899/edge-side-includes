@@ -1,9 +1,16 @@
 {
   "name": "@dtnam0899/dsl-renderer-angular",
   "version": "0.0.0",
+  "description": "Angular renderer for ESI DSL artifacts: validates with dsl-core and renders with @a2ui/angular/v0_9.",
   "peerDependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0"
+    "@angular/common": "^21.2.5",
+    "@angular/core": "^21.2.5",
+    "@angular/platform-browser": "^21.2.5"
+  },
+  "dependencies": {
+    "@a2ui/angular": "0.13.0",
+    "@a2ui/web_core": "0.14.0",
+    "@dtnam0899/dsl-core": "0.0.0"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"

@@ -1,0 +1,30 @@
+@let state = view();
+@if (state.kind === 'invalid') {
+  <div class="esi-dsl-error" role="alert">
+    <p>This item cannot be shown because its definition is not valid.</p>
+    <ul>
+      @for (message of state.messages; track $index) {
+        <li>{{ message }}</li>
+      }
+    </ul>
+  </div>
+} @else if (state.kind === 'missing-columns') {
+  <div class="esi-dsl-error" role="alert">
+    <p>
+      This item cannot be shown because the query result no longer has the
+      {{ state.columns.length === 1 ? 'column' : 'columns' }} {{ state.columns.join(', ') }}.
+      Create it again with a new prompt.
+    </p>
+  </div>
+} @else if (state.kind === 'render-error') {
+  <div class="esi-dsl-error" role="alert">
+    <p>This item could not be rendered.</p>
+  </div>
+} @else if (state.kind === 'ready') {
+  <!-- Two branches, so that a new surface (new generation) gets a new surface element. -->
+  @if (state.generation % 2 === 0) {
+    <a2ui-v09-surface [surfaceId]="state.surfaceId" />
+  } @else {
+    <a2ui-v09-surface [surfaceId]="state.surfaceId" />
+  }
+}
