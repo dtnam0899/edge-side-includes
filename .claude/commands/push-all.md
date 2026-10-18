@@ -12,7 +12,7 @@ Use only when the user explicitly invokes this command. This command stages ever
 Check the current branch, upstream, `git status --short`, `git diff --stat`, staged and unstaged diffs, and the latest commit message. List untracked files separately and inspect their contents as needed to check for secrets and generated artifacts. Do not stage or modify anything yet.
 
 Stop and report if:
-- The branch is `main` or `master`, there are merge conflicts, or the repository has no appropriate upstream.
+- The branch is `develop`, `main` or `master`, there are merge conflicts, or the repository has no appropriate upstream.
 - The changes include secrets, credentials, `.env` files, build artifacts, temporary files, or unexpected large files.
 - Changes appear unrelated, contain work the user may not own, or cannot be safely reviewed.
 - The branch does not identify an `ESI-<number>` ticket. Ask the user for the ticket reference rather than inventing one.

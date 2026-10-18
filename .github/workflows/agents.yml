@@ -6,7 +6,7 @@ on:
       - "services/ai-agents/**"
       - ".github/workflows/agents.yml"
   push:
-    branches: [main]
+    branches: [develop, main]
     paths:
       - "services/ai-agents/**"
       - ".github/workflows/agents.yml"
