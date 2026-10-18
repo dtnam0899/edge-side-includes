@@ -1,0 +1,133 @@
+name: release-lib
+
+# Manually started from main after a develop -> main release merge. Publishes the chosen lib packages with
+# `nx release` (independent versions). Versions are not committed: they live in the tags
+# lib-<package>@v<version> (nx resolves the current version from these tags) and in the published dist
+# package.json, which nx writes together with exact versions of the internal dependencies.
+# main accepts only admin updates, so no changelog or version commit is pushed; only tags.
+on:
+  workflow_dispatch:
+    inputs:
+      projects:
+        description: "Comma-separated lib projects, released in dependency order"
+        required: true
+        default: dsl-schema,dsl-core,dsl-renderer-angular
+        type: string
+      version:
+        description: "Stable version for all of them (e.g. 0.1.0); empty = derive from conventional commits"
+        required: false
+        type: string
+      dry_run:
+        description: "Show versions and package contents without publishing or tagging"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+env:
+  PROJECTS: ${{ inputs.projects }}
+  VERSION: ${{ inputs.version }}
+  DRY_RUN: ${{ inputs.dry_run }}
+  NX_DAEMON: "false"
+  NX_NO_CLOUD: "true"
+  CI: "true"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    defaults:
+      run:
+        working-directory: lib
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      packages: ${{ steps.versions.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.3
+      - name: Check branch and inputs
+        run: |
+          [ "$GITHUB_REF_NAME" = main ] || { echo "::error::lib releases run from main only"; exit 1; }
+          echo "$PROJECTS" | grep -Eq '^[a-z0-9-]+(,[a-z0-9-]+)*$' || { echo "::error::projects must be a comma-separated list"; exit 1; }
+          if [ -n "$VERSION" ]; then
+            echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "::error::$VERSION is not a stable version"; exit 1; }
+          fi
+      - name: Install and check (build, test, lint, module boundaries)
+        run: |
+          npm ci
+          npm run check
+          npm run test:boundaries
+      - name: Version (writes dist/<project>/package.json only)
+        run: |
+          # --first-release falls back to the manifest version when a project has no tag yet
+          npx nx release version ${VERSION:+"$VERSION"} --projects="$PROJECTS" --first-release \
+            --git-commit=false --git-tag=false --stage-changes=false
+      - name: Read versions and check tags
+        id: versions
+        run: |
+          packages=""
+          for p in $(echo "$PROJECTS" | tr ',' ' '); do
+            v=$(node -p "require('./dist/$p/package.json').version")
+            n=$(node -p "require('./dist/$p/package.json').name")
+            tag="lib-$p@v$v"
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "::error::$tag already exists; nothing new to release for $p (or pass a higher version)"; exit 1
+            fi
+            echo "$n@$v ($tag)"
+            packages="$packages $n@$v"
+          done
+          echo "packages=${packages# }" >> "$GITHUB_OUTPUT"
+      - name: Publish
+        run: |
+          if [ "$DRY_RUN" = true ]; then
+            npx nx release publish --projects="$PROJECTS" --dry-run
+          else
+            npx nx release publish --projects="$PROJECTS"
+          fi
+      - name: Tag
+        if: inputs.dry_run == false
+        run: |
+          for p in $(echo "$PROJECTS" | tr ',' ' '); do
+            tag="lib-$p@v$(node -p "require('./dist/$p/package.json').version")"
+            git tag "$tag" "$GITHUB_SHA"
+            git push origin "$tag"
+          done
+
+  verify:
+    needs: release
+    if: inputs.dry_run == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PACKAGES: ${{ needs.release.outputs.packages }}
+    steps:
+      # Clean container, as a consumer installs them: exact versions, token only as a build secret.
+      - name: Install by exact version in a clean Docker build
+        run: |
+          mkdir -p "$RUNNER_TEMP/consumer" && cd "$RUNNER_TEMP/consumer"
+          cat > Dockerfile <<'EOF'
+          # syntax=docker/dockerfile:1
+          FROM node:22.23.3-alpine3.24
+          ARG PACKAGES
+          WORKDIR /consumer
+          RUN printf '%s\n' '@dtnam0899:registry=https://npm.pkg.github.com' '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' > .npmrc \
+           && npm init -y >/dev/null
+          # --legacy-peer-deps: the Angular peers of the renderer are the consumer's choice; only resolution is checked here.
+          RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN \
+              npm install --save-exact --legacy-peer-deps $PACKAGES \
+           && rm .npmrc \
+           && node -e "for (const spec of process.argv.slice(1)) { const i = spec.lastIndexOf('@'); const name = spec.slice(0, i), want = spec.slice(i + 1); const got = require(name + '/package.json').version; if (got !== want) throw new Error(name + ' ' + got + ' != ' + want); console.log('installed', name + '@' + got); }" $PACKAGES
+          EOF
+          docker build --no-cache --progress=plain --build-arg PACKAGES="$PACKAGES" --secret id=npm_token,env=NODE_AUTH_TOKEN .

@@ -49,7 +49,7 @@ Publishing from a laptop is not part of the workflow: releases and prereleases r
 
 ## Release flow
 
-- Stable releases: after the `develop` → `main` release PR is merged, CI on `main` publishes (`esi-project-standards`).
+- Stable releases: after the `develop` → `main` release PR is merged, start the release workflow on `main`: `release-contracts` (version committed in `services/contracts`, tag `contracts@v<version>`) or `release-lib` (versions from tags and conventional commits or an explicit input, tags `lib-<package>@v<version>`). See each project's `CLAUDE.md`.
 - Prereleases (decided 2026-10-18): a manually started workflow may publish from `develop`, and only versions with a prerelease identifier (for example `0.1.0-rc.0`). Stable versions are refused outside `main`.
 
 ## Labels and templates
