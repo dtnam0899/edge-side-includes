@@ -18,6 +18,74 @@ After reviewing generated (or their own) SQL, the user explicitly runs it and se
 2. The result shows the column headers, up to 20 rows and "n more rows after this page" (or "No more rows"); paging loads other pages. NULLs are shown as such, and cells cut at 64 KB are marked "truncated".
 3. A query that ran but returned no rows says so. A failure shows the reason (for example "The statement was not run: only a single read-only SELECT can be executed", "SQL Server returned an error…", "The query timed out…"); it is never shown as an empty result.
 
+## Diagrams
+
+### Swimlane: run an approved SELECT
+
+```mermaid
+flowchart LR
+  subgraph User
+    U1[Click Run query]
+    U2[Page through results]
+  end
+  subgraph Portal["web/esi-portal: assistant module"]
+    P1[Show Running]
+    P2[Show 20 rows and remaining count]
+    P3[Show failure reason]
+  end
+  subgraph Core["services/core-backend"]
+    C1[Check owner, consent, terms]
+    C2[Parse and allow-list check]
+    C3[Check objects are user tables]
+    C4[Read page, count the rest, roll back]
+    C5[Log masked statement and outcome]
+  end
+  subgraph DB["User's SQL Server"]
+    D1[sys.all_objects]
+    D2[Run SELECT read-only]
+  end
+  U1 --> P1 --> C1 --> C2
+  C2 -- rejected --> C5 --> P3
+  C2 -- valid --> C3 --> D1
+  C3 -- view or system object --> C5
+  C3 -- user tables --> C4 --> D2
+  C4 --> C5 --> P2 --> U2 --> C1
+```
+
+### Sequence: execute a page
+
+```mermaid
+sequenceDiagram
+  actor U as User
+  participant P as Portal (assistant)
+  participant C as core-backend
+  participant S as User's SQL Server
+  U->>P: Run query (or next page)
+  P->>C: POST /connections/{id}/executions {sql, page}
+  C->>C: Owner, consent, terms, ScriptDom parse, allow-list
+  alt Not a single read-only SELECT
+    C->>C: Log "rejected" (literals as ?)
+    C-->>P: 422 sql-rejected {issues}
+  else Valid
+    C->>S: Open (ApplicationIntent=ReadOnly), BEGIN TRANSACTION
+    C->>S: Type of each referenced object (sys.all_objects)
+    alt Not a user table
+      C-->>P: 422 sql-rejected (object-not-allowed)
+    else User tables
+      C->>S: SELECT (timeout 30 s)
+      S-->>C: Stream rows
+      C->>C: Skip earlier pages, keep 20 rows, count the rest, cap cells at 64 KB
+      C->>S: ROLLBACK
+      C->>C: Log outcome, duration, masked statement, hash
+      C-->>P: 200 {columns, rows, page{number,size,remainingRows}, truncatedCells}
+    end
+    opt SQL Server error or timeout
+      C-->>P: 422 execution-failed or 504 execution-timeout
+    end
+  end
+  P-->>U: Rows, remaining count, or the failure reason
+```
+
 ## API (core-api 0.1.0)
 
 `POST /connections/{connectionId}/executions` (`executeQuery`) with `{ "sql": "...", "page": 1 }` returns `QueryResult`:

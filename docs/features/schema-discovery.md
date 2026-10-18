@@ -29,6 +29,27 @@ Objects shipped by Microsoft are excluded. No row values are read.
 
 `GET /connections/{connectionId}/schema` (`getConnectionSchema`) returns `SchemaMetadata`. It needs an owned connection with granted consent and the current terms accepted (404, 403 otherwise).
 
+## Diagrams
+
+### Sequence: read schema metadata
+
+```mermaid
+sequenceDiagram
+  participant Caller as Portal or ChatService (core)
+  participant C as core-backend
+  participant DB as App database (esi_core)
+  participant S as User's SQL Server
+  Caller->>C: GET /connections/{id}/schema (or internal call during chat)
+  C->>DB: Load connection (owner, consent)
+  C->>C: Check current terms, decrypt connection string
+  C->>S: Open (ApplicationIntent=ReadOnly), BEGIN TRANSACTION
+  C->>S: Catalog views: columns, primary keys, foreign keys
+  C->>S: sys.procedures + OBJECT_DEFINITION (text only)
+  S-->>C: Rows of the catalog views
+  C->>S: ROLLBACK
+  C-->>Caller: SchemaMetadata (schemas, tables/views, columns, keys, procedure definitions)
+```
+
 ## How it is used
 
 - **Chat:** for every question, core reads the schema and sends its structure, with procedure definitions, to the agent (`generateSql`). The agent grounds identifiers in it and masks string literals of procedure definitions in its prompt.

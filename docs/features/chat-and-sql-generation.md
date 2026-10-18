@@ -21,6 +21,78 @@ The user asks questions about a selected database in natural language. The assis
 5. Failures are shown as failures with a reason (for example "The AI assistant is not available right now, so no SQL was generated"), never as an empty answer.
 6. Reopening a session shows all earlier messages.
 
+## Diagrams
+
+### Swimlane: ask a question
+
+```mermaid
+flowchart LR
+  subgraph User
+    U1[Select database]
+    U2[Ask a question]
+    U3[Review SQL: copy or run]
+  end
+  subgraph Portal["web/esi-portal: assistant module"]
+    P1[List chat sessions]
+    P2[Show question in progress]
+    P3[Show answer and SQL labelled Not run]
+    P4[Show failure reason]
+  end
+  subgraph Core["services/core-backend"]
+    C1[Check owner, consent, terms]
+    C2[Load last 20 messages]
+    C3[Read schema of the database]
+    C4[Save question, answer, script]
+    C5[Store nothing]
+  end
+  subgraph Agents["services/ai-agents"]
+    A1[Build prompt from typed fields]
+    A2[Model call]
+    A3[Check SQL policy and grounding]
+  end
+  subgraph DB["User's SQL Server"]
+    D1[Catalog views]
+  end
+  U1 --> P1 --> C1
+  U2 --> P2 --> C1 --> C2 --> C3 --> D1
+  C3 --> A1 --> A2 --> A3
+  A3 -- answer --> C4 --> P3 --> U3
+  A3 -- unavailable --> C5 --> P4
+```
+
+### Sequence: send a chat message
+
+```mermaid
+sequenceDiagram
+  actor U as User
+  participant P as Portal (assistant)
+  participant C as core-backend
+  participant DB as App database (esi_core)
+  participant S as User's SQL Server
+  participant A as ai-agents
+  U->>P: Question
+  P->>C: POST /chat-sessions/{id}/messages {text}
+  C->>DB: Session (owner) and connection (consent, terms)
+  C->>DB: Last 20 messages
+  C->>S: Read schema (read-only, rolled back)
+  S-->>C: Schema metadata
+  C->>A: POST /sql-generations {question, schema, history}
+  Note over C,A: Never row values or connection strings
+  alt Answer
+    A-->>C: {kind, sql, explanation, referencedTables, procedureName}
+    opt kind = stored-procedure
+      C->>DB: Insert script (text only, never created in S)
+    end
+    C->>DB: Insert question and answer messages
+    C-->>P: 201 ChatTurn
+    P-->>U: Explanation + SQL ("Not run" or "Script only, never run")
+  else Agents unreachable, no model, timeout
+    A-->>C: 503 / no answer
+    C-->>P: 503 agents-unavailable (nothing stored)
+    P-->>U: "The AI assistant is not available right now"
+  end
+```
+
 ## API (core-api 0.1.0)
 
 | Operation | Method and path | Notes |

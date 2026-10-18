@@ -21,6 +21,102 @@ A user connects the assistant to their own SQL Server databases. Before the firs
 5. Withdrawing consent locks the database at once: its chat history, scripts and other features become unavailable. Granting consent again restores everything. Deleting removes the connection.
 6. When the terms change, the user is asked to accept the new version before any connection can be used again.
 
+## Diagrams
+
+### Swimlane: accept terms, add and test a connection, withdraw consent
+
+```mermaid
+flowchart LR
+  subgraph User
+    U1[Open assistant]
+    U2[Read and accept terms]
+    U3[Enter name and connection string]
+    U4[Test connection]
+    U5[Withdraw or grant consent]
+  end
+  subgraph Portal["web/esi-portal: assistant module"]
+    P1[List connections]
+    P2[Show terms dialog]
+    P3[Add-connection dialog with read-only login notice]
+    P4[Show server version or fixed reason]
+    P5[Lock or unlock the database]
+  end
+  subgraph Core["services/core-backend"]
+    C1[Check owner]
+    C2[Record acceptance: user, version, time]
+    C3[Check current terms, parse server and database]
+    C4[Encrypt with data key, wrap with master key, store]
+    C5[Decrypt at use, open connection]
+    C6[Set consent state]
+  end
+  subgraph DB["User's SQL Server"]
+    D1[Accept login or fail]
+  end
+  U1 --> P1 --> C1
+  P1 --> P2 --> U2 --> C2
+  C2 --> P3 --> U3 --> C3 --> C4
+  U4 --> C5 --> D1 --> P4
+  U5 --> C6 --> P5
+```
+
+### Sequence: add and test a connection
+
+```mermaid
+sequenceDiagram
+  actor U as User
+  participant P as Portal (assistant)
+  participant C as core-backend
+  participant DB as App database (esi_core)
+  participant S as User's SQL Server
+  U->>P: Add connection
+  P->>C: GET /consent/acceptance
+  C-->>P: 404 or isCurrent=false
+  P->>C: GET /consent/terms
+  C-->>P: version, text, status=draft
+  U->>P: Accept
+  P->>C: POST /consent/acceptance {termsVersion}
+  C->>DB: Insert acceptance (user, version, time)
+  C-->>P: 201 isCurrent=true
+  U->>P: Name + connection string
+  P->>C: POST /connections {name, connectionString}
+  C->>C: Check current terms, parse server/database
+  C->>C: AES-256-GCM encrypt (data key), wrap data key (master key vN)
+  C->>DB: Insert connection with encrypted secret
+  C-->>P: 201 {id, name, server, database, consent=granted}
+  U->>P: Test
+  P->>C: POST /connections/{id}/test
+  C->>C: Owner, consent and terms check, decrypt
+  C->>S: Open connection (15 s)
+  alt Opened
+    S-->>C: Server version
+    C-->>P: 200 {serverVersion, durationMs}
+  else Failed
+    S-->>C: SQL error number
+    C-->>P: 422 connection-failed (fixed reason)
+  end
+```
+
+### Sequence: withdraw and grant consent again
+
+```mermaid
+sequenceDiagram
+  actor U as User
+  participant P as Portal (assistant)
+  participant C as core-backend
+  participant DB as App database (esi_core)
+  U->>P: Withdraw consent
+  P->>C: DELETE /connections/{id}/consent
+  C->>DB: consent = withdrawn (nothing deleted)
+  C-->>P: 204
+  P->>C: Any use: schema, chat, execution, scripts, artifacts, dashboards
+  C-->>P: 403 consent-withdrawn
+  U->>P: Grant consent
+  P->>C: PUT /connections/{id}/consent
+  C->>C: Current terms accepted?
+  C->>DB: consent = granted
+  C-->>P: 200 (hidden data is available again)
+```
+
 ## API (core-api 0.1.0)
 
 | Operation | Method and path | Notes |

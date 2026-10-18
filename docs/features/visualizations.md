@@ -28,6 +28,76 @@ Charts and forms are not supported in this version; the assistant says so (`visu
 3. Core validates the candidate itself. If it is invalid, core calls the agent again with the findings, at most 2 more times; then it answers 422 `dsl-validation-failed` with the findings. Only a valid document is returned.
 4. The portal renders the document with the live rows of the query (pending in ESI-20; the renderer is published in `lib`).
 
+## Diagrams
+
+### Swimlane: create and render a visualization
+
+```mermaid
+flowchart LR
+  subgraph User
+    U1[Ask for a table or KPI]
+    U2[See the visualization]
+  end
+  subgraph Portal["web/esi-portal (rendering: ESI-20)"]
+    P1[Send column definitions and intent]
+    P2["Render with esi-dsl-surface and live rows"]
+    P3[Show refusal or validation failure]
+  end
+  subgraph Core["services/core-backend"]
+    C1[Check session owner, consent, terms]
+    C2[Validate candidate: DslValidator]
+    C3[Retry with findings, max 2]
+  end
+  subgraph Agents["services/ai-agents"]
+    A1[Refuse charts and forms]
+    A2[Generate DSL from columns only]
+    A3[Self-check: Python mirror of dsl-core]
+  end
+  subgraph Lib["lib (published packages)"]
+    L1[dsl-core validation]
+    L2[A2UI Angular renderer]
+  end
+  U1 --> P1 --> C1 --> A1
+  A1 -- unsupported --> P3
+  A1 --> A2 --> A3 --> C2
+  C2 -- invalid --> C3 --> A2
+  C3 -- still invalid --> P3
+  C2 -- valid --> P2 --> L1 --> L2 --> U2
+```
+
+### Sequence: create a visualization
+
+```mermaid
+sequenceDiagram
+  actor U as User
+  participant P as Portal (assistant)
+  participant C as core-backend
+  participant A as ai-agents
+  participant L as lib (dsl-core, dsl-renderer-angular)
+  U->>P: "Show revenue per customer as a table"
+  P->>C: POST /chat-sessions/{id}/visualizations {columns, intent}
+  C->>C: Session owner, consent, terms, validate columns
+  loop At most 1 + 2 retries
+    C->>A: POST /dsl-generations {columns, intent, catalogId, previousIssues}
+    Note over C,A: Column names and types only, no rows
+    alt Unsupported (chart, form)
+      A-->>C: {status: unsupported, reason}
+      C-->>P: 422 visualization-not-supported
+    else Candidate
+      A-->>C: {status: generated, dsl}
+      C->>C: DslValidator (envelope, A2UI schemas, ESI rules, bound columns)
+      Note over C: Valid: leave the loop. Invalid: retry with the issues.
+    end
+  end
+  alt Valid
+    C-->>P: 200 {dsl, columns}
+    P->>L: Validate again, then createSurface, updateComponents, updateDataModel(rows, page)
+    L-->>U: Table or KPI (plain text, error state if a column is missing)
+  else Still invalid after the retries
+    C-->>P: 422 dsl-validation-failed {issues}
+  end
+```
+
 ## The document (`DslDocument`)
 
 `catalogId` (`https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json`), `protocolVersion` (`v0.9`), `dslSchemaVersion` (the `@dtnam0899/dsl-schema` version, `0.1.0`) and `components` (the A2UI `updateComponents` payload, exactly one with id `root`). Data paths: relative column names inside a `/rows` template, `/rows/<index>/<column>` for one row, `/page/<field>` for paging.
