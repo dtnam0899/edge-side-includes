@@ -6,7 +6,7 @@ allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git b
 # Pull Request Preparation
 
 1. Read the project's `CLAUDE.md` and run its lint, typecheck and test commands. Stop and report if any fail.
-2. Review `git diff main...HEAD` and `git log main..HEAD --oneline`.
+2. Confirm the branch was created from `develop`, then review `git diff develop...HEAD` and `git log develop..HEAD --oneline`.
 3. Check the branch name follows `type/ESI-<n>-short-description` (e.g. `feat/ESI-123-user-login`).
    The PR title must follow the ticket title format: `ESI-<n> [PROJECT] <summary>`, e.g. `ESI-1 [CORE] Add login`.
    The `ESI-` prefix is mandatory; the `[PROJECT]` tag is mandatory whenever the ticket belongs to a sub-project of the ESI platform.
@@ -33,4 +33,4 @@ Only for UI changes
 - [ ] No secrets committed
 ```
 
-PRs should be small and squash-merged into `main` after CI passes and one approval.
+PRs target `develop` (never `main`), stay small, and are squash-merged into `develop` after CI passes and one approval. Production releases are a separate PR from `develop` into `main`, merged with a merge commit.

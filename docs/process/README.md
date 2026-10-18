@@ -116,14 +116,14 @@ G5: tech lead approves the plan; the first executable issue is unblocked.
 Per issue, following `esi-workflow`:
 
 1. Check "Depends on": producing issues are merged and published; ADRs are Accepted.
-2. Branch `type/ESI-<n>-short-description`, commits `type(project): subject` with `Refs: ESI-<n>`.
+2. Branch `type/ESI-<n>-short-description` from the latest `develop`, commits `type(project): subject` with `Refs: ESI-<n>`.
 3. Work inside one project directory; use its own `CLAUDE.md` commands; documented commands must work in Docker.
 4. Tests come with the change: the acceptance criteria are the test list.
-5. PR title `ESI-<n> [project] <summary>`; the PR links the issue and ticks the acceptance criteria; CI green; one approval; squash-merge.
-6. The producer releases first; consumers bump the pinned version in a separate PR.
+5. PR title `ESI-<n> [project] <summary>`; the PR links the issue and ticks the acceptance criteria; CI green; one approval; squash-merge into `develop`.
+6. Production release: a PR from `develop` into `main`, merged with a merge commit after CI and one approval; release and publish run from `main`. The producer releases first; consumers bump the pinned version in a separate PR.
 7. If the work reveals a wrong assumption, stop and use [Change handling](#change-handling) instead of silently diverging.
 
-G6: PR merged with CI green and one approval.
+G6: PR merged into `develop` with CI green and one approval.
 
 ## Stage 8. Verify and close
 
