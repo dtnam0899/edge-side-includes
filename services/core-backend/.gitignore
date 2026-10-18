@@ -4,3 +4,4 @@ TestResults/
 .vs/
 .env
 .env.*
+!.env.example
