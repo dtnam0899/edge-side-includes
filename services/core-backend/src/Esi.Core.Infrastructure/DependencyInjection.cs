@@ -1,8 +1,14 @@
+using Esi.Core.Application.Agents;
+using Esi.Core.Application.Chat;
 using Esi.Core.Application.Connections;
 using Esi.Core.Application.Consent;
 using Esi.Core.Application.Queries;
 using Esi.Core.Application.Security;
+using Esi.Core.Application.Visualizations;
+using Esi.Core.Infrastructure.Agents.Contracts;
+using Esi.Core.Infrastructure.Agents;
 using Esi.Core.Infrastructure.Connections;
+using Esi.Core.Infrastructure.Dsl;
 using Esi.Core.Infrastructure.Persistence.Repositories;
 using Esi.Core.Infrastructure.Persistence;
 using Esi.Core.Infrastructure.Queries;
@@ -43,6 +49,21 @@ public static class DependencyInjection
         services.AddSingleton<ISqlStatementValidator, SelectStatementValidator>();
         services.AddSingleton<ITargetDatabase, SqlTargetDatabase>();
         services.AddScoped<IConnectionRepository, ConnectionRepository>();
+        services.AddScoped<IChatRepository, ChatRepository>();
+        services.AddSingleton<IDslValidator, DslValidator>();
+        services.AddSingleton(new VisualizationOptions(
+            int.TryParse(configuration["Visualization:MaxRetries"], out var retries) && retries >= 0 ? retries : 2));
+
+        // services/ai-agents (agents-api contract). Missing base URL: chat and visualizations answer agents-unavailable.
+        var agentsUrl = Uri.TryCreate(configuration["Agents:BaseUrl"], UriKind.Absolute, out var url) ? url : null;
+        var agentsOptions = new AgentsOptions(agentsUrl, int.TryParse(configuration["Agents:TimeoutSeconds"], out var t) && t > 0 ? t : 120);
+        services.AddSingleton(agentsOptions);
+        services.AddHttpClient<IAgentsApiClient, AgentsApiClient>(http =>
+        {
+            http.BaseAddress = agentsOptions.BaseUrl ?? new Uri("http://agents.invalid/");
+            http.Timeout = Timeout.InfiniteTimeSpan; // HttpAgentsClient applies the configured timeout
+        });
+        services.AddScoped<IAgentsClient, HttpAgentsClient>();
         services.AddScoped<IConsentAcceptanceRepository, ConsentAcceptanceRepository>();
         return services;
     }

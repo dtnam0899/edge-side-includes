@@ -56,6 +56,11 @@ services:
       <<: *core-env
       ESI_CORE_AppDb__ConnectionString: *appdb-connection
       ESI_CORE_Logging__LogLevel__Default: ${ESI_CORE_LOG_LEVEL:-Information}
+      # services/ai-agents is another project; run it separately (its own compose, port 8000). Without it, chat
+      # and visualizations answer 503 agents-unavailable.
+      ESI_CORE_Agents__BaseUrl: ${ESI_CORE_AGENTS_URL:-http://host.docker.internal:8000/}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       migrate:
         condition: service_completed_successfully
