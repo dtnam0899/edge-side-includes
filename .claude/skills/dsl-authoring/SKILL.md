@@ -1,24 +1,31 @@
 ---
 name: dsl-authoring
-description: Add or change UI DSL nodes (table, chart, dashboard, widget, form, layout, action) in lib/dsl-schema and lib/dsl-core. Use when a task adds a DSL field or node type, changes its validation, or bumps the DSL version.
+description: Change how ESI stores or validates UI DSL (A2UI v0.9 basic catalog payloads and the ESI artifact envelope) in lib/dsl-schema and lib/dsl-core. Use when a task changes artifact fields, validation rules, the pinned A2UI version or catalog, or adds a custom component.
 ---
 
 # DSL authoring
 
-The DSL describes UI as data. `lib/dsl-schema` is the single source of truth; `lib/dsl-core` holds framework-agnostic parsing and validation. The renderer (`lib/dsl-renderer-angular`) and the backend/AI agents consume it. If a renderer for another framework is added later, apply the `dsl-renderer-parity` skill.
+The DSL is **A2UI v0.9 with its basic catalog** (ADR-0002). ESI does not define its own `table`, `chart`, `dashboard` or `form` nodes. `lib/dsl-schema` is the source of truth for the pinned A2UI schema and the ESI artifact envelope; `lib/dsl-core` holds framework-agnostic validation and migration. The renderer is `lib/dsl-renderer-angular`, which wraps `@a2ui/angular/v0_9`. Read `docs/architecture/ADR-0002-a2ui-dsl-adoption-and-storage.md` and `docs/dsl/README.md` first.
+
+## What is stored
+
+A stored artifact = the A2UI `updateComponents` payload (component list with a `root`) + `catalogId` + A2UI protocol version + `dslSchemaVersion` + column definitions + the bound SELECT. It never contains row values and never contains layout (layout belongs to the dashboard, in core).
 
 ## Workflow
 
-1. Read the project `CLAUDE.md` of `lib/` and `docs/dsl/` for the current spec and version.
-2. Change the schema first (`lib/dsl-schema/src/<node>/`). Every node has a `type` discriminator, is serializable JSON only (no functions or framework types), and has documented defaults.
-3. Update validation and type guards in `dsl-core`; add valid and invalid fixtures.
-4. Update the renderer(s) (see the `dsl-renderer-parity` skill). While only the Angular renderer exists, parity does not apply; if more renderers exist, do not merge a node supported by only one unless the schema marks it as such.
-5. Release `dsl-schema` first (Nx release, new version). Consumers (renderers in `lib`, `services/core-backend`, `services/ai-agents`) then bump to that version and regenerate their models (TS, C#, Pydantic) inside their own project; they never read `lib/` by path. Never edit generated files by hand.
-6. Update `docs/dsl/` and record breaking changes in an ADR (`docs/architecture/`).
+1. Read `lib/CLAUDE.md` and `docs/dsl/README.md` for the pinned versions.
+2. Change `dsl-schema` first (envelope fields, pinned catalog file). Everything is serializable JSON with documented defaults.
+3. Update validation in `dsl-core` in this order: A2UI JSON Schema for the pinned version, then ESI rules (unique component ids, `root` exists, only components and functions from the pinned catalog, bound paths exist in the column definitions, no HTML or script content, no row data). Add valid and invalid fixtures.
+4. Core also validates on save, with a .NET implementation of the ESI rules. The fixtures from `dsl-core` are the shared corpus; both implementations must pass them.
+5. Update the renderer (see `dsl-renderer-parity`).
+6. Release `dsl-schema` first (Nx release). Consumers (`lib` packages, `services/core-backend`, `services/ai-agents`) bump to the published version and regenerate models inside their own project; they never read `lib/` by path. Never edit generated files by hand.
+7. Update `docs/dsl/`; a breaking change needs an ADR (`docs/architecture/`).
 
 ## Rules
 
-- Additive changes (new optional field, new node) keep the version. Removing, renaming or tightening a field is breaking: bump the DSL version and provide a migration in `dsl-core`.
-- Treat DSL from AI agents or users as untrusted: validate before rendering; no raw HTML, scripts or arbitrary URLs in nodes. Actions reference named handlers, never code.
-- Prefer composition (small nodes combined in layouts) over one large node with many flags.
-- Test: schema fixtures (valid/invalid), migration round-trips, and that generated models match the schema.
+- Pin `@a2ui/angular` and `@a2ui/web_core` to exact versions and import only from `@a2ui/angular/v0_9`; the package root is protocol v1.0.
+- The `catalogId` is taken verbatim from the pinned catalog file and covered by a test, so an upstream mismatch fails the build.
+- Use only components and functions from the basic catalog. A custom component (for example charts in phase 7) needs its own custom catalog with its own `catalogId`, and an ADR.
+- Additive changes keep the version. Removing, renaming or tightening a field, or changing the pinned A2UI version, is breaking: bump `dslSchemaVersion` and add a migration function per version step in `dsl-core`. Old artifacts stay readable until migrated.
+- Treat DSL from AI agents or users as untrusted: validate before rendering; no raw HTML, scripts or arbitrary URLs. Forms are out of scope for now; agents refuse them.
+- Test: schema fixtures (valid/invalid), `catalogId` test, migration round-trips, missing bound column yields an error state.

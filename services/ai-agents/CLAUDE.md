@@ -6,8 +6,8 @@
 AI agents and tools that answer user requests and emit DSL documents (validated against models generated from `lib/dsl-schema`) for the UI to render. Evaluation cases live in `evals/`.
 
 ## Stack
-- Python <version>, <framework: FastAPI / LangChain / other>, <package manager: uv / pip / poetry>
-- Model providers and external tools/services: <list, with config location>
+- Python 3.13 (or 3.14), FastAPI, `uv` with a lock file, `pytest`, `ruff` (ADR-0001).
+- Model provider and agent framework: not chosen yet; a separate ADR must be accepted before agent feature work starts.
 
 ## Commands (run from this directory)
 - Install: `<verified command>`

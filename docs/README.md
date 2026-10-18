@@ -19,7 +19,7 @@ Entry point for humans and AI agents. Read this first, then open only the file y
 | Which tasks make up the foundation phase? | [plan/phase-0-foundation.md](./plan/phase-0-foundation.md) |
 | Why was a technical choice made? | [architecture/](./architecture/README.md) (ADR index and template) |
 | What is the HTTP API? | `api/` (empty until the contracts project publishes; the source of truth is `services/contracts`) |
-| What is the UI DSL? | `dsl/` (empty until ADR-0002 is accepted; source of truth is `lib/dsl-schema`) |
+| What is the UI DSL? | [dsl/](./dsl/README.md) (A2UI v0.9 basic catalog, pinned versions, component selection; source of truth is `lib/dsl-schema`) |
 | How do I work in one project? | that project's `CLAUDE.md` (`services/*`, `web/esi-portal`, `lib`) |
 | Repo-wide rules (independence, Docker, versioning, workflow) | root [CLAUDE.md](../CLAUDE.md) and `.claude/skills/esi-project-standards/SKILL.md` |
 

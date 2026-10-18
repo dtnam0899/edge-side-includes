@@ -6,8 +6,10 @@
 Angular management web app; renders DSL through `lib/dsl-renderer-angular`. It hosts large features as independent modules, including the AI assistant (chat, database connections, DSL dashboards).
 
 ## Stack
-- Angular <version>, TypeScript, <state management / UI library>
-- Backend/API it talks to: <project or URL config location>
+- Angular 21 line (21.2.x; exact patch pinned at scaffold), TypeScript strict, standalone components, lazy-loaded feature modules, Angular CDK drag-drop. Not Angular 22: `@a2ui/angular` peers require `^21.2.5` (ADR-0001).
+- DSL rendering: `lib/dsl-renderer-angular`, which wraps `@a2ui/angular/v0_9` (never the package root, which is protocol v1.0; ADR-0002).
+- State management and UI library: not decided yet (decide in the scaffold task, record here).
+- Backend/API: `services/core-backend` through the published `lib/api-client` package; the base URL config location is set in the scaffold task.
 
 ## Commands (run from this directory)
 - Install: `npm ci`

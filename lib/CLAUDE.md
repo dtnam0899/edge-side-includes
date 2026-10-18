@@ -3,10 +3,10 @@
 <!-- Supplements the repository root CLAUDE.md for this project. Keep only verified facts. -->
 
 ## Overview
-Shared TypeScript workspace used by the portal. Packages: `dsl-schema` (source of truth, no framework deps), `dsl-core` (parse, validate, migrate), `dsl-renderer-angular`, `api-client` (generated from a pinned published `services/contracts` version), `ui-tokens`. See the `dsl-authoring` and `dsl-renderer-parity` skills.
+Shared TypeScript workspace used by the portal. Packages: `dsl-schema` (source of truth, no framework deps: the pinned A2UI v0.9 schema/catalog plus the ESI artifact envelope, see ADR-0002), `dsl-core` (parse, validate, migrate), `dsl-renderer-angular`, `api-client` (generated from a pinned published `services/contracts` version), `ui-tokens`. See the `dsl-authoring` and `dsl-renderer-parity` skills.
 
 ## Stack
-- TypeScript, Nx workspace (build, test, lint, affected, `nx release` with independent per-package versions)
+- TypeScript strict, Nx 23 workspace (works with Angular 21; ADR-0001) (build, test, lint, affected, `nx release` with independent per-package versions)
 - Registry: GitHub Packages (npm registry `https://npm.pkg.github.com`, so `ESI_PACKAGE_REGISTRY_URL` is that URL). Packages are scoped to the GitHub owner (`@dtnam0899/<name>`); auth is a `NODE_AUTH_TOKEN` env var (`GITHUB_TOKEN` in CI, a PAT with `read:packages` locally), configured through a project-level `.npmrc` that references the variable and never contains a token.
 - Each package has its own version (`projectsRelationship: independent`); `nx release` bumps only affected packages, and dependents bump the changed dependency via `updateDependents`. Never hand-edit versions; a change in `dsl-schema` is released before its dependents.
 - `web/*` consume packages by registry version, never by path

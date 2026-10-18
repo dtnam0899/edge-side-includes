@@ -30,7 +30,7 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 |
 | P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` | ESI-31 |
 | P0-12 | esi | Prove publish and pin flow with a prerelease | P0-06, P0-07, P0-11 | one prerelease package published and installed by a consumer | ESI-32 |
-| P0-13 | esi | Update skills and project docs after ADRs | P0-02..P0-05 | placeholders filled, DSL skills match ADR-0002 | ESI-33 |
+| P0-13 | esi | Update skills and project docs after ADRs | P0-02..P0-05 | placeholders filled, DSL skills match ADR-0002 | ESI-33 (closed) |
 | P0-14 | esi | Define test data policy | P0-08, P0-09 | shared understanding of fixtures per project | ESI-34 |
 
 ```mermaid
@@ -124,6 +124,7 @@ Same pattern for each: a human reviews the ADR in [architecture/](../architectur
 - Update `.claude/skills/dsl-authoring/SKILL.md` and `dsl-renderer-parity/SKILL.md` to match ADR-0002 (A2UI basic catalog, stored `updateComponents`, no custom `table/chart/form` nodes).
 - Create `docs/dsl/README.md` (component selection rules: table = `List` with template, KPI = `Card` + `Text`).
 - Done when: `grep -rn "<verified command>\|<version>" */CLAUDE.md` finds no placeholders in scaffolded projects.
+- Status 2026-10-18: stack lines (versions, framework, data store) filled from ADR-0001..0004, DSL skills and `docs/dsl/README.md` done. Commands, structure and config placeholders are filled by each scaffold task (P0-06..P0-10), which own their verified commands.
 
 ### P0-14 `[esi]` Define test data policy
 - Core owns the SQL Server test container and a sample schema script (tables with relationships, one stored procedure to exercise "read definitions, never execute").
