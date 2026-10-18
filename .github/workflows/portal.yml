@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - "web/esi-portal/**"
+      - "infra/vercel/**"
       - ".github/workflows/portal.yml"
   push:
     branches: [develop, main]
     paths:
       - "web/esi-portal/**"
+      - "infra/vercel/**"
       - ".github/workflows/portal.yml"
 
 permissions:
@@ -37,3 +39,49 @@ jobs:
           for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
           curl -fsS http://127.0.0.1:8080/config.json | grep -q '"apiBaseUrl": "https://api.example.test"'
           curl -fsS http://127.0.0.1:8080/assistant | grep -q '<app-shell>' || { docker logs portal; exit 1; }
+      # The Vercel deployment uses exactly the files the check stage built and tested (ADR-0005).
+      - name: Export static files
+        if: vars.VERCEL_PROJECT_ID != '' && ((github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+        run: |
+          id=$(docker create portal:check)
+          docker cp "$id:/app/dist/esi-portal/browser" "$RUNNER_TEMP/portal-static"
+          docker rm "$id"
+      - uses: actions/upload-artifact@v7
+        if: vars.VERCEL_PROJECT_ID != '' && ((github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+        with:
+          name: portal-static
+          path: ${{ runner.temp }}/portal-static
+          retention-days: 1
+
+  # Pushes to develop deploy the demo (Vercel production); same-repository PRs get a preview. Skipped until the
+  # Vercel project is set up (infra/vercel/README.md) and for fork PRs, which get no secrets.
+  deploy-vercel:
+    needs: build
+    if: vars.VERCEL_PROJECT_ID != '' && ((github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: ubuntu-latest
+    concurrency:
+      group: portal-vercel-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: infra/vercel
+      - uses: actions/download-artifact@v8
+        with:
+          name: portal-static
+          path: ${{ runner.temp }}/portal-static
+      - name: Build output
+        env:
+          ESI_DEMO_CORE_URL: ${{ vars.ESI_DEMO_CORE_URL }}
+        run: infra/vercel/build-output.sh "$RUNNER_TEMP/portal-static" "$RUNNER_TEMP/deploy/.vercel/output" "$ESI_DEMO_CORE_URL"
+      - name: Deploy
+        working-directory: ${{ runner.temp }}/deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+        run: |
+          target=""
+          if [ "$GITHUB_EVENT_NAME" = push ]; then target="--prod"; fi
+          url=$(npx --yes vercel@62.2.0 deploy --prebuilt $target --yes --token "$VERCEL_TOKEN")
+          echo "Portal deployed: $url" >> "$GITHUB_STEP_SUMMARY"
