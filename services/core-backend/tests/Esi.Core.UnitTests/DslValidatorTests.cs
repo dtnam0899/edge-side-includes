@@ -82,3 +82,15 @@ public class DslValidatorTests
         return (JsonSerializer.SerializeToElement(document), columns, expected);
     }
 }
+
+public class DslValidatorInstancesTests
+{
+    [Fact]
+    public void Several_validators_can_exist_in_one_process()
+    {
+        var first = new DslValidator();
+        var second = new DslValidator();
+
+        Assert.Equal(first.CatalogId, second.CatalogId);
+    }
+}

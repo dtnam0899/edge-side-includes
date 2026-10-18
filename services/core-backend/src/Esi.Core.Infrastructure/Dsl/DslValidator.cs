@@ -41,14 +41,15 @@ public sealed partial class DslValidator : IDslValidator
         _functions = [.. catalog["functions"]!.AsObject().Select(f => f.Key)];
 
         var catalogId = catalog["$id"]!.GetValue<string>();
+        // A registry per validator: building without options would register into the process-wide global registry,
+        // which refuses a second schema with the same $id (several hosts in one process, e.g. tests).
         var registry = new SchemaRegistry();
-        registry.Register(JsonSchema.FromText(Resource("common_types.json")));
-        var catalogSchema = JsonSchema.FromText(catalogText);
-        registry.Register(catalogSchema);
+        var options = new BuildOptions { SchemaRegistry = registry };
+        JsonSchema.FromText(Resource("common_types.json"), options);
+        var catalogSchema = JsonSchema.FromText(catalogText, options);
 
         // common_types.json refers to the catalog as "catalog.json" next to itself (dsl-schema CATALOG_ALIAS_ID).
         registry.Register(new Uri(CatalogAliasId), catalogSchema);
-        var options = new BuildOptions { SchemaRegistry = registry };
         foreach (var name in _components)
         {
             _componentSchemas[name] = JsonSchema.FromText($$"""{"$ref":"{{catalogId}}#/components/{{name}}"}""", options);
@@ -56,6 +57,8 @@ public sealed partial class DslValidator : IDslValidator
     }
 
     public string CatalogId { get; }
+
+    public bool SupportsSchemaVersion(string dslSchemaVersion) => SupportedSchemaVersions.Contains(dslSchemaVersion);
 
     public IReadOnlyList<DslIssue> Validate(JsonElement document, IReadOnlyCollection<string> columnNames)
     {
