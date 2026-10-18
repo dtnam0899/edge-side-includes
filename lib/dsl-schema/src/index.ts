@@ -1,1 +1,3 @@
-export * from './lib/dsl-schema';
+export * from './lib/artifact';
+export * from './lib/schemas';
+export * from './lib/versions';

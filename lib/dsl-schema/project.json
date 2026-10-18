@@ -26,7 +26,12 @@
         "main": "dsl-schema/src/index.ts",
         "tsConfig": "dsl-schema/tsconfig.lib.json",
         "assets": [
-          "dsl-schema/*.md"
+          "dsl-schema/*.md",
+          {
+            "input": "dsl-schema/src/a2ui",
+            "glob": "**/*.md",
+            "output": "src/a2ui"
+          }
         ]
       }
     },

@@ -9,5 +9,18 @@
   },
   "dependencies": {
     "tslib": "^2.3.0"
-  }
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./fixtures": {
+      "types": "./src/fixtures/index.d.ts",
+      "default": "./src/fixtures/index.js"
+    },
+    "./schemas/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "description": "Pinned A2UI v0.9.1 schemas and basic catalog, the ESI DSL artifact envelope, and the shared DSL fixtures."
 }

@@ -27,6 +27,8 @@ Shared TypeScript workspace used by the portal. Packages: `dsl-schema` (source o
 - Test data (P0-14, `docs/process/test-data.md`): fixtures live next to each package's tests; DSL fixtures come from the package's own schema, never from other projects.
 - Pins that look odd but are required: TypeScript 5.9.3 (`@angular/build` 21.2.x needs `>=5.9 <6.0`), vitest and `@vitest/*` 4.0.18 (4.1.x triggers an npm 10 Arborist crash on install). Do not bump them without rerunning `npm ci` and `npm run check`.
 - `tsconfig.base.json` must keep `module`/`moduleResolution` = `nodenext` and must not set `emitDeclarationOnly` (breaks `@nx/js:tsc` and ng-packagr).
-- `dsl-renderer-angular/vite.config.mts` passes `tsconfig.spec.json` to the Analog plugin; otherwise components with `templateUrl` fail in tests.
+- `dsl-renderer-angular/vite.config.mts` passes `tsconfig.spec.json` to the Analog plugin; otherwise components with `templateUrl` fail in tests. It also inlines `@a2ui/*` (`server.deps.inline`); otherwise the tests fail with "Linked modules must use the same context".
+- A2UI pins (ADR-0002): `@a2ui/angular` 0.13.0 and `@a2ui/web_core` 0.14.0, exact, in the root `package.json` and `dsl-renderer-angular/package.json`, and named in `dsl-schema/src/lib/versions.ts`; a `dsl-schema` test fails if they disagree or if the vendored v0.9.1 catalog differs from the one in `@a2ui/web_core`. Import only from `@a2ui/angular/v0_9`.
+- `dsl-core` validates with Ajv (runtime-compiled, needs `'unsafe-eval'` under a CSP until validators are precompiled).
 - Each package declares `publishConfig.registry` (GitHub Packages); `.npmrc` only references `NODE_AUTH_TOKEN`.
 - Known warnings: `nxViteTsPaths`/`nxCopyAssetsPlugin` deprecations (removed in Nx 24) and the legacy `@nx/eslint:lint` executor on the Angular package.
