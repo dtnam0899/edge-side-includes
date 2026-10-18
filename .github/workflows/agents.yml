@@ -1,0 +1,34 @@
+name: agents
+
+on:
+  pull_request:
+    paths:
+      - "services/ai-agents/**"
+      - ".github/workflows/agents.yml"
+  push:
+    branches: [main]
+    paths:
+      - "services/ai-agents/**"
+      - ".github/workflows/agents.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/ai-agents
+    steps:
+      - uses: actions/checkout@v7
+      # Lint, unit tests and evals run in the `test` stage; then the runtime image is built and its health checked.
+      - name: Test
+        run: docker build --target test -t agents:test .
+      - name: Build runtime image
+        run: docker build --build-arg REVISION="$GITHUB_SHA" -t agents:ci .
+      - name: Health check
+        run: |
+          docker run -d --name agents -p 8000:8000 agents:ci
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8000/health && exit 0; sleep 1; done
+          docker logs agents; exit 1
