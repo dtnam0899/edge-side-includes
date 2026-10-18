@@ -21,7 +21,7 @@ If the real label names differ from the above (e.g. prefixes, casing), use the a
 3. **Review** each SR against the existing skills; record only real findings:
    - `esi-project-standards`: does it force a cross-project dependency, shared build, or path link? Propose an artifact/API-based alternative and the release order (producer first).
    - Contracts: does it change an API? Mark the `services/contracts` spec and version impact (additive = minor, breaking = major + ADR).
-   - `dsl-authoring` / `dsl-renderer-parity`: does it add or change DSL nodes, and does it need both renderers and generated models in consumers?
+   - `dsl-authoring` / `dsl-renderer-parity`: does it add or change DSL nodes, and does it need renderer changes and generated models in consumers?
    - Stack skills (`angular-`, `react-`, `dotnet-`, `python-agent-conventions`): are there conflicts, missing conventions or security aspects (untrusted AI output, secrets, auth)?
    - `esi-workflow`: can it be split so each ticket/PR touches one project?
    - Quality of the ticket: testable acceptance criteria, ambiguity, missing non-functional needs (security, performance, accessibility), duplicates.

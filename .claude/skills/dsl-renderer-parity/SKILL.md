@@ -14,7 +14,7 @@ Every renderer must produce the same behavior for the same DSL document. Only `l
 - [ ] Styling comes from `lib/ui-tokens`; no per-renderer hard-coded colors or spacing.
 - [ ] Accessible: roles, labels, keyboard navigation, focus handling.
 - [ ] Input is validated through `dsl-core` before rendering; no `innerHTML`/`dangerouslySetInnerHTML` from DSL values.
-- [ ] Shared fixtures from `dsl-schema` are rendered in both renderers' tests; assertions are on behavior (DOM roles/text/events), not framework internals.
+- [ ] Shared fixtures from `dsl-schema` are rendered in each renderer's tests; assertions are on behavior (DOM roles/text/events), not framework internals.
 - [ ] Behavior difference that cannot be avoided is documented in `docs/dsl/` and noted in the PR.
 
 ## Rules
