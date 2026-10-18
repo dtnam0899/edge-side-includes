@@ -13,6 +13,7 @@ Entry point for humans and AI agents. Read this first, then open only the file y
 
 | Question | Go to |
 |----------|-------|
+| What does the assistant do today, feature by feature (flows, API, rules, status)? | [features/](./features/README.md) |
 | What does the user want and what was decided? | [requirements/](./requirements/README.md) (UR-1 analysis, decisions, filed issues) |
 | How do we go from a new UR to analyzed SRs and tasks? | [process/](./process/README.md) (stages, gates, roles, change handling) and [process/templates.md](./process/templates.md) |
 | In which order do we build it? What is the next task? | [plan/](./plan/README.md) (roadmap, phases, dependencies) |
@@ -30,6 +31,7 @@ Entry point for humans and AI agents. Read this first, then open only the file y
 ```
 docs/
   README.md            this file
+  features/            implemented features: flows, API, rules, verification, status
   requirements/        UR/SR analysis, flows, decisions, issue drafts (source: GitHub tickets)
   process/             standard process from UR to tasks, gates, templates
   plan/                roadmap and per-phase task lists with dependencies
