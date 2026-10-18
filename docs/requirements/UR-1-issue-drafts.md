@@ -6,7 +6,7 @@ Parent: [UR-1](./UR-1-bi-ai-assistant-web-application.md), ticket #1. Each draft
 
 1. `contracts` (API specs) and `lib` (DSL and renderer) first.
 2. `core`, then `agents`.
-3. `assistant` last, consuming the published contracts and `lib` versions.
+3. `portal` (assistant module) last, consuming the published contracts and `lib` versions.
 
 ADRs needed before or alongside: A2UI adoption and storage model, key management, SQL validation approach, chart component (phase 2).
 
@@ -18,10 +18,10 @@ ADRs needed before or alongside: A2UI adoption and storage model, key management
 - No connection string or secret in any response. Additive minor version, first release.
 - Done when: specs lint, are published, and consumers can pin the version.
 
-### D2 `[lib]` DSL: pin A2UI v0.9.1, validator, and React renderer wrapper (SR-5, SR-6)
-- Pin the A2UI v0.9.1 basic catalog and `@a2ui/react` at a fixed version; record the protocol/renderer pair. Use the exact `catalogId` from the pinned catalog file (test it).
+### D2 `[lib]` DSL: pin A2UI v0.9.1, validator, and Angular renderer wrapper (SR-5, SR-6)
+- Pin the A2UI v0.9.1 basic catalog and `@a2ui/angular` at a fixed version; record the protocol/renderer pair. Use the exact `catalogId` from the pinned catalog file (test it).
 - `dsl-core`: schema validation plus ESI checks (unique ids, `root` exists, bound paths exist in column definitions, no unknown component/function).
-- `dsl-renderer-react`: wraps `@a2ui/react`; builds the message sequence (`createSurface`, `updateComponents`, `updateDataModel` with rows at `/rows` and paging at `/page`).
+- `dsl-renderer-angular`: wraps `@a2ui/angular`; builds the message sequence (`createSurface`, `updateComponents`, `updateDataModel` with rows at `/rows` and paging at `/page`).
 - Fixtures and tests: table (List template with relative paths) and KPI (Card, Text, `formatNumber`).
 - Not in scope: Angular renderer, forms, charts.
 - Update `docs/dsl/` (component selection rules) and the `dsl-authoring`/`dsl-renderer-parity` skills per the ADR.
@@ -52,13 +52,13 @@ ADRs needed before or alongside: A2UI adoption and storage model, key management
 - Retry on validation errors at most 2 times (configurable), then fail clearly.
 - Evals (`evals/`): grounded identifiers, write/DDL/EXEC refusals, no executed procedures, invalid-DSL handling, form and chart refusal.
 
-### D7 `[assistant]` Chat, connection and consent UI, SQL review and paged results (SR-1, SR-2, SR-4)
+### D7 `[portal]` Assistant module: chat, connection and consent UI, SQL review and paged results (SR-1, SR-2, SR-4)
 - Selecting a connected database shows chat session history and the dashboards list; withdrawn-consent databases are not accessible.
 - Add/edit/delete connection with consent step; recommend a read-only login.
 - Chat with progress and error states; show generated SQL; explicit user action to execute; page of 20 rows with the remaining count; procedure scripts are saved automatically and can be deleted.
 
-### D8 `[assistant]` Render DSL, save artifacts, dashboards with drag-and-drop (SR-6, SR-7, SR-8)
-- Render DSL via `lib/dsl-renderer-react` with live rows; error state when a bound column is missing (user re-prompts).
+### D8 `[portal]` Render DSL, save artifacts, dashboards with drag-and-drop (SR-6, SR-7, SR-8)
+- Render DSL via `lib/dsl-renderer-angular` with live rows; error state when a bound column is missing (user re-prompts).
 - Save artifact explicitly; add to dashboard; draggable/resizable wrapper around each item with its own surface; layout persisted.
 - Dashboards only here (not in the portal).
 
@@ -68,8 +68,8 @@ ADRs needed before or alongside: A2UI adoption and storage model, key management
 - Custom catalog extending the basic catalog with its own `catalogId`; `EsiChart` as in the chart proposal in the UR file (bar, line, pie; `categoryKey`, `series`; accessibility fallback table).
 - Needs the chart ADR first.
 
-### D10 `[agents]` and `[assistant]` chart support (follow-up)
-- Agent: allow `EsiChart` with validation of numeric `valueKey` columns; assistant: render and "view as table".
+### D10 `[agents]` and `[portal]` chart support (follow-up)
+- Agent: allow `EsiChart` with validation of numeric `valueKey` columns; portal: render and "view as table".
 
 ## Cross-cutting before production (not filed yet)
 - Admin approval of consent terms; real authentication replacing the assumed admin; key-management review; read-only login recommendation shown to users.

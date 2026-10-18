@@ -3,7 +3,7 @@
 <!-- Keep this file concise. Fill placeholders with verified project facts and remove sections that do not apply. -->
 
 ## Overview
-ESI platform: a core backend, AI agents, an Angular management portal and a React AI assistant, sharing a DSL that describes UI (tables, charts, dashboards, widgets, forms) rendered by both web apps.
+ESI platform: a core backend, AI agents and an Angular management portal, sharing a DSL that describes UI (tables, charts, dashboards, widgets, forms) rendered in the portal. The AI assistant is an independent feature module inside the portal.
 
 ## Projects
 This repository holds several independent projects. Each has its own `CLAUDE.md` with stack and commands; work inside one project directory and run its commands from there.
@@ -13,13 +13,12 @@ This repository holds several independent projects. Each has its own `CLAUDE.md`
 | `services/core-backend/` | .NET | Core API, domain, auth |
 | `services/ai-agents/` | Python | AI agents, tools, prompts, evals |
 | `services/contracts/` | OpenAPI | Design-first API contracts (core-api, agents-api); published as an npm package, no runtime code |
-| `web/esi-portal/` | Angular | Management web app |
-| `web/esi-assistant/` | React | AI chat assistant |
-| `lib/` | TypeScript workspace | DSL schema/core, Angular and React renderers, API client, UI tokens |
+| `web/esi-portal/` | Angular | Management web app; large features (e.g. the AI assistant) are independent modules inside it |
+| `lib/` | TypeScript workspace | DSL schema/core, Angular renderer, API client, UI tokens |
 
-How the projects relate: only through published, versioned artifacts and network APIs (see Architecture rules). `services/contracts` publishes the API contracts; `lib/dsl-schema` publishes the UI DSL schema; `lib/*` packages and the contracts package are published to GitHub Packages (npm) and consumed by version. The AI agents emit DSL, both web apps render it through `lib/dsl-renderer-*`. Other top-level dirs: `docs/` (ADRs, DSL spec, API docs), `infra/` (deployment wiring only), `scripts/`.
+How the projects relate: only through published, versioned artifacts and network APIs (see Architecture rules). `services/contracts` publishes the API contracts; `lib/dsl-schema` publishes the UI DSL schema; `lib/*` packages and the contracts package are published to GitHub Packages (npm) and consumed by version. The AI agents emit DSL, the portal renders it through `lib/dsl-renderer-angular`. Other top-level dirs: `docs/` (ADRs, DSL spec, API docs), `infra/` (deployment wiring only), `scripts/`.
 
-Commit/PR `[PROJECT]` codes: `core`, `agents`, `contracts`, `portal`, `assistant`, `lib`.
+Commit/PR `[PROJECT]` codes: `core`, `agents`, `contracts`, `portal`, `lib`. Work on the assistant module uses `portal`.
 
 ## Architecture rules
 Applies to every project; details and templates in the `esi-project-standards` skill.

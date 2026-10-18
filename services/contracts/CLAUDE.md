@@ -20,7 +20,7 @@ Design-first source of truth for the network APIs between ESI components. It is 
 
 ## Structure
 - `core-api/` - OpenAPI spec of `services/core-backend`
-- `agents-api/` - OpenAPI spec of `services/ai-agents` (including streaming endpoints used by `web/esi-assistant`)
+- `agents-api/` - OpenAPI spec of `services/ai-agents` (including streaming endpoints used by the AI assistant module of `web/esi-portal`)
 
 ## Project context
 - `info.version` in each spec is the contract version and the release version; never edit it by hand outside the release flow.

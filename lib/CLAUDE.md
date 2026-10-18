@@ -3,7 +3,7 @@
 <!-- Supplements the repository root CLAUDE.md for this project. Keep only verified facts. -->
 
 ## Overview
-Shared TypeScript workspace used by the web apps. Packages: `dsl-schema` (source of truth, no framework deps), `dsl-core` (parse, validate, migrate), `dsl-renderer-angular`, `dsl-renderer-react`, `api-client` (generated from a pinned published `services/contracts` version), `ui-tokens`. See the `dsl-authoring` and `dsl-renderer-parity` skills.
+Shared TypeScript workspace used by the portal. Packages: `dsl-schema` (source of truth, no framework deps), `dsl-core` (parse, validate, migrate), `dsl-renderer-angular`, `api-client` (generated from a pinned published `services/contracts` version), `ui-tokens`. See the `dsl-authoring` and `dsl-renderer-parity` skills.
 
 ## Stack
 - TypeScript, Nx workspace (build, test, lint, affected, `nx release` with independent per-package versions)
@@ -18,7 +18,7 @@ Shared TypeScript workspace used by the web apps. Packages: `dsl-schema` (source
 - Docker: `<image build command>`; the image builds and tests the workspace without access to other projects
 
 ## Structure
-- `dsl-schema/`, `dsl-core/`, `dsl-renderer-angular/`, `dsl-renderer-react/`, `api-client/`, `ui-tokens/` - one package each; no package imports from `web/` or `services/`. Nx module-boundary tags: `scope:schema` (`dsl-schema`, no deps) <- `scope:core` (`dsl-core`) <- `scope:renderer` (+ `scope:tokens` = `ui-tokens`); `framework:angular` and `framework:react` must not import each other; `api-client` is `scope:api`.
+- `dsl-schema/`, `dsl-core/`, `dsl-renderer-angular/`, `api-client/`, `ui-tokens/` - one package each; no package imports from `web/` or `services/`. Nx module-boundary tags: `scope:schema` (`dsl-schema`, no deps) <- `scope:core` (`dsl-core`) <- `scope:renderer` (+ `scope:tokens` = `ui-tokens`); framework tags (`framework:angular`, and e.g. `framework:react` if another renderer is added) must not import each other; `api-client` is `scope:api`.
 - Release tags: `lib-<package>@vX.Y.Z`, published to GitHub Packages (`$ESI_PACKAGE_REGISTRY_URL`).
 
 ## Project context

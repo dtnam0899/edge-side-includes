@@ -3,7 +3,7 @@
 <!-- Supplements the repository root CLAUDE.md for this project. Keep only verified facts. -->
 
 ## Overview
-Core API, domain logic and auth for ESI; consumed by `web/esi-portal`, `web/esi-assistant` and `services/ai-agents`.
+Core API, domain logic and auth for ESI; consumed by `web/esi-portal` (including its AI assistant module) and `services/ai-agents`.
 
 ## Stack
 - .NET <version>, <ASP.NET Core / Duende IdentityServer / other>

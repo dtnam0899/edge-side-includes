@@ -1,11 +1,11 @@
 ---
 name: dsl-renderer-parity
-description: Keep the Angular and React DSL renderers consistent. Use when implementing or reviewing a DSL node renderer in lib/dsl-renderer-angular or lib/dsl-renderer-react, or when a DSL change must work in both apps.
+description: Keep DSL renderers consistent. Today only lib/dsl-renderer-angular exists, so use this skill for the renderer checklist, and for parity when a second renderer (for example React) is added.
 ---
 
 # DSL renderer parity
 
-Both renderers must produce the same behavior for the same DSL document.
+Every renderer must produce the same behavior for the same DSL document. Only `lib/dsl-renderer-angular` exists now; the parity items below apply once another renderer is added.
 
 ## Checklist for each node
 
@@ -20,5 +20,5 @@ Both renderers must produce the same behavior for the same DSL document.
 ## Rules
 
 - Logic that does not depend on the framework (formatting, filtering, expression evaluation, migration) belongs in `dsl-core`, not duplicated in renderers.
-- Angular: standalone components, signals/OnPush. React: function components and hooks. Follow the matching conventions skill.
-- Run both renderer test suites before a PR; a green single renderer is not enough.
+- Angular: standalone components, signals/OnPush; follow the `angular-conventions` skill. For another framework, follow its conventions skill.
+- With more than one renderer, run all renderer test suites before a PR; a green single renderer is not enough.

@@ -70,4 +70,4 @@ sequenceDiagram
 
 | UR | SRs | Projects | Review status |
 |----|-----|----------|---------------|
-| [UR-1](./UR-1-bi-ai-assistant-web-application.md) | Proposed SR-1..SR-9 (not yet filed) | assistant, agents, core, contracts, lib | Draft proposal; key decisions recorded, details open |
+| [UR-1](./UR-1-bi-ai-assistant-web-application.md) | Proposed SR-1..SR-9 (not yet filed) | portal, agents, core, contracts, lib | Draft proposal; key decisions recorded, details open |

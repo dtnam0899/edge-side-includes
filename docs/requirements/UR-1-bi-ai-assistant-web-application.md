@@ -1,25 +1,27 @@
 # UR-1 BI AI Assistant web application
 Ticket: [#1](https://github.com/dtnam0899/edge-side-includes/issues/1) | Status: open | Last reviewed: 2026-10-17
 
+> **Structure change (2026-10-18):** the AI assistant is no longer a separate React project (`web/esi-assistant`). It is an independent Angular feature module inside `web/esi-portal` (project code `portal`). Rules for such modules are in `web/esi-portal/CLAUDE.md`. Statements below that still say "assistant" mean this module.
+
 > Draft analysis only. The SRs below are proposals derived from the user requirement; they are not approved or filed as GitHub issues.
 
 ## System requirements
 
 | SR | Title | Projects | Status |
 |----|-------|----------|--------|
-| SR-1 | Configuring a SQL Server data source and discovering its schema | core, assistant | Proposed |
-| SR-2 | Asking database questions through the AI Assistant | assistant, core, agents | Proposed |
-| SR-3 | Generating SQL Server queries and stored-procedure SQL | agents, core, assistant | Proposed |
-| SR-4 | Running approved SQL and previewing result data | core, assistant | Proposed |
+| SR-1 | Configuring a SQL Server data source and discovering its schema | core, portal | Proposed |
+| SR-2 | Asking database questions through the AI Assistant | portal, core, agents | Proposed |
+| SR-3 | Generating SQL Server queries and stored-procedure SQL | agents, core, portal | Proposed |
+| SR-4 | Running approved SQL and previewing result data | core, portal | Proposed |
 | SR-5 | Converting query results into validated UI DSL (table, KPI) | agents, core, lib | Proposed |
-| SR-6 | Rendering DSL in the assistant | assistant, lib | Proposed |
-| SR-7 | Saving reusable DSL artifacts | assistant, core | Proposed |
-| SR-8 | Creating personalized dashboards from saved artifacts | assistant, core | Proposed |
-| SR-9 | Protecting connections, SQL execution, and user-owned assets | core, agents, assistant | Proposed |
+| SR-6 | Rendering DSL in the portal | assistant, lib | Proposed |
+| SR-7 | Saving reusable DSL artifacts | portal, core | Proposed |
+| SR-8 | Creating personalized dashboards from saved artifacts | portal, core | Proposed |
+| SR-9 | Protecting connections, SQL execution, and user-owned assets | core, agents, portal | Proposed |
 
 ## Interpretation
 
-The ticket asks for a workflow spanning database metadata, natural-language SQL generation, result-to-DSL conversion, DSL rendering, saving, and personalized dashboards. The repository maps these responsibilities to independent projects: the React assistant, AI agents, core API, shared DSL packages, and versioned API contracts. `web/esi-portal` is not involved in UR-1: dashboards are shown only in the assistant.
+The ticket asks for a workflow spanning database metadata, natural-language SQL generation, result-to-DSL conversion, DSL rendering, saving, and personalized dashboards. The repository maps these responsibilities to independent projects: the assistant module of the Angular portal, AI agents, core API, shared DSL packages, and versioned API contracts. Dashboards are shown only inside the assistant module.
 
 The ticket does not define SQL execution behavior, stored-procedure lifecycle, data refresh semantics, user/tenant ownership, or operational limits. The proposals below make the expected workflow testable while leaving those product decisions explicit. In particular, generated SQL should not be executed or deployed implicitly.
 
@@ -105,12 +107,12 @@ The system shall map result metadata/data, plus the user's visualization intent,
 
 ### SR-6 — Rendering DSL in the assistant
 
-The DSL (JSON data) is the core of the feature: `web/esi-assistant` shall validate and render DSL documents bound to query results, both for previews in chat and for saved dashboards, using the maintained A2UI React renderer for v0.9.1 where it fits; `lib/dsl-renderer-react` is the fallback only if it does not. The portal does not display this content in this version. Renderer parity with the Angular renderer is not required for UR-1, but the DSL must stay framework-neutral so the portal can adopt it later.
+The DSL (JSON data) is the core of the feature: the assistant module of `web/esi-portal` shall validate and render DSL documents bound to query results, both for previews in chat and for saved dashboards, through `lib/dsl-renderer-angular`, which wraps the maintained A2UI Angular renderer (`@a2ui/angular`) for v0.9.1. The portal does not display this content in this version. Renderer parity with the Angular renderer is not required for UR-1, but the DSL must stay framework-neutral so the portal can adopt it later.
 
 **Acceptance criteria**
 - Invalid DSL is rejected before rendering.
 - Supported nodes render without evaluating DSL values as HTML, scripts, or arbitrary code.
-- Shared schema fixtures are covered by behavior-level tests in the React renderer.
+- Shared schema fixtures are covered by behavior-level tests in the Angular renderer.
 - Data is bound to components from the query result by column key/name; row values are never interpreted as HTML or code.
 
 ### SR-7 — Saving reusable DSL artifacts
@@ -136,7 +138,7 @@ The user shall be able to create a personal dashboard and add saved DSL artifact
 - A missing, deleted, or invalid artifact is surfaced clearly and does not prevent unrelated dashboard items from rendering.
 - Opening a dashboard loads live data for each item through the owner's connection, under the same execution policy as SR-4; one failing item does not block others.
 - Data is queried when the user opens the dashboard (not on a schedule); caching is not assumed.
-- Dashboards are shown only in `web/esi-assistant`, not in the portal.
+- Dashboards are shown only inside the assistant module of the portal and are not shared with other portal modules at component level.
 - The user can drag-and-drop dashboard items to change their position and resize them; the layout is persisted and restored when the dashboard is reopened.
 - Drag-and-drop is provided by a wrapper component around the DSL-rendered component; layout (position/size) is stored with the dashboard, not inside the DSL document. Each dashboard item renders in its own A2UI surface, so one failing item does not affect the others.
 - A dashboard of a database whose consent was withdrawn is not accessible.
@@ -172,7 +174,7 @@ flowchart LR
     U4[Inspect result and choose visualization]
     U5[Save DSL]
   end
-  subgraph Assistant["web/esi-assistant"]
+  subgraph Assistant["web/esi-portal: assistant module"]
     A1[Submit question]
     A2[Show generated SQL]
     A3[Show result preview]
@@ -197,7 +199,7 @@ flowchart LR
     D2[Return query result]
   end
   subgraph Lib["lib"]
-    L1[Validate DSL and render in React]
+    L1[Validate DSL and render in Angular]
   end
   U1 --> A1 --> C1 --> C2 --> D1 --> G1 --> A2
   U2 --> U3 --> C3 --> D2 --> C4 --> A3
@@ -214,7 +216,7 @@ flowchart LR
     U2[Add saved artifact to dashboard]
     U3[Drag and resize items]
   end
-  subgraph Assistant["web/esi-assistant"]
+  subgraph Assistant["web/esi-portal: assistant module"]
     A1[List chat sessions and dashboards]
     A2[Open dashboard]
     A3[Draggable wrapper around rendered DSL]
@@ -240,7 +242,7 @@ The contract specs are currently placeholders; no paths, payloads, or contract v
 
 ```mermaid
 sequenceDiagram
-  box web/esi-assistant
+  box web/esi-portal assistant module
     participant W as Assistant
   end
   box services
@@ -273,7 +275,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  box web/esi-assistant
+  box web/esi-portal assistant module
     participant W as Assistant
   end
   box services
@@ -305,14 +307,15 @@ sequenceDiagram
 - **Legal text.** An AI-drafted consent text is acceptable for the first version only with a human legal review before release.
 - **Charts limited to a page.** Charts use only the current 20-row page for now. The UI must say so, otherwise a chart could be mistaken for the whole data set.
 - **GitHub secret scope.** It suits the master key for CI/CD deployment, but it is not a runtime key store; see SR-9.
-- **A2UI renderer (verified).** The A2UI renderer page lists React as a maintained web renderer, marked stable for v0.8 and v0.9.1, and planned for v1.0. So the A2UI React renderer can be tried first.
+- **A2UI renderer (verified).** The A2UI renderer page lists Angular as a maintained web renderer, marked stable for v0.8 and v0.9.1, and planned for v1.0. After the structure change this is the renderer in use (React is no longer needed).
 - **Version wording.** The A2UI site labels v0.9 "Stable" and v0.9.1 "Current production release" (a patch release in the stable v0.9 family). This document pins v0.9.1.
 - **Catalog checked (v0.9.1).** The basic catalog has 18 components: Text, Image, Icon, Video, AudioPlayer, Row, Column, List, Card, Tabs, Modal, Divider, Button, TextField, CheckBox, ChoicePicker, Slider, DateTimeInput, plus functions such as `formatNumber`, `formatCurrency`, `formatDate`, `pluralize`. It has **no Table, Chart or dashboard-layout component**. Tables can be composed from `List` with a template over bound rows (relative paths), and KPIs from `Card` + `Text`, so "use as-is" works for table and KPI. A chart needs a custom catalog component, which is the allowed exception.
 - **Catalog id mismatch.** The v0.9.1 `catalog.json` carries a `catalogId` pointing at `.../specification/v0_9/catalogs/basic/catalog.json`, while the v0.9.1 spec examples use `.../v0_9_1/...`. Use the exact string from the catalog file we pin, and cover it with a test.
-- **Package names and versions.** The React renderer is published as `@a2ui/react` 0.14.0 (Apache-2.0, peer deps React 18/19 and zod 3). Its version is not the protocol version; pin both and record the pair.
-- **Vendoring vs depending.** The Apache-2.0 license allows copying with the license and notices kept and modifications marked. Preferred order: (1) depend on `@a2ui/react` at a pinned version from inside `lib/dsl-renderer-react`; (2) copy only if a patch is unavoidable, recording the upstream version/commit and keeping edits separate from upstream files so upgrades do not conflict.
-- **A2UI fit.** The repo skills and `lib/` assume a custom DSL (`table`, `chart`, `dashboard`, `form` nodes) with Angular and React renderers. Reusing A2UI changes that premise: `lib/dsl-schema` would derive from or adopt A2UI, and the `dsl-authoring` and `dsl-renderer-parity` skills would need updating once an ADR is accepted. The A2UI protocol is stream-based (`createSurface`, `updateComponents`, `updateDataModel`), so how it fits the stored, versioned DSL document model needs an ADR.
-- **Only the assistant is in scope.** Dashboards live only in the assistant, so Angular renderer parity is not needed for UR-1.
+- **Package names and versions.** The Angular renderer is published as `@a2ui/angular` 0.13.0 (Apache-2.0) with peer dependencies on Angular `^21.2.5`; the portal must therefore run Angular 21 or newer (its version is still a placeholder in `web/esi-portal/CLAUDE.md`). The package version is not the protocol version; pin both and record the pair.
+- **Vendoring vs depending.** The Apache-2.0 license allows copying with the license and notices kept and modifications marked. Preferred order: (1) depend on `@a2ui/angular` at a pinned version from inside `lib/dsl-renderer-angular`; (2) copy only if a patch is unavoidable, recording the upstream version/commit and keeping edits separate from upstream files so upgrades do not conflict.
+- **A2UI fit.** The repo skills and `lib/` assumed a custom DSL (`table`, `chart`, `dashboard`, `form` nodes). Reusing A2UI changes that premise: `lib/dsl-schema` would derive from or adopt A2UI, and the `dsl-authoring` skill needs updating once an ADR is accepted. The A2UI protocol is stream-based (`createSurface`, `updateComponents`, `updateDataModel`), so how it fits the stored, versioned DSL document model needs an ADR.
+- **One renderer.** `lib/dsl-renderer-react` and `web/esi-assistant` were removed, so renderer parity is not needed.
+- **Module isolation.** The assistant must not import components from other portal modules, and no other module may import its components; shared needs go through `core`/`shared` (see portal module rules). Dashboards drag-and-drop therefore lives inside the assistant module.
 - **No row data to the AI.** Because the DSL holds only column keys, the agent can work from column definitions alone, which keeps the user's data out of the model prompt (proposal).
 - **No identity provider.** Authentication does not exist yet; local testing assumes an admin. Production needs a real mechanism.
 - Network paths and contract versions must not be inferred from this ticket; the relevant API contracts need to be designed and versioned.
@@ -325,7 +328,7 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 2. **Connection ownership.** Each user manages (add/edit/delete) the connections they added; connections are private to the owner.
 3. **Live data.** The data source is a live database of another system. Saved DSL artifacts and dashboards fetch live data; they are not snapshots.
 4. **Stored procedures** are mainly for statistics/aggregations over multiple tables.
-5. **DSL is the core.** The assistant renders DSL JSON for previews and dashboards. (Superseded in part by decision 20: the portal does not show dashboards in this version.)
+5. **DSL is the core.** The assistant module renders DSL JSON for previews and dashboards.
 6. **Read-only execution.** The assistant may only read/SELECT. Standard command timeout; no row limit, since the user owns the database.
 7. **Stored procedures are script-only.** They are never created in the target database. The script is saved automatically; the user can delete it.
 8. **Entry point.** Selecting a connected database in the UI shows the user's chat session history and the list of dashboards rendered from DSL for it. Data is fetched when the user opens it.
@@ -340,22 +343,25 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 17. **Key management.** The master key comes from a GitHub secret (see SR-9).
 18. **A2UI first.** Reuse A2UI; add ESI custom components only when A2UI conflicts and cannot express the need.
 19. **DSL has no data.** It carries only keys/column names mapped to query results.
-20. **Assistant only.** Dashboards are shown only in `web/esi-assistant`, not in the portal.
+20. **Assistant module only.** Dashboards are shown only inside the assistant module of the portal.
 21. **Drag-and-drop** is a wrapper component around the rendered DSL; layout is stored with the dashboard, not in the DSL.
 22. **Logging.** Executed SQL is logged inline in the application log; no audit store or extra rules for now.
 23. **Auth for testing.** No Identity Server; local testing assumes an admin user. Real authentication is a production prerequisite.
 24. **A2UI version and scope.** Pin the stable A2UI v0.9.1 and use its catalog as-is for now.
-25. **Renderer.** Try the A2UI React renderer first; fall back to `lib/dsl-renderer-react` only if it does not fit.
+25. **Renderer.** Use the A2UI Angular renderer (`@a2ui/angular`) wrapped by `lib/dsl-renderer-angular`.
 26. **Missing column.** Show an error; the user starts over with a new prompt. No regeneration offered.
 27. **Agent input.** The agent receives only column definitions, not row values.
 28. **First phase scope.** Basic catalog components only: table and KPI. Charts are a follow-up with a custom component.
-29. **Renderer packaging.** `web/esi-assistant` consumes `lib/dsl-renderer-react`, which wraps the A2UI React renderer (preferably as a pinned dependency; copied from upstream only when necessary) so upstream version changes are absorbed in one place.
+29. **Renderer packaging.** The assistant module consumes `lib/dsl-renderer-angular`, which wraps the A2UI Angular renderer (a pinned dependency; copied from upstream only when necessary) so upstream version changes are absorbed in one place.
 30. **Artifact storage and retry policy.** As described in SR-5 and SR-7 (store components + SELECT, rebuild the A2UI messages at render time; at most 2 validation retries).
 31. **Chart library.** Charts use Chart.js, wrapped as an ESI custom component in a custom A2UI catalog (follow-up phase, needs an ADR). Chart types (bar, line, pie) are still to be confirmed.
-32. **Vendoring.** `lib/dsl-renderer-react` depends on `@a2ui/react` at a pinned version; code is copied only when a patch is unavoidable.
+32. **Vendoring.** `lib/dsl-renderer-angular` depends on `@a2ui/angular` at a pinned version; code is copied only when a patch is unavoidable.
 33. **KPI totals** come from the SQL aggregate, not from the visible 20-row page.
 
 34. **Issue split.** SRs are filed as one-project issues following `esi-workflow`; drafts are in `UR-1-issue-drafts.md` (pending review).
+
+35. **Structure change.** The assistant is an independent Angular module in `web/esi-portal`; `web/esi-assistant` and `lib/dsl-renderer-react` were removed. The portal gets module-isolation rules (no component-level dependency between feature modules); the folder layout is decided later.
+36. **Drag-and-drop.** Use the Angular CDK drag-drop in a wrapper component inside the assistant module (proposal; the wrapper stays private to the module).
 
 ## Open questions
 
@@ -365,8 +371,10 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 ## Chart proposal (follow-up phase, pending ADR)
 
 - **Types:** `bar`, `line`, `pie`. Pie is limited to a single series and a small number of categories (suggested 8); otherwise the agent proposes a bar chart.
-- **Component:** one custom catalog component (working name `EsiChart`) in a custom A2UI catalog that extends the basic catalog with its own `catalogId`. It wraps Chart.js inside `lib/dsl-renderer-react`.
+- **Component:** one custom catalog component (working name `EsiChart`) in a custom A2UI catalog that extends the basic catalog with its own `catalogId`. It wraps Chart.js inside `lib/dsl-renderer-angular`, as an Angular standalone component.
 - **Properties:** `chartType` (`bar|line|pie`), `title`, `categoryKey` (column name for the x axis or pie labels), `series` (list of `{valueKey, label}`), and `data` bound to the rows with `{"path": "/rows"}`. No data values appear in the DSL.
 - **Validation:** `categoryKey` and every `valueKey` must exist in the query's column definitions; each `valueKey` column must be numeric; pie allows exactly one series.
 - **Data scope:** as decided, a chart uses the rows of the current page (20), and its caption states "first 20 of N rows". Aggregation should be done in the SQL.
 - **Accessibility and safety:** the canvas has a text alternative (title plus summary) and a "view as table" toggle that renders the same rows with the basic catalog table; series must be distinguishable without color alone; colors come from `lib/ui-tokens`; labels are drawn as text, never as HTML.
+3. Portal prerequisites: A2UI's Angular renderer needs Angular 21+, and the portal's Angular version and its folder layout for modules are not decided yet. Does the module's chat need streaming through the portal's HTTP stack?
+4. Which parts of the assistant (for example the connection list) may other portal modules reach, and through which `core` API?
