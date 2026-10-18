@@ -1,0 +1,13 @@
+{
+  "name": "esi-e2e-scenario",
+  "private": true,
+  "description": "Phase 5 end-to-end scenario for UR-1: connection to dashboard through portal, core, agents and SQL Server.",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "typescript": "5.9.3"
+  }
+}
