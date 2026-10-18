@@ -1,0 +1,11 @@
+**/bin
+**/obj
+**/TestResults
+.vs
+.vscode
+.idea
+.git
+.env
+.env.*
+compose.yaml
+Dockerfile

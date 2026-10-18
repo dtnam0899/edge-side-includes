@@ -1,0 +1,71 @@
+# Local dev for services/core-backend. The SQL Server sa password comes from ESI_CORE_SA_PASSWORD (shell or
+# the git-ignored .env next to this file, see .env.example); without it the local-only default below is used.
+# SQL Server's port is not published to the host, so the default is reachable only inside this compose network.
+#   docker compose up                                              -> sqlserver, migrations, api on :8080
+#   docker compose --profile integration run --rm integration-tests -> integration tests
+#
+# One SQL Server instance (SQL Server needs ~2 GB, so a second instance does not fit a small Docker VM) holds
+# two separate databases: esi_core (the application's own database) and esi_target (stand-in for a user's
+# target database in integration tests). Never point the application at esi_target.
+x-sa-password: &sa-password ${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026}
+
+services:
+  sqlserver:
+    # SQL Server publishes amd64 images only; on Apple silicon Docker Desktop needs Rosetta emulation.
+    image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: *sa-password
+      MSSQL_MEMORY_LIMIT_MB: ${ESI_CORE_SQL_MEMORY_LIMIT_MB:-2048}
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    image: esi-core-migrator:dev
+    environment:
+      ESI_CORE_AppDb__ConnectionString: &appdb-connection "Server=sqlserver;Database=esi_core;User Id=sa;Password=${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026};TrustServerCertificate=True"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      target: runtime
+    image: esi-core:dev
+    ports:
+      - "8080:8080"
+    environment:
+      ESI_CORE_AppDb__ConnectionString: *appdb-connection
+      ESI_CORE_Logging__LogLevel__Default: ${ESI_CORE_LOG_LEVEL:-Information}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  integration-tests:
+    build:
+      context: .
+      target: integration-test
+    image: esi-core-integration-tests:dev
+    profiles: [integration]
+    environment:
+      ESI_CORE_TEST_APPDB: *appdb-connection
+      # Server-level connection; the tests create the esi_target database if it does not exist.
+      ESI_CORE_TEST_TARGETDB: "Server=sqlserver;Database=master;User Id=sa;Password=${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026};TrustServerCertificate=True"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  sqlserver-data:

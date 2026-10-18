@@ -25,14 +25,9 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | P0-05 | esi | Review and accept ADR-0004 SQL policy | none | ADR-0004 Accepted | ESI-25 (closed) |
 | P0-06 | contracts | Scaffold contracts project | P0-02 | lint, breaking-change check, pack, Dockerfile | ESI-26 (closed) |
 | P0-07 | lib | Scaffold Nx workspace and packages | P0-02 | five empty packages build, test, lint | ESI-27 (closed) |
-| P0-08 | core | Scaffold core-backend with test SQL Server | P0-02 | API skeleton, migrations, compose with SQL Server | ESI-28 |
-
-| P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 (in review) |
-| P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 |
-
-| P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 |
-| P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 (in review) |
-
+| P0-08 | core | Scaffold core-backend with test SQL Server | P0-02 | API skeleton, migrations, compose with SQL Server | ESI-28 (in review) |
+| P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 (closed) |
+| P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 (closed) |
 | P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` | ESI-31 |
 | P0-12 | esi | Prove publish and pin flow with a prerelease | P0-06, P0-07, P0-11 | one prerelease package published and installed by a consumer | ESI-32 |
 | P0-13 | esi | Update skills and project docs after ADRs | P0-02..P0-05 | placeholders filled, DSL skills match ADR-0002 | ESI-33 (closed) |
