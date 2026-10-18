@@ -9,7 +9,14 @@
  * No real data, credentials or connection strings with real passwords.
  */
 import type {
+  Artifact,
+  ArtifactSummary,
   ChatMessage,
+  ColumnDefinition,
+  Dashboard,
+  DashboardItem,
+  DslDocument,
+  Visualization,
   ChatSession,
   ChatSessionSummary,
   ChatTurn,
@@ -172,4 +179,96 @@ export function mockProblem(
   overrides: Partial<Problem> = {},
 ): Problem {
   return { type: `urn:esi:problem:${name}`, title: name.replace(/-/g, ' '), status, ...overrides };
+}
+
+/**
+ * DSL document in the shape core returns (`DslDocument`): the `catalogId` example; `protocolVersion` and
+ * `dslSchemaVersion` as core validates them ("v0.9" and the dsl-schema package version "0.1.0"; the contract's
+ * field example "0.9.1" is not what core accepts). Components: a KPI over `Revenue`.
+ */
+export function mockDslDocument(overrides: Partial<DslDocument> = {}): DslDocument {
+  return {
+    catalogId: 'https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json',
+    protocolVersion: 'v0.9',
+    dslSchemaVersion: '0.1.0',
+    components: [
+      { id: 'root', component: 'Card', child: 'kpi-column' },
+      { id: 'kpi-column', component: 'Column', children: ['kpi-label', 'kpi-value'] },
+      { id: 'kpi-label', component: 'Text', text: 'Total revenue', variant: 'caption' },
+      {
+        id: 'kpi-value',
+        component: 'Text',
+        variant: 'h2',
+        text: {
+          call: 'formatNumber',
+          args: { value: { path: '/rows/0/Revenue' } },
+          returnType: 'string',
+        },
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export const MOCK_KPI_COLUMNS: ColumnDefinition[] = [
+  { name: 'Revenue', sqlType: 'decimal(18,2)', nullable: true },
+];
+export const MOCK_KPI_SQL =
+  'SELECT SUM(l.Quantity * l.UnitPrice) AS Revenue FROM dbo.OrderLines AS l';
+
+export function mockKpiResult(): QueryResult {
+  return mockQueryResult({
+    columns: MOCK_KPI_COLUMNS,
+    rows: [{ Revenue: 156.5 }],
+    page: { number: 1, size: 20, remainingRows: 0 },
+  });
+}
+
+export function mockVisualization(overrides: Partial<Visualization> = {}): Visualization {
+  return { dsl: mockDslDocument(), columns: MOCK_KPI_COLUMNS, ...overrides };
+}
+
+export function mockArtifact(overrides: Partial<Artifact> = {}): Artifact {
+  return {
+    id: MOCK_ID_3,
+    connectionId: MOCK_ID,
+    name: 'Total revenue',
+    kind: 'kpi',
+    status: 'available',
+    createdAt: AT,
+    dsl: mockDslDocument(),
+    sql: MOCK_KPI_SQL,
+    columns: MOCK_KPI_COLUMNS,
+    ...overrides,
+  };
+}
+
+export function mockArtifactSummary(overrides: Partial<ArtifactSummary> = {}): ArtifactSummary {
+  const { id, connectionId, name, kind, status, createdAt } = mockArtifact();
+  return { id, connectionId, name, kind, status, createdAt, ...overrides };
+}
+
+export function mockDashboardItem(
+  id: string,
+  overrides: Partial<DashboardItem> = {},
+): DashboardItem {
+  return {
+    id,
+    artifactId: MOCK_ID_3,
+    layout: { x: 0, y: 0, width: 3, height: 2 },
+    status: 'available',
+    artifact: mockArtifact(),
+    ...overrides,
+  };
+}
+
+export function mockDashboard(overrides: Partial<Dashboard> = {}): Dashboard {
+  return {
+    id: MOCK_ID_4,
+    connectionId: MOCK_ID,
+    name: 'Sales overview',
+    items: [],
+    updatedAt: AT,
+    ...overrides,
+  };
 }

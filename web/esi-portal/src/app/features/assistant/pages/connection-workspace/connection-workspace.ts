@@ -22,14 +22,21 @@ import {
   ConnectionHeader,
   ConnectionTestState,
 } from '../../components/connection-header/connection-header';
+import { ArtifactsPanel } from '../../containers/artifacts-panel/artifacts-panel';
 import { ChatPanel } from '../../containers/chat-panel/chat-panel';
+import { DashboardsPanel } from '../../containers/dashboards-panel/dashboards-panel';
 import { ScriptsPanel } from '../../containers/scripts-panel/scripts-panel';
 import { needsTermsAcceptance } from '../../helpers/problem-message';
 import { ConnectionEditorService } from '../../services/connection-editor.service';
 import { ConnectionsService } from '../../services/connections.service';
 import { ConsentService } from '../../services/consent.service';
 
-type WorkspaceTab = 'chat' | 'scripts';
+const WORKSPACE_TABS = ['chat', 'dashboards', 'artifacts', 'scripts'] as const;
+type WorkspaceTab = (typeof WORKSPACE_TABS)[number];
+
+function toTab(value: unknown): WorkspaceTab {
+  return WORKSPACE_TABS.find((tab) => tab === value) ?? 'chat';
+}
 
 /**
  * A selected connection. With consent granted it shows chats and saved scripts; with consent withdrawn nothing of
@@ -47,7 +54,9 @@ type WorkspaceTab = 'chat' | 'scripts';
     TabPanels,
     Tabs,
     ConnectionHeader,
+    ArtifactsPanel,
     ChatPanel,
+    DashboardsPanel,
     ScriptsPanel,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +68,8 @@ export class ConnectionWorkspace {
   readonly connectionId = input.required<string>();
   /** Query parameter `?session=`. */
   readonly session = input<string | undefined>(undefined);
+  /** Query parameter `?tab=` (chat when absent). */
+  readonly tab = input<string | undefined>(undefined);
 
   protected readonly connections = inject(ConnectionsService);
   private readonly consent = inject(ConsentService);
@@ -70,7 +81,7 @@ export class ConnectionWorkspace {
   protected readonly connection = computed(() =>
     this.connections.connections().find((c) => c.id === this.connectionId()),
   );
-  protected readonly tab = signal<WorkspaceTab>('chat');
+  protected readonly activeTab = computed(() => toTab(this.tab()));
   protected readonly testState = signal<ConnectionTestState>({ status: 'idle' });
   protected readonly consentBusy = signal(false);
   protected readonly actionProblem = signal<ApiProblem | null>(null);
@@ -79,7 +90,6 @@ export class ConnectionWorkspace {
     effect(() => {
       this.connectionId();
       untracked(() => {
-        this.tab.set('chat');
         this.testState.set({ status: 'idle' });
         this.actionProblem.set(null);
       });
@@ -87,7 +97,12 @@ export class ConnectionWorkspace {
   }
 
   protected selectTab(value: string | number | undefined): void {
-    this.tab.set(value === 'scripts' ? 'scripts' : 'chat');
+    const tab = toTab(value);
+    void this.router.navigate([], {
+      queryParams: { tab: tab === 'chat' ? null : tab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   protected test(connection: Connection): void {

@@ -2,18 +2,22 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  computed,
   effect,
   inject,
   input,
+  signal,
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ChatComposer } from '../../components/chat-composer/chat-composer';
+import { NameDialog } from '../../components/name-dialog/name-dialog';
 import { ChatThread, RunRequest } from '../../components/chat-thread/chat-thread';
 import { ProblemMessage } from '../../components/problem-message/problem-message';
 import { SessionList } from '../../components/session-list/session-list';
+import type { ChatMessage } from '../../../../core/api';
 import { ChatService } from '../../services/chat.service';
 
 /**
@@ -22,7 +26,7 @@ import { ChatService } from '../../services/chat.service';
  */
 @Component({
   selector: 'app-chat-panel',
-  imports: [ChatComposer, ChatThread, ProblemMessage, SessionList],
+  imports: [ChatComposer, NameDialog, ChatThread, ProblemMessage, SessionList],
   providers: [ChatService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -55,6 +59,10 @@ import { ChatService } from '../../services/chat.service';
           [pendingQuestion]="chat.pendingQuestion()"
           [failedQuestion]="chat.failedQuestion()"
           [executions]="chat.executions()"
+          [visualizations]="chat.visualizations()"
+          [saves]="chat.saves()"
+          (visualize)="chat.visualize($event.message, $event.intent)"
+          (saveVisualization)="naming.set($event)"
           (run)="run($event)"
           (retry)="send($event)"
         />
@@ -65,6 +73,15 @@ import { ChatService } from '../../services/chat.service';
         />
       </section>
     </div>
+    <app-name-dialog
+      [visible]="naming() !== null"
+      header="Save visualization"
+      label="Name"
+      submitLabel="Save"
+      [initialName]="defaultName()"
+      (saved)="saveAs($event)"
+      (dismissed)="naming.set(null)"
+    />
   `,
   styles: `
     .chat {
@@ -99,6 +116,17 @@ export class ChatPanel {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** The answer whose visualization is being named before it is saved. */
+  protected readonly naming = signal<ChatMessage | null>(null);
+  /** The question that led to the answer, as a starting name. */
+  protected readonly defaultName = computed(() => {
+    const answer = this.naming();
+    const messages = this.chat.messages();
+    const index = answer ? messages.findIndex((m) => m.id === answer.id) : -1;
+    const question = index > 0 ? messages[index - 1] : undefined;
+    return question?.role === 'user' ? question.text.slice(0, 120) : '';
+  });
 
   constructor() {
     effect(() => {
@@ -138,5 +166,11 @@ export class ChatPanel {
 
   protected run(request: RunRequest): void {
     this.chat.run(request.message, request.page);
+  }
+
+  protected saveAs(name: string): void {
+    const message = this.naming();
+    this.naming.set(null);
+    if (message) this.chat.saveArtifact(message, name);
   }
 }

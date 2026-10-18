@@ -41,6 +41,7 @@ describe('GeneratedSqlView', () => {
         await render(mockGeneratedSql(), {
           status: 'success',
           result: toResultPage(mockFullQueryPage()),
+          raw: mockFullQueryPage(),
         })
       ).tag(),
     ).toBe('Ran, page 1');

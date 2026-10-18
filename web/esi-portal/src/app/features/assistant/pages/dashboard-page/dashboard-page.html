@@ -1,0 +1,170 @@
+<div class="page">
+  <a
+    [routerLink]="['/assistant/connections', connectionId()]"
+    [queryParams]="{ tab: 'dashboards' }"
+    class="back"
+    >← Back to the database</a
+  >
+
+  @if (withdrawn()) {
+    <p-message severity="warn">
+      Consent for this database was withdrawn, so its dashboards are hidden. Grant consent again on
+      the database page to restore them.
+    </p-message>
+  } @else if (board.problem(); as problem) {
+    <app-problem-message [problem]="problem" lead="This dashboard could not be opened." />
+  } @else if (board.dashboard(); as dashboard) {
+    <header>
+      <h2>{{ dashboard.name }}</h2>
+      <div class="actions">
+        <button
+          pButton
+          type="button"
+          size="small"
+          [loading]="board.busy()"
+          (click)="picking.set(true)"
+        >
+          Add visualization
+        </button>
+        <button
+          pButton
+          type="button"
+          size="small"
+          severity="secondary"
+          [outlined]="true"
+          (click)="renaming.set(true)"
+        >
+          Rename
+        </button>
+        <button
+          pButton
+          type="button"
+          size="small"
+          severity="danger"
+          [text]="true"
+          (click)="confirmDelete()"
+        >
+          Delete
+        </button>
+      </div>
+    </header>
+
+    <div class="status" aria-live="polite">
+      @switch (board.layoutState()) {
+        @case ('saving') {
+          <span>Saving layout…</span>
+        }
+        @case ('saved') {
+          <span>Layout saved.</span>
+        }
+        @case ('failed') {
+          <span class="failed">The layout was not saved.</span>
+          <button
+            pButton
+            type="button"
+            size="small"
+            severity="secondary"
+            [text]="true"
+            (click)="board.retryLayout()"
+          >
+            Try again
+          </button>
+        }
+      }
+      @if (narrow() && board.items().length) {
+        <span>Items are stacked on small screens; move and resize them on a wider screen.</span>
+      }
+    </div>
+    @if (board.layoutProblem(); as problem) {
+      <app-problem-message [problem]="problem" />
+    }
+    @for (problem of [board.actionProblem(), deleteProblem()]; track $index) {
+      @if (problem) {
+        <app-problem-message [problem]="problem" />
+      }
+    }
+
+    @if (!board.items().length) {
+      <section class="empty">
+        <p>
+          This dashboard is empty. Add saved visualizations; each one shows live data from the
+          database.
+        </p>
+      </section>
+    } @else {
+      <app-dashboard-grid
+        [items]="board.items()"
+        [itemTemplate]="itemContent"
+        [editable]="!narrow()"
+        (layoutChange)="onLayoutChange($event)"
+        (remove)="board.removeItem($event)"
+      />
+    }
+  } @else if (board.loading()) {
+    <div aria-hidden="true"><p-skeleton height="16rem" /></div>
+    <span class="visually-hidden" role="status">Loading the dashboard…</span>
+  }
+</div>
+
+<ng-template #itemContent let-item>
+  @if (item.status !== 'available') {
+    <div class="unavailable">
+      <p-tag severity="warn" [value]="statusLabel(item.status)" />
+      <p>{{ statusMessage(item.status) }}</p>
+    </div>
+  } @else {
+    <app-dsl-view
+      [renderer]="item.renderer"
+      [live]="board.live().get(item.id) ?? null"
+      (retry)="board.runItem(item.id)"
+    />
+  }
+</ng-template>
+
+<p-dialog
+  [visible]="picking()"
+  (visibleChange)="picking.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  header="Add a saved visualization"
+  [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }"
+>
+  @if (artifacts.problem(); as problem) {
+    <app-problem-message [problem]="problem" />
+  } @else if (!addable().length) {
+    <p class="muted">
+      No saved visualizations to add. Run a query in the chat, ask for a table or KPI, and save it.
+    </p>
+  } @else {
+    <ul class="picker">
+      @for (artifact of addable(); track artifact.id) {
+        <li>
+          <span class="name">{{ artifact.name }}</span>
+          <p-tag severity="secondary" [value]="artifact.kind === 'kpi' ? 'KPI' : 'Table'" />
+          <button
+            pButton
+            type="button"
+            size="small"
+            [outlined]="true"
+            [attr.aria-label]="'Add ' + artifact.name"
+            (click)="add(artifact)"
+          >
+            Add
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</p-dialog>
+
+<app-name-dialog
+  [visible]="renaming()"
+  header="Rename dashboard"
+  submitLabel="Rename"
+  [initialName]="board.dashboard()?.name ?? ''"
+  [saving]="renameSaving()"
+  [problem]="renameProblem()"
+  (saved)="rename($event)"
+  (dismissed)="closeRename()"
+/>

@@ -24,6 +24,12 @@ export function problemMessage(problem: ApiProblem): string {
         'The AI assistant is not available right now, so no SQL was generated. Try again later.',
         problem.detail,
       );
+    case 'visualization-not-supported':
+      return 'Charts and forms are not supported yet. Ask for a table or a KPI instead.';
+    case 'dsl-validation-failed':
+      return 'The assistant could not produce a valid visualization. Try again, or describe the table or KPI differently.';
+    case 'artifact-unavailable':
+      return 'This saved visualization cannot run: its connection was deleted or its consent withdrawn.';
     case 'not-found':
       return 'This item no longer exists or is not yours.';
     case 'network-error':

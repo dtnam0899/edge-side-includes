@@ -5,8 +5,12 @@ import {
   ChatSession,
   ChatSessionSummary,
   ChatTurn,
+  ColumnDefinition,
   CoreApi,
+  Visualization,
+  VisualizationIntent,
   createChatSessionRequest,
+  createVisualizationRequest,
   getChatSessionRequest,
   listChatSessionsRequest,
   sendChatMessageRequest,
@@ -36,6 +40,21 @@ export class ChatApi {
   sendMessage(sessionId: string, text: string): Observable<ChatTurn> {
     return this.api.send((target) =>
       sendChatMessageRequest({ ...target, path: { sessionId }, body: { text } }),
+    );
+  }
+
+  /** Asks for a validated DSL document for the result columns (never rows). */
+  createVisualization(
+    sessionId: string,
+    columns: readonly ColumnDefinition[],
+    intent: VisualizationIntent,
+  ): Observable<Visualization> {
+    return this.api.send((target) =>
+      createVisualizationRequest({
+        ...target,
+        path: { sessionId },
+        body: { columns: [...columns], intent },
+      }),
     );
   }
 }

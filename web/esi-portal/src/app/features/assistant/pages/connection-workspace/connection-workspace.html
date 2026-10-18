@@ -13,19 +13,31 @@
     />
 
     @if (c.consent === 'granted') {
-      <p-tabs [value]="tab()" (valueChange)="selectTab($event)">
+      <p-tabs [value]="activeTab()" (valueChange)="selectTab($event)">
         <p-tablist>
           <p-tab value="chat">Chat</p-tab>
+          <p-tab value="dashboards">Dashboards</p-tab>
+          <p-tab value="artifacts">Saved visualizations</p-tab>
           <p-tab value="scripts">Saved scripts</p-tab>
         </p-tablist>
         <p-tabpanels>
           <p-tabpanel value="chat">
-            @if (tab() === 'chat') {
+            @if (activeTab() === 'chat') {
               <app-chat-panel [connectionId]="c.id" [sessionId]="session() ?? null" />
             }
           </p-tabpanel>
+          <p-tabpanel value="dashboards">
+            @if (activeTab() === 'dashboards') {
+              <app-dashboards-panel [connectionId]="c.id" />
+            }
+          </p-tabpanel>
+          <p-tabpanel value="artifacts">
+            @if (activeTab() === 'artifacts') {
+              <app-artifacts-panel [connectionId]="c.id" />
+            }
+          </p-tabpanel>
           <p-tabpanel value="scripts">
-            @if (tab() === 'scripts') {
+            @if (activeTab() === 'scripts') {
               <app-scripts-panel [connectionId]="c.id" />
             }
           </p-tabpanel>
