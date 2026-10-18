@@ -46,7 +46,7 @@ internal static class QueryEndpoints
         })],
     };
 
-    private static QueryResult ToContract(QueryPage page) => new()
+    internal static QueryResult ToContract(QueryPage page) => new()
     {
         Columns = [.. page.Columns.Select(c => new ColumnDefinition { Name = c.Name, SqlType = c.SqlType, Nullable = c.Nullable })],
         Rows = [.. page.Rows.Cast<object>()],

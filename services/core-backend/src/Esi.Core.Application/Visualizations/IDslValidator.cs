@@ -14,5 +14,8 @@ public interface IDslValidator
     /// <summary>The pinned catalog id agents must use.</summary>
     string CatalogId { get; }
 
+    /// <summary>Whether documents of this DSL schema version can be validated and rendered.</summary>
+    bool SupportsSchemaVersion(string dslSchemaVersion);
+
     IReadOnlyList<DslIssue> Validate(JsonElement document, IReadOnlyCollection<string> columnNames);
 }
