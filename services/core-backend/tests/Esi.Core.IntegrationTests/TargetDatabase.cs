@@ -47,3 +47,10 @@ public sealed partial class TargetDatabase : IAsyncLifetime
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
+
+/// <summary>Tests that use esi_target share one seeded database and run one class at a time.</summary>
+[CollectionDefinition(Name)]
+public sealed class TargetDatabaseCollection : ICollectionFixture<TargetDatabase>
+{
+    public const string Name = "target-database";
+}
