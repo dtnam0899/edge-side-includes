@@ -61,7 +61,7 @@ services:
     profiles: [integration]
     environment:
       ESI_CORE_TEST_APPDB: *appdb-connection
-      # Server-level connection; the tests create the esi_target database if it does not exist.
+      # Server-level connection; the tests recreate esi_target from tests/Esi.Core.IntegrationTests/Fixtures/target-sample-schema.sql.
       ESI_CORE_TEST_TARGETDB: "Server=sqlserver;Database=master;User Id=sa;Password=${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026};TrustServerCertificate=True"
     depends_on:
       migrate:

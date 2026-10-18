@@ -21,7 +21,7 @@ Core API, domain logic and auth for ESI; consumed by `web/esi-portal` (including
 - Apply migrations: `dotnet ef database update --project src/Esi.Core.Infrastructure --startup-project src/Esi.Core.Infrastructure` (locally); in containers the `migrate` compose service runs the EF Core migrations bundle.
 - Docker: `docker build --target test .` (format, build, unit tests; also the pre-commit command in `.esi-test-cmd`), `docker build -t esi-core:<version> --build-arg VERSION=<version> .` (runtime, non-root, `HEALTHCHECK` on `/health`).
 - Compose (settings from the shell or a git-ignored `.env`, see `.env.example`; without them a local-only sa password is used): `docker compose up` (SQL Server, migrations, API on http://localhost:8080), `docker compose --profile integration run --rm integration-tests` (integration tests). Build context is this directory only.
-- One SQL Server container (`sqlserver`, memory capped by `ESI_CORE_SQL_MEMORY_LIMIT_MB`, default 2048) holds two separate databases: `esi_core` (app) and `esi_target` (stand-in for a user's target database, created by the integration tests).
+- One SQL Server container (`sqlserver`, memory capped by `ESI_CORE_SQL_MEMORY_LIMIT_MB`, default 2048) holds two separate databases: `esi_core` (app) and `esi_target` (stand-in for a user's target database, recreated by the integration tests).
 - SQL Server images are amd64 only and need at least 2000 MB: on Apple silicon enable Rosetta emulation in Docker Desktop (SQL Server fails under QEMU) and give the Docker VM 4 GB or more.
 
 ## Structure
@@ -37,4 +37,5 @@ Core API, domain logic and auth for ESI; consumed by `web/esi-portal` (including
 - Never commit connection strings, passwords, signing keys or client secrets; `.env` is git-ignored.
 - Logging: JSON lines on stdout through `RedactingJsonConsoleFormatter`; messages, state values and exceptions pass through `SensitiveDataRedactor`. Add new secret key names there rather than bypassing it (ADR-0003 requires that no log contains a secret).
 - `esi_target` stands in for a user's target database; never point the app database at it.
+- Test data (P0-14, `docs/process/test-data.md`): integration tests recreate `esi_target` from `tests/Esi.Core.IntegrationTests/Fixtures/target-sample-schema.sql` (customers/products/orders with foreign keys and rows, plus `dbo.usp_GetCustomerOrders`, whose definition tests read and nothing executes). Change the schema there; other projects never read it.
 - Security-sensitive areas that need a human reviewer: `SensitiveDataRedactor`, connection/secret handling (ESI-15), SQL execution (ESI-16), and authentication once an identity provider is chosen.
