@@ -10,7 +10,7 @@ keywords: [features, documentation, status, bi assistant, ur-1, connections, con
 
 # Feature documentation: BI AI assistant (UR-1)
 
-Official description of what the ESI BI assistant does today, feature by feature: user flow, API operations, rules and guarantees, errors, configuration and verification. The requirements and decisions behind them are in [UR-1](../requirements/UR-1-bi-ai-assistant-web-application.md) and the [ADRs](../architecture/README.md); this folder describes the implemented behavior. Verified against `develop` at `61c6c1b` on 2026-10-18.
+Official description of what the ESI BI assistant does today, feature by feature: user flow, API operations, rules and guarantees, errors, configuration and verification. The requirements and decisions behind them are in [UR-1](../requirements/UR-1-bi-ai-assistant-web-application.md) and the [ADRs](../architecture/README.md); this folder describes the implemented behavior. Verified against `develop` at `e267665` (ESI-13 to ESI-20 merged) on 2026-10-18.
 
 ## Features
 
@@ -21,11 +21,11 @@ Official description of what the ESI BI assistant does today, feature by feature
 | 3 | Chat and SQL generation | Ask questions in natural language; get reviewable SQL or a stored-procedure script | Done (ESI-17) | Done (ESI-18), no model provider yet | Done (ESI-19) | [chat-and-sql-generation](./chat-and-sql-generation.md) |
 | 4 | Read-only query execution | Run an approved SELECT explicitly and page through live results | Done (ESI-16) | - | Done (ESI-19) | [query-execution](./query-execution.md) |
 | 5 | Script library | Generated stored-procedure scripts are kept per database and can be deleted | Done (ESI-17) | Done (ESI-18) | Done (ESI-19) | [chat-and-sql-generation](./chat-and-sql-generation.md#script-library) |
-| 6 | Visualizations (DSL) | Turn a result into a validated table or KPI described in A2UI DSL | Done (ESI-17) | Done (ESI-18) | Rendering pending (ESI-20) | [visualizations](./visualizations.md) |
-| 7 | Saved artifacts and dashboards | Save visualizations and arrange them on personal dashboards with live data | Done (ESI-17) | - | Pending (ESI-20) | [artifacts-and-dashboards](./artifacts-and-dashboards.md) |
+| 6 | Visualizations (DSL) | Turn a result into a validated table or KPI described in A2UI DSL | Done (ESI-17) | Done (ESI-18) | Done (ESI-20) | [visualizations](./visualizations.md) |
+| 7 | Saved artifacts and dashboards | Save visualizations and arrange them on personal dashboards with live data | Done (ESI-17) | - | Done (ESI-20) | [artifacts-and-dashboards](./artifacts-and-dashboards.md) |
 | - | Security and privacy (cross-cutting) | Encryption, owner isolation, consent enforcement, logging, authentication stand-in | Done | Done | Done | [security-and-privacy](./security-and-privacy.md) |
 
-Not started: charts (ESI-10, ESI-11, ESI-12, phase 7, pending a chart ADR), real authentication and the production release checklist (phase 6), end-to-end integration (phase 5).
+Not started: end-to-end integration (phase 5), real authentication and the production release checklist (phase 6), charts (ESI-10, ESI-11, ESI-12, phase 7, pending a chart ADR).
 
 ## Components and how they talk
 
@@ -46,8 +46,8 @@ flowchart LR
 
 | Where | Content |
 |-------|---------|
-| `main` (production line) | Phase 0 foundation and phase 1 shared artifacts: contracts 0.1.0 and lib 0.1.0 published (tags `contracts@v0.1.0`, `lib-dsl-schema@v0.1.0`, `lib-dsl-core@v0.1.0`, `lib-dsl-renderer-angular@v0.1.0`). |
-| `develop` (not released yet) | ESI-15, ESI-16, ESI-17 (core), ESI-18 (agents), ESI-19 (portal). |
+| `main` (production line) | Phases 0 to 4 (released together with this documentation): foundation; contracts 0.1.0 and lib 0.1.0 published (tags `contracts@v0.1.0`, `lib-dsl-schema@v0.1.0`, `lib-dsl-core@v0.1.0`, `lib-dsl-renderer-angular@v0.1.0`); core ESI-15 to ESI-17, agents ESI-18, portal ESI-19 and ESI-20. |
+| Services | core, agents and portal have no image release or deployment yet; they run locally with Docker. |
 | Not deployed | No service is deployed; everything runs locally with Docker (see each project's `CLAUDE.md`). |
 
 ## Problem types

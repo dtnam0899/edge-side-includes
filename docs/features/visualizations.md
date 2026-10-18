@@ -1,7 +1,7 @@
 ---
 id: feature-visualizations
 type: feature
-status: Implemented (agents, core, lib); portal rendering pending (ESI-20)
+status: Implemented (agents, core, lib, portal)
 updated: 2026-10-18
 projects: [agents, core, lib, portal, contracts]
 issues: [ESI-14, ESI-17, ESI-18, ESI-20]
@@ -26,7 +26,7 @@ Charts and forms are not supported in this version; the assistant says so (`visu
 1. The portal sends the result's column definitions and the intent (`table` or `kpi`, plus the user's wording) to core: `POST /chat-sessions/{sessionId}/visualizations` (`createVisualization`).
 2. Core forwards column definitions only (never rows) to the agent (`POST /dsl-generations`), with the pinned catalog id.
 3. Core validates the candidate itself. If it is invalid, core calls the agent again with the findings, at most 2 more times; then it answers 422 `dsl-validation-failed` with the findings. Only a valid document is returned.
-4. The portal renders the document with the live rows of the query (pending in ESI-20; the renderer is published in `lib`).
+4. The portal shows the preview: it maps the `DslDocument`, the SELECT and the column types to the renderer's artifact format, maps the query page to `/rows` and `/page`, and renders it with `<esi-dsl-surface>`. Refusals and validation failures are shown as messages that offer a table or KPI instead. The user can then save the preview as an artifact ([artifacts and dashboards](./artifacts-and-dashboards.md)).
 
 ## Diagrams
 
@@ -38,7 +38,7 @@ flowchart LR
     U1[Ask for a table or KPI]
     U2[See the visualization]
   end
-  subgraph Portal["web/esi-portal (rendering: ESI-20)"]
+  subgraph Portal["web/esi-portal: assistant module"]
     P1[Send column definitions and intent]
     P2["Render with esi-dsl-surface and live rows"]
     P3[Show refusal or validation failure]
@@ -114,7 +114,7 @@ In the order of ADR-0002: the envelope (catalog id, protocol and schema versions
 
 All three must produce the same error codes on the shared fixtures published in `@dtnam0899/dsl-schema` (valid table and KPI; 16 invalid cases), which each project vendors at a pinned version.
 
-## Rendering (lib, used by ESI-20)
+## Rendering (lib, used by the portal)
 
 `<esi-dsl-surface [artifact] [data]>` from `@dtnam0899/dsl-renderer-angular` 0.1.0 wraps the A2UI Angular renderer (`@a2ui/angular` 0.13.0, imported only from `@a2ui/angular/v0_9`). It validates before rendering and shows an error state (`role="alert"`) for an invalid document or a bound column that the live result no longer has; the user then starts over with a new prompt. All text is plain text: Markdown and HTML in DSL or row values are shown literally, never interpreted.
 
@@ -123,8 +123,9 @@ All three must produce the same error codes on the shared fixtures published in 
 - lib: behavior tests for the table and KPI fixtures, the exact catalog id, the missing-column error state and untrusted row values.
 - agents: evals for valid table and KPI output, invalid DSL retries, chart and form refusals, and prompts containing column definitions only.
 - core: `DslValidatorTests` (all shared fixtures, same codes as dsl-core); integration tests for a retry that succeeds, failure after the retries, and an unsupported request.
+- portal: unit tests for the DSL adapter, preview, refusal and failure messages; browser checks against the live core with artifacts saved through the API (the agents service has no model yet, so live generation answers 503).
 
 ## Status and open items
 
-- Portal rendering of previews, saving and dashboards: ESI-20.
+- A `dslSchemaVersion` the portal does not know is shown as "migration required" and never rendered.
 - Upgrades of the pinned A2UI versions need a dedicated issue with fixture tests (ADR-0002).

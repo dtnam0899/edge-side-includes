@@ -1,7 +1,7 @@
 ---
 id: feature-artifacts-and-dashboards
 type: feature
-status: Implemented (core); portal pending (ESI-20)
+status: Implemented (core, portal)
 updated: 2026-10-18
 projects: [core, portal, contracts]
 issues: [ESI-17, ESI-20]
@@ -12,9 +12,13 @@ keywords: [artifact, saved visualization, dashboard, layout, drag and drop, live
 
 A user saves a validated visualization as an artifact and arranges artifacts on personal dashboards. Dashboards always show live data: each item runs its saved SELECT when the dashboard is opened. Requirements: SR-7 and SR-8 in [UR-1](../requirements/UR-1-bi-ai-assistant-web-application.md); storage model: [ADR-0002](../architecture/ADR-0002-a2ui-dsl-adoption-and-storage.md).
 
-## Planned user flow (portal, ESI-20)
+## User flow (portal)
 
-Save a visualization from chat; open the database's dashboards list; create a dashboard; add saved artifacts; drag and resize items (Angular CDK in a wrapper around each rendered item); reopen it later with the layout restored. Each item renders in its own surface, so a failing item does not affect the others. Until ESI-20 the operations below exist in core only.
+1. In a database's workspace the tabs are Chat, Dashboards, Saved visualizations (artifacts) and Scripts (`?tab=chat|dashboards|artifacts|scripts`).
+2. A visualization preview from chat is saved explicitly under a name; it then appears under Saved visualizations, where it can be opened (its own page renders live data) or deleted.
+3. Dashboards are created, renamed and deleted from the Dashboards tab; a dashboard page shows its items on a 12-column grid.
+4. Saved visualizations are added as items. Each item renders in its own surface inside a wrapper that can be dragged (Angular CDK), resized with the pointer, or moved and resized with the arrow and Shift+arrow keys.
+5. Each item loads its data separately, so an item with a SQL error, a missing column or a deleted artifact shows its own state while the others render. The layout is saved after each change and restored when the dashboard is reopened.
 
 ## Diagrams
 
@@ -26,7 +30,7 @@ flowchart LR
     U1[Open dashboard]
     U2[Drag or resize items]
   end
-  subgraph Portal["web/esi-portal (ESI-20)"]
+  subgraph Portal["web/esi-portal: assistant module"]
     P1[Request dashboard]
     P2[One surface per item]
     P3[Run each item separately]
@@ -132,9 +136,9 @@ sequenceDiagram
 
 ## Verification
 
-core integration tests on the sample database: an artifact saved and run on live rows; invalid DSL and a write statement are not saved; a layout saved, renamed, reopened and restored, invalid layouts rejected, an item removed; a failing item and a good item run independently; owner isolation on 13 operations; withdrawn consent hiding and restoring; deleted artifact and deleted connection states.
+- portal: unit tests for the dashboard service (independent item loading, layout saved with every item once) and the grid; browser checks against the live core, including a runtime SQL error and a missing column next to working items, and a reload compared with the stored layout.
+- core integration tests on the sample database: an artifact saved and run on live rows; invalid DSL and a write statement are not saved; a layout saved, renamed, reopened and restored, invalid layouts rejected, an item removed; a failing item and a good item run independently; owner isolation on 13 operations; withdrawn consent hiding and restoring; deleted artifact and deleted connection states.
 
 ## Status and open items
 
-- Portal: saving, dashboards list, drag-and-drop and live rendering are ESI-20.
 - Dashboards are private; sharing is out of scope for this version.
