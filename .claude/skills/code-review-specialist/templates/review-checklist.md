@@ -1,55 +1,22 @@
 # Code Review Checklist
 
-## Security Checklist
-- [ ] No hardcoded credentials or secrets
-- [ ] Input validation on all user inputs
-- [ ] SQL injection prevention (parameterized queries)
-- [ ] CSRF protection on state-changing operations
-- [ ] XSS prevention with proper escaping
-- [ ] Authentication checks on protected endpoints
-- [ ] Authorization checks on resources
-- [ ] Secure password hashing (bcrypt, argon2)
-- [ ] No sensitive data in logs
-- [ ] HTTPS enforced
+Review only the change and directly affected behavior. Treat these as prompts, not blanket requirements; report findings only when supported by evidence in the diff and relevant context.
 
-## Performance Checklist
-- [ ] No N+1 queries
-- [ ] Appropriate use of indexes
-- [ ] Caching implemented where beneficial
-- [ ] No blocking operations on main thread
-- [ ] Async/await used correctly
-- [ ] Large datasets paginated
-- [ ] Database connections pooled
-- [ ] Regular expressions optimized
-- [ ] No unnecessary object creation
-- [ ] Memory leaks prevented
+## Correctness and maintainability
+- [ ] Does the change preserve intended behavior and handle important errors?
+- [ ] Are inputs validated at the appropriate boundary?
+- [ ] Are authorization and ownership checks preserved where relevant?
+- [ ] Are dependencies, types, and generated files used consistently with project rules?
+- [ ] Are there concrete regressions, unnecessary complexity, or maintainability issues?
 
-## Quality Checklist
-- [ ] Functions < 50 lines
-- [ ] Clear variable naming
-- [ ] No duplicate code
-- [ ] Proper error handling
-- [ ] Comments explain WHY, not WHAT
-- [ ] No console.logs in production
-- [ ] Type checking (TypeScript/JSDoc)
-- [ ] SOLID principles followed
-- [ ] Design patterns applied correctly
-- [ ] Self-documenting code
+## Tests
+- [ ] Is the changed behavior covered by relevant tests?
+- [ ] Are important error cases and regression cases covered?
+- [ ] Are there test gaps worth reporting?
 
-## Testing Checklist
-- [ ] Unit tests written
-- [ ] Edge cases covered
-- [ ] Error scenarios tested
-- [ ] Integration tests present
-- [ ] Coverage > 80%
-- [ ] No flaky tests
-- [ ] Mock external dependencies
-- [ ] Clear test names
+Use `testing-strategy` to decide what tests to add. Do not require a fixed coverage percentage or test level for every change.
 
----
+## Security and performance
+- [ ] Is there concrete evidence of a security or performance problem in the change?
 
-**Last Updated**: August 4, 2026
-**Claude Code Version**: 2.1.220
-**Sources**:
-- https://code.claude.com/docs/en/skills
-**Compatible Models**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5
+Do not treat this checklist as an exhaustive security audit or performance profile. Use the dedicated security-review workflow for explicit vulnerability audits and the performance optimizer for measured optimization work.

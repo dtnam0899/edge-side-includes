@@ -181,7 +181,7 @@ Sync check (run at the start of every stage and before reporting status): list t
 ## Working with AI agents
 
 - Start every session at [docs/README.md](../README.md); pick the next issue from [docs/plan/README.md](../plan/README.md).
-- Use the skill for the stage: `requirement-review` (stages 2-3 and sync), `esi-workflow` (stage 7), `esi-project-standards` (independence, Docker, versioning), `dsl-authoring` and `dsl-renderer-parity` (DSL), stack skills by project.
+- Use the skill for the task: `requirement-review` (stages 2-3 and sync), `esi-workflow` (stage 7), `esi-project-standards` (independence, Docker, versioning), `api-contract-change` (contract compatibility, release and consumer adoption), `database-change` (schema/data migration lifecycle), `testing-strategy` (test levels and evidence), `frontend-accessibility` (web UI accessibility), `dsl-authoring` and `dsl-renderer-parity` (DSL), and stack skills for implementation conventions. `doc-generator` writes API reference docs only; `code-review-specialist` reviews diffs but does not implement fixes or replace a security audit.
 - An agent may draft documents, ADRs and issue drafts, and may file issues only after G4 is approved and only through a dry-run-first script.
 - An agent never closes the UR, accepts an ADR, changes ticket text, or approves a gate. It asks (in one batch) when a design decision is open.
 - State what was verified (GitHub read, tests run) in every report; mark everything else `TBD`.

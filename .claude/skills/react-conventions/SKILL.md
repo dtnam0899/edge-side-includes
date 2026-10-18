@@ -1,6 +1,6 @@
 ---
 name: react-conventions
-description: React conventions for ESI web code. Use when creating or editing React components, hooks, streaming UI, or tests.
+description: React implementation conventions for web code. Use when creating or editing React components, hooks, streaming UI, or React tests; use frontend-accessibility for accessibility requirements and validation.
 ---
 
 # React conventions
@@ -13,5 +13,5 @@ Commands and versions live in the project `CLAUDE.md`; general rules in `clean-c
 - Model/AI output is untrusted: render as text, never `dangerouslySetInnerHTML`; render generated UI only from schema-validated data.
 - State: local first, lift or use the project's store only when shared; derive values instead of syncing state with effects.
 - Strict TypeScript, no `any`; stable `key`s; memoize only after measuring.
-- Accessibility: semantic elements, labels, `aria-live` for streaming content, focus management.
-- Tests: Vitest or Jest with React Testing Library, query by role/text, mock the stream source; use the project's test command.
+- Accessibility: follow `frontend-accessibility` for requirements and verification; this skill covers React implementation patterns, not a separate accessibility standard.
+- Tests: follow `testing-strategy`; use Vitest or Jest with React Testing Library, query by role/text, mock the stream source, and run the project's test command.

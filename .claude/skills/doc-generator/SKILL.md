@@ -1,13 +1,18 @@
 ---
 name: doc-generator
-description: Generate comprehensive, accurate API documentation from source code. Use when creating or updating API documentation, generating OpenAPI specs, or when users mention API docs, endpoints, or documentation.
+description: Generate or update API reference documentation from an approved API contract or implementation. Use for endpoint docs, SDK examples, and integration guides; use api-contract-change for designing or versioning the contract itself.
 ---
 
 # API Documentation Generator Skill
 
+## Scope
+
+Document an already-agreed API shape accurately. Do not invent endpoints, schemas, status codes, authentication behavior, or examples. The source of truth is the repository's API contract when one exists; otherwise verify against the implementation and identify any uncertainty.
+
+This skill creates documentation only. It does not design or change API contracts, decide compatibility/version impact, or regenerate clients; use `api-contract-change` for that lifecycle.
+
 ## Generates
 
-- OpenAPI/Swagger specifications
 - API endpoint documentation
 - SDK usage examples
 - Integration guides
@@ -74,6 +79,8 @@ response = requests.get(
 user = response.json()
 ```
 ````
+
+Replace all illustrative routes and payloads in the examples above with verified contract or implementation details before publishing. Never document a placeholder example as a real API.
 
 ---
 

@@ -9,6 +9,10 @@ A systematic approach to refactoring code based on Martin Fowler's *Refactoring:
 
 > "Refactoring is the process of changing a software system in such a way that it does not alter the external behavior of the code yet improves its internal structure." — Martin Fowler
 
+## Scope
+
+This skill manages behavior-preserving refactoring: scope, safe sequence, and incremental verification. Use `testing-strategy` to select test levels and assess test gaps; use the stack skill for framework-specific test commands. Do not impose a universal coverage percentage.
+
 ## Core Principles
 
 1. **Behavior Preservation**: External behavior must remain unchanged

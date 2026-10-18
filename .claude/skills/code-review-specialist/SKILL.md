@@ -1,39 +1,24 @@
 ---
 name: code-review-specialist
-description: Comprehensive code review with security, performance, and quality analysis. Use when users ask to review code, analyze code quality, evaluate pull requests, or mention code review, security analysis, or performance optimization.
+description: Review a code change or pull request for correctness, maintainability, and test gaps. Use when asked to review code or assess a diff; use the focused security-review workflow for an explicit vulnerability audit.
 ---
 
 # Code Review Skill
 
-This skill provides comprehensive code review capabilities focusing on:
+## Scope
 
-1. **Security Analysis**
-   - Authentication/authorization issues
-   - Data exposure risks
-   - Injection vulnerabilities
-   - Cryptographic weaknesses
-   - Sensitive data logging
+- Review the changed code and its directly affected behavior. Report actionable findings with impact, severity, evidence, and location.
+- This skill reviews; it does not implement fixes, create a general test plan, or perform a dedicated security audit.
+- For test strategy or test-case design, use `testing-strategy`. For an explicit security audit, use the repository's security-review workflow/agent. For measured performance optimization, use the performance optimizer.
+- Use `esi-project-standards` for project-independence, Docker, and versioning compliance, and `esi-workflow` for branch/commit/PR conventions; those policy checks are not this skill's primary review scope.
+- Mention security or performance concerns only when they are evidenced in the reviewed change; do not claim an exhaustive audit.
 
-2. **Performance Review**
-   - Algorithm efficiency (Big O analysis)
-   - Memory optimization
-   - Database query optimization
-   - Caching opportunities
-   - Concurrency issues
+## Review focus
 
-3. **Code Quality**
-   - SOLID principles
-   - Design patterns
-   - Naming conventions
-   - Documentation
-   - Test coverage
-
-4. **Maintainability**
-   - Code readability
-   - Function size (should be < 50 lines)
-   - Cyclomatic complexity
-   - Dependency management
-   - Type safety
+- Correctness, regressions, error handling, and compatibility.
+- Maintainability and type safety where they materially affect the change.
+- Whether the changed behavior has appropriate tests; use `testing-strategy` for deciding which tests to add.
+- Security and performance only where the diff provides concrete evidence. Avoid speculative findings and arbitrary function-length limits.
 
 ## Reference Files
 
@@ -41,38 +26,25 @@ This skill includes supporting files that you should read when performing review
 
 - **`templates/review-checklist.md`** — Structured checklist covering security, performance, quality, and testing. Read this file and use it as a guide to ensure no category is missed during review.
 - **`templates/finding-template.md`** — Standard template for documenting individual findings with severity, location, code examples, and impact analysis. Read this file and use its format when reporting issues.
-- **`scripts/analyze-metrics.py`** — Python script that calculates code metrics (function count, class count, average line length, complexity score). Run this on the file under review to gather quantitative data.
-- **`scripts/compare-complexity.py`** — Python script that compares cyclomatic and cognitive complexity between two versions of a file. Run this with the before and after versions when reviewing refactoring changes.
+- **`scripts/analyze-metrics.py`** — Optional metrics aid when quantitative context helps a specific finding; metrics alone are not review findings.
+- **`scripts/compare-complexity.py`** — Optional comparison aid when reviewing a refactoring change; use it only when the comparison is relevant.
 
 ## Review Template
 
-For each piece of code reviewed, provide:
+For each change reviewed, provide:
 
 ### Summary
-- Overall quality assessment (1-5)
 - Key findings count
-- Recommended priority areas
+- Review limitations, if any
 
-### Critical Issues (if any)
+### Findings (highest severity first)
 - **Issue**: Clear description
 - **Location**: File and line number
 - **Impact**: Why this matters
-- **Severity**: Critical/High/Medium
-- **Fix**: Code example
+- **Severity**: Critical/High/Medium/Low
+- **Recommendation**: Minimal direction to resolve
 
-### Findings by Category
-
-#### Security (if issues found)
-List security vulnerabilities with examples
-
-#### Performance (if issues found)
-List performance problems with complexity analysis
-
-#### Quality (if issues found)
-List code quality issues with refactoring suggestions
-
-#### Maintainability (if issues found)
-List maintainability problems with improvements
+Do not prescribe a code example unless it clarifies the finding. If there are no actionable findings, say so and note any review limitations.
 
 ## Version History
 
