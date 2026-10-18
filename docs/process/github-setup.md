@@ -10,7 +10,7 @@ keywords: [github, registry, github packages, npm, ghcr, token, NODE_AUTH_TOKEN,
 
 # GitHub setup
 
-Repository: `dtnam0899/edge-side-includes` (private, GitHub Free). Default branch `develop`; `main` is production (see `esi-workflow`). Source of truth for task P0-11 ([phase 0](../plan/phase-0-foundation.md)).
+Repository: `dtnam0899/edge-side-includes` (public since 2026-10-18). Default branch `develop`; `main` is production (see `esi-workflow`). Source of truth for task P0-11 ([phase 0](../plan/phase-0-foundation.md)).
 
 ## Repository variables
 
@@ -25,8 +25,8 @@ Set under Settings → Secrets and variables → Actions → Variables (`gh vari
 ## Package registry (GitHub Packages, npm)
 
 - Scope `@dtnam0899` maps to `https://npm.pkg.github.com` in each consuming or publishing project's own `.npmrc` (`services/contracts`, `lib`, `web/esi-portal`). The `.npmrc` contains only `//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}`; no token is ever committed. Use exactly `${NAME}`: npm 10 does not support shell defaults such as `${NAME-}` and would send that text as the token (401).
-- Packages published from this repository are linked to it and inherit its (private) visibility. Installing them needs a token with `read:packages` even for public consumers.
-- GitHub Free includes 500 MB of private package storage; remove or deprecate prereleases that only proved a flow (P0-12).
+- Packages published from this repository are linked to it and inherit its visibility (public). The GitHub npm registry still needs a token with `read:packages` to install, even for public packages.
+- Remove prereleases that only proved a flow (P0-12 did, with the `prerelease` workflow's `cleanup` mode).
 
 ### Tokens
 
@@ -57,18 +57,25 @@ Publishing from a laptop is not part of the workflow: releases and prereleases r
 - Labels: `User Requirement`, `System Requirement`, `Foundation Task`, `Task` (plus GitHub defaults).
 - Issue templates in `.github/ISSUE_TEMPLATE/` (user requirement, system requirement, foundation task) and `.github/pull_request_template.md` use the `ESI-<n> [PROJECT] <title>` format.
 
-## Branch protection: not available
+## Branch protection
 
-Branch protection rules and rulesets are not available for private repositories on GitHub Free (`GET /repos/.../branches/develop/protection` returns 403 "Upgrade to GitHub Pro or make this repository public"). Until that changes:
+Verified 2026-10-18 (`gh api repos/dtnam0899/edge-side-includes/rulesets`, `.../branches/<branch>/protection`):
 
-- The rules in `esi-workflow` (PR into `develop`, CI green, one approval, squash-merge; release PR `develop` → `main`; no direct commits or force-push to `develop`/`main`) are a team convention, not enforced by GitHub.
-- Reviewers check CI and the approval before merging; agents never merge without an explicit request.
-- The P0-11 acceptance criterion "a test PR cannot be merged without approval and passing CI" is deferred.
+| Branch | Rule | Source |
+|--------|------|--------|
+| `develop` | Deletion and force push (non-fast-forward) blocked | ruleset `develop-1` |
+| `develop` | Pull request required with 1 approving review; merge methods merge, squash, rebase; the Admin repository role may always bypass | ruleset `develop-2` (plus a classic protection rule with the same review count) |
+| `main` | none | - |
 
-To enforce it after upgrading to GitHub Pro (or making the repository public), add a ruleset for `develop` and `main`:
+Not enforced yet, so still team convention (`esi-workflow`):
 
-- Require a pull request with 1 approval; dismiss stale approvals on new commits.
-- Require status checks to pass (the `build` job of the project workflows that the PR touches) and branches to be up to date.
-- Block force pushes and deletions; allow only squash merges into `develop` and merge commits for `develop` → `main`.
+- **CI before merge:** no required status checks are configured, so a PR with failing or pending CI can be merged once approved.
+- **`main`:** not protected; the release PR `develop` → `main`, the merge commit and "no direct push or force push" are conventions only.
+- **Merge method:** squash into `develop` is a convention; the ruleset also allows merge and rebase.
+- **Admin bypass:** admins (the repository owner) can merge without an approval (`gh pr merge --admin`). With a single maintainer, the owner cannot approve their own PRs, so the bypass is the way to merge them. Use it only when CI is green, and say so in the PR.
 
-Then open a test PR without approval to confirm it cannot be merged, and close P0-11's deferred criterion.
+To finish enforcement:
+
+- Add the `build` job of each project workflow as a required status check on `develop` (path-filtered workflows do not report on unrelated PRs, so require only checks that always run, or add an always-running aggregate job first).
+- Add a ruleset for `main`: block deletion and force push, require a pull request with 1 approval, required status checks, and allow merge commits only.
+- Restrict `develop` to squash merges.
