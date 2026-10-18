@@ -59,3 +59,23 @@ def test_cli_exit_codes(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> N
 def test_committed_cases_pass() -> None:
     root = Path(__file__).resolve().parents[1]
     assert main([str(root / "evals" / "cases")]) == 0
+
+
+def test_agent_case_fails_when_unsafe_sql_would_be_returned(tmp_path: Path) -> None:
+    fixture = Path(__file__).resolve().parents[1] / "evals" / "fixtures" / "sales-schema.json"
+    case = {
+        "id": "expects-query",
+        "agent": "sql",
+        "schema_fixture": str(fixture),
+        "request": {"question": "Delete orders"},
+        "stub_outputs": [{"kind": "query", "sql": "DELETE FROM dbo.Orders", "explanation": "x"}]
+        * 3,
+        "checks": [
+            {"kind": "equals", "path": "/response/kind", "value": "query"},
+            {"kind": "absent", "path": "/response/procedureName"},
+        ],
+    }
+    cases = load_cases(_write(tmp_path / "agent.json", [case]))
+    [result] = asyncio.run(run_cases(cases, StubModel()))
+    assert not result.passed
+    assert [c.path for c in result.failed_checks] == ["/response/kind"]

@@ -1,0 +1,94 @@
+{
+  "description": "Sample target database (customers, products, orders) as SchemaMetadata. No row values, no connection details.",
+  "contract": {
+    "package": "@dtnam0899/esi-contracts",
+    "version": "0.1.0",
+    "api": "agents-api",
+    "shape": "SchemaMetadata"
+  },
+  "schema": {
+    "schemas": [
+      {
+        "name": "dbo",
+        "tables": [
+          {
+            "name": "Customers",
+            "kind": "table",
+            "columns": [
+              {"name": "CustomerId", "sqlType": "int", "nullable": false},
+              {"name": "Name", "sqlType": "nvarchar(200)", "nullable": false},
+              {"name": "Country", "sqlType": "nvarchar(100)", "nullable": true},
+              {"name": "CreatedAt", "sqlType": "datetime2(7)", "nullable": false}
+            ],
+            "primaryKey": ["CustomerId"]
+          },
+          {
+            "name": "Products",
+            "kind": "table",
+            "columns": [
+              {"name": "ProductId", "sqlType": "int", "nullable": false},
+              {"name": "Name", "sqlType": "nvarchar(200)", "nullable": false},
+              {"name": "Category", "sqlType": "nvarchar(100)", "nullable": true},
+              {"name": "UnitPrice", "sqlType": "decimal(18,2)", "nullable": false}
+            ],
+            "primaryKey": ["ProductId"]
+          },
+          {
+            "name": "Orders",
+            "kind": "table",
+            "columns": [
+              {"name": "OrderId", "sqlType": "int", "nullable": false},
+              {"name": "CustomerId", "sqlType": "int", "nullable": false},
+              {"name": "OrderDate", "sqlType": "date", "nullable": false},
+              {"name": "Status", "sqlType": "nvarchar(20)", "nullable": false}
+            ],
+            "primaryKey": ["OrderId"],
+            "foreignKeys": [
+              {
+                "name": "FK_Orders_Customers",
+                "columns": ["CustomerId"],
+                "referencedSchema": "dbo",
+                "referencedTable": "Customers",
+                "referencedColumns": ["CustomerId"]
+              }
+            ]
+          },
+          {
+            "name": "OrderLines",
+            "kind": "table",
+            "columns": [
+              {"name": "OrderLineId", "sqlType": "int", "nullable": false},
+              {"name": "OrderId", "sqlType": "int", "nullable": false},
+              {"name": "ProductId", "sqlType": "int", "nullable": false},
+              {"name": "Quantity", "sqlType": "int", "nullable": false},
+              {"name": "UnitPrice", "sqlType": "decimal(18,2)", "nullable": false}
+            ],
+            "primaryKey": ["OrderLineId"],
+            "foreignKeys": [
+              {
+                "name": "FK_OrderLines_Orders",
+                "columns": ["OrderId"],
+                "referencedSchema": "dbo",
+                "referencedTable": "Orders",
+                "referencedColumns": ["OrderId"]
+              },
+              {
+                "name": "FK_OrderLines_Products",
+                "columns": ["ProductId"],
+                "referencedSchema": "dbo",
+                "referencedTable": "Products",
+                "referencedColumns": ["ProductId"]
+              }
+            ]
+          }
+        ],
+        "procedures": [
+          {
+            "name": "usp_GetCustomerOrders",
+            "definition": "CREATE PROCEDURE dbo.usp_GetCustomerOrders @CustomerId int AS BEGIN SET NOCOUNT ON; SELECT o.OrderId, o.OrderDate, o.Status FROM dbo.Orders AS o WHERE o.CustomerId = @CustomerId AND o.Status <> 'Cancelled' ORDER BY o.OrderDate DESC; END"
+          }
+        ]
+      }
+    ]
+  }
+}

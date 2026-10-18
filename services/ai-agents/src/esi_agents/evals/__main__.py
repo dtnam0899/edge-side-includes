@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> int:
     results = asyncio.run(run_cases(cases, model))
     for result in results:
         status = "PASS" if result.passed else "FAIL"
-        detail = "".join(f"\n    {c.kind}: {c.value!r}" for c in result.failed_checks)
+        detail = "".join(f"\n    {c.kind} {c.path}: {c.value!r}" for c in result.failed_checks)
         print(f"{status} {result.id}{detail}")
     failed = sum(not r.passed for r in results)
     print(f"{len(results) - failed} passed, {failed} failed")
