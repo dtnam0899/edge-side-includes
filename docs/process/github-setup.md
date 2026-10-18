@@ -65,17 +65,18 @@ Verified 2026-10-18 (`gh api repos/dtnam0899/edge-side-includes/rulesets`, `.../
 |--------|------|--------|
 | `develop` | Deletion and force push (non-fast-forward) blocked | ruleset `develop-1` |
 | `develop` | Pull request required with 1 approving review; merge methods merge, squash, rebase; the Admin repository role may always bypass | ruleset `develop-2` (plus a classic protection rule with the same review count) |
-| `main` | none | - |
+| `main` | Deletion and force push blocked | ruleset `main-1` |
+| `main` | Pull request required with 1 approving review; only actors with bypass (Admin role) may update `main` (`update` rule), so release PRs are merged by an admin | ruleset `main-2` (plus a classic protection rule with the same review count) |
 
 Not enforced yet, so still team convention (`esi-workflow`):
 
 - **CI before merge:** no required status checks are configured, so a PR with failing or pending CI can be merged once approved.
-- **`main`:** not protected; the release PR `develop` → `main`, the merge commit and "no direct push or force push" are conventions only.
+- **Release merge method:** a merge commit for `develop` → `main` is a convention; the ruleset also allows squash and rebase.
 - **Merge method:** squash into `develop` is a convention; the ruleset also allows merge and rebase.
 - **Admin bypass:** admins (the repository owner) can merge without an approval (`gh pr merge --admin`). With a single maintainer, the owner cannot approve their own PRs, so the bypass is the way to merge them. Use it only when CI is green, and say so in the PR.
 
 To finish enforcement:
 
 - Add the `build` job of each project workflow as a required status check on `develop` (path-filtered workflows do not report on unrelated PRs, so require only checks that always run, or add an always-running aggregate job first).
-- Add a ruleset for `main`: block deletion and force push, require a pull request with 1 approval, required status checks, and allow merge commits only.
+- Restrict `main` to merge commits.
 - Restrict `develop` to squash merges.
