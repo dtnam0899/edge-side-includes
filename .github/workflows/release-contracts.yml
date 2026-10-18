@@ -1,0 +1,58 @@
+name: release-contracts
+
+# Manually started from main after a develop -> main release merge. Publishes @dtnam0899/esi-contracts at the
+# version committed in services/contracts/package.json (and every spec's info.version), after lint and a
+# breaking-change check against the latest published version, then pushes the tag contracts@v<version>.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    defaults:
+      run:
+        working-directory: services/contracts
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.3
+      - name: Check branch, version and tag
+        run: |
+          [ "$GITHUB_REF_NAME" = main ] || { echo "::error::stable releases run from main only"; exit 1; }
+          VERSION=$(node -p "require('./package.json').version")
+          echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "::error::$VERSION is not a stable version"; exit 1; }
+          if git rev-parse -q --verify "refs/tags/contracts@v$VERSION" >/dev/null; then
+            echo "::error::tag contracts@v$VERSION already exists; bump the version in a PR first"; exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Lint, version check, bundle
+        run: |
+          npm ci
+          npm run check
+      - name: Breaking-change check against the latest release
+        run: |
+          LAST=$(npm view @dtnam0899/esi-contracts version 2>/dev/null || true)
+          if [ -z "$LAST" ]; then echo "No previous release: first release."; exit 0; fi
+          mkdir -p .base && npm pack "@dtnam0899/esi-contracts@$LAST" --pack-destination .base >/dev/null
+          tar -xzf .base/*.tgz -C .base --strip-components=1
+          # oasdiff binary from the same pinned image the Dockerfile uses
+          id=$(docker create tufin/oasdiff:v1.33.0) && mkdir -p "$RUNNER_TEMP/bin"
+          docker cp "$id:/usr/bin/oasdiff" "$RUNNER_TEMP/bin/oasdiff" && docker rm "$id" >/dev/null
+          PATH="$RUNNER_TEMP/bin:$PATH" sh scripts/check-breaking.sh .base
+      - name: Publish
+        run: npm publish
+      - name: Tag
+        run: |
+          git tag "contracts@v$VERSION" "$GITHUB_SHA"
+          git push origin "contracts@v$VERSION"
