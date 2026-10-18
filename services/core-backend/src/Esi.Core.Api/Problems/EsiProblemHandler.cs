@@ -28,6 +28,11 @@ public sealed partial class EsiProblemHandler(IProblemDetailsService problems, I
                     details.Extensions["errors"] = problem.FieldErrors.Select(e => new { field = e.Field, message = e.Message }).ToArray();
                 }
 
+                if (problem.Issues.Count > 0)
+                {
+                    details.Extensions["issues"] = problem.Issues.Select(i => new { code = i.Code, message = i.Message }).ToArray();
+                }
+
                 break;
             case BadHttpRequestException bad:
                 details = new ProblemDetails

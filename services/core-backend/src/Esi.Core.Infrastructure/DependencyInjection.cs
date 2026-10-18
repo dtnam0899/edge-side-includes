@@ -1,9 +1,11 @@
 using Esi.Core.Application.Connections;
 using Esi.Core.Application.Consent;
+using Esi.Core.Application.Queries;
 using Esi.Core.Application.Security;
 using Esi.Core.Infrastructure.Connections;
-using Esi.Core.Infrastructure.Persistence;
 using Esi.Core.Infrastructure.Persistence.Repositories;
+using Esi.Core.Infrastructure.Persistence;
+using Esi.Core.Infrastructure.Queries;
 using Esi.Core.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +38,10 @@ public static class DependencyInjection
         services.AddSingleton<ISecretProtector, AesGcmSecretProtector>();
         services.AddSingleton<IConnectionStringInspector, SqlConnectionStringInspector>();
         services.AddSingleton<IConnectionProbe, SqlConnectionProbe>();
+        services.AddSingleton(new ExecutionOptions(
+            int.TryParse(configuration["Execution:CommandTimeoutSeconds"], out var timeout) && timeout > 0 ? timeout : 30));
+        services.AddSingleton<ISqlStatementValidator, SelectStatementValidator>();
+        services.AddSingleton<ITargetDatabase, SqlTargetDatabase>();
         services.AddScoped<IConnectionRepository, ConnectionRepository>();
         services.AddScoped<IConsentAcceptanceRepository, ConsentAcceptanceRepository>();
         return services;

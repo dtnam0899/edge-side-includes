@@ -57,6 +57,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check 
 // core-api contract operations (@dtnam0899/esi-contracts, see Contracts/CONTRACT_VERSION).
 app.MapConsentEndpoints();
 app.MapConnectionEndpoints();
+app.MapQueryEndpoints();
 
 await app.RunAsync();
 return 0;
