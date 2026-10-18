@@ -1,6 +1,8 @@
+using Esi.Core.Application.Artifacts;
 using Esi.Core.Application.Chat;
 using Esi.Core.Application.Connections;
 using Esi.Core.Application.Consent;
+using Esi.Core.Application.Dashboards;
 using Esi.Core.Application.Queries;
 using Esi.Core.Application.Schema;
 using Esi.Core.Application.Scripts;
@@ -23,6 +25,8 @@ public static class DependencyInjection
         services.AddScoped<ChatService>();
         services.AddScoped<ScriptService>();
         services.AddScoped<VisualizationService>();
+        services.AddScoped<ArtifactService>();
+        services.AddScoped<DashboardService>();
         return services;
     }
 }

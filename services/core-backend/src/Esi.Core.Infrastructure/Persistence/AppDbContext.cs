@@ -1,6 +1,8 @@
+using Esi.Core.Domain.Artifacts;
 using Esi.Core.Domain.Chat;
 using Esi.Core.Domain.Connections;
 using Esi.Core.Domain.Consent;
+using Esi.Core.Domain.Dashboards;
 using Esi.Core.Domain.Scripts;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +20,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
     public DbSet<Script> Scripts => Set<Script>();
+
+    public DbSet<Artifact> Artifacts => Set<Artifact>();
+
+    public DbSet<Dashboard> Dashboards => Set<Dashboard>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

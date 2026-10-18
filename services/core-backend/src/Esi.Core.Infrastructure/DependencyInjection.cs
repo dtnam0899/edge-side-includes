@@ -1,4 +1,5 @@
 using Esi.Core.Application.Agents;
+using Esi.Core.Application.Artifacts;
 using Esi.Core.Application.Chat;
 using Esi.Core.Application.Connections;
 using Esi.Core.Application.Consent;
@@ -50,6 +51,7 @@ public static class DependencyInjection
         services.AddSingleton<ITargetDatabase, SqlTargetDatabase>();
         services.AddScoped<IConnectionRepository, ConnectionRepository>();
         services.AddScoped<IChatRepository, ChatRepository>();
+        services.AddScoped<IArtifactRepository, ArtifactRepository>();
         services.AddSingleton<IDslValidator, DslValidator>();
         services.AddSingleton(new VisualizationOptions(
             int.TryParse(configuration["Visualization:MaxRetries"], out var retries) && retries >= 0 ? retries : 2));

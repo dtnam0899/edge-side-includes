@@ -59,6 +59,7 @@ app.MapConsentEndpoints();
 app.MapConnectionEndpoints();
 app.MapQueryEndpoints();
 app.MapChatEndpoints();
+app.MapArtifactEndpoints();
 
 await app.RunAsync();
 return 0;

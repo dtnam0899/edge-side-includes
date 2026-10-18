@@ -64,6 +64,9 @@ public sealed class EsiProblem : Exception
     /// <summary>The AI agents service did not answer usably (not running, no model provider, timeout).</summary>
     public static EsiProblem AgentsUnavailable(string detail) => new("agents-unavailable", 503, "AI agents unavailable", detail);
 
+    public static EsiProblem ArtifactUnavailable(string? detail = null) =>
+        new("artifact-unavailable", 409, "Artifact unavailable", detail ?? "The artifact's connection was deleted or its consent withdrawn.");
+
     public static EsiProblem InvalidResultColumns(string detail) => new("invalid-result-columns", 422, "Invalid result columns", detail);
 
     public static EsiProblem InvalidRequest(params (string Field, string Message)[] errors) =>

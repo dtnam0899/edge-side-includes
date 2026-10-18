@@ -22,6 +22,54 @@ namespace Esi.Core.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Esi.Core.Domain.Artifacts.Artifact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ColumnsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DslJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DslSchemaVersion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Sql")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId", "ConnectionId", "CreatedAt");
+
+                    b.ToTable("Artifacts", (string)null);
+                });
+
             modelBuilder.Entity("Esi.Core.Domain.Chat.ChatMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -140,6 +188,35 @@ namespace Esi.Core.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId", "AcceptedAt");
 
                     b.ToTable("ConsentAcceptances", (string)null);
+                });
+
+            modelBuilder.Entity("Esi.Core.Domain.Dashboards.Dashboard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId", "ConnectionId", "UpdatedAt");
+
+                    b.ToTable("Dashboards", (string)null);
                 });
 
             modelBuilder.Entity("Esi.Core.Domain.Scripts.Script", b =>
@@ -269,6 +346,44 @@ namespace Esi.Core.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Secret")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Esi.Core.Domain.Dashboards.Dashboard", b =>
+                {
+                    b.OwnsMany("Esi.Core.Domain.Dashboards.DashboardItem", "Items", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("ArtifactId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("DashboardId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Height")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Width")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("X")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Y")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("DashboardId");
+
+                            b1.ToTable("DashboardItems", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("DashboardId");
+                        });
+
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }
