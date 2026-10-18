@@ -121,7 +121,7 @@ Depends on D1.
 - [ ] ...
 ```
 
-Body headings inside a task must be `###` or deeper only if they contain `|`; plain `## Scope` lines are fine because only headings of the form `## a | b | c` start a new task.
+Only headings of the form `## a | b | c` start a new task, so ordinary `## Scope` lines inside a body are fine.
 
 ```bash
 scripts/file-issues.sh --file docs/requirements/UR-2-tasks.md --parent 40 --label "System Requirement"          # dry run
