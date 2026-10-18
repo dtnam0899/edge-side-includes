@@ -1,7 +1,7 @@
 ---
 id: ADR-0003
 type: adr
-status: Proposed
+status: Accepted
 date: 2026-10-18
 projects: [core]
 issues: [ESI-15]
@@ -20,11 +20,11 @@ keywords: [encryption, envelope encryption, aes-256-gcm, master key, key rotatio
 2. **Managed key service (cloud KMS or key vault).** Per-use audit and managed rotation; adds infrastructure and a vendor.
 3. **Single key encrypting all secrets directly.** Simplest; rotation requires re-encrypting everything.
 
-## Decision (proposed)
+## Decision
 Take option 1 for the first version, designed so option 2 can replace the key-wrapping step without data changes.
 
 - Each secret is encrypted with a fresh random 256-bit data key using AES-256-GCM (random 96-bit nonce, the authentication tag stored with the ciphertext).
-- The data key is wrapped (encrypted) by the master key identified by `keyVersion`. The stored record contains: `ciphertext`, `nonce`, `tag`, `wrappedDataKey`, `keyVersion`, `algorithm`.
+- The data key is wrapped (encrypted) by the master key identified by `keyVersion`, using AES-256-GCM with its own random nonce (.NET has no built-in AES key wrap, so GCM is used for wrapping too). The wrapped key is stored in the same table row as the connection record (decided 2026-10-18). The stored record contains: `ciphertext`, `nonce`, `tag`, `wrappedDataKey`, `keyVersion`, `algorithm`.
 - Associated data binds the ciphertext to the record (connection id and owner id), so a copied blob cannot be used for another connection.
 - Master keys come from environment variables (for example `ESI_MASTER_KEY_V1`, `ESI_MASTER_KEY_V2`, plus `ESI_MASTER_KEY_ACTIVE`); names are TBD in the scaffold. New secrets use the active version; older versions stay available for decryption.
 - Rotation: add a new version, deploy, then re-wrap data keys in a background job (the secret ciphertext itself is not re-encrypted); retire the old key after all records moved.
@@ -43,6 +43,6 @@ Take option 1 for the first version, designed so option 2 can replace the key-wr
 - CI secret scan runs on the repo (`security-scan.sh` hook).
 
 ## Open questions
-- Where does the data store the wrapped keys: same table as the connection record (proposed) or a separate store?
-- Master key backup and ownership process (human).
-- Moving to a managed key store before production (Phase 6 review).
+- Resolved 2026-10-18: wrapped data keys live in the same table as the connection record.
+- Open (human, before production): master key backup and ownership process.
+- Open: moving to a managed key store before production (Phase 6 review).

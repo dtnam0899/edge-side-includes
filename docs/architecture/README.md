@@ -14,9 +14,9 @@ One decision per file: `ADR-NNNN-short-title.md`. Breaking changes to a contract
 | ADR | Title | Status | Projects | Needed by |
 |-----|-------|--------|----------|-----------|
 | [ADR-0001](./ADR-0001-technology-baseline.md) | Technology baseline and versions | Accepted | all | P0-06..P0-10 (scaffolds) |
-| [ADR-0002](./ADR-0002-a2ui-dsl-adoption-and-storage.md) | A2UI adoption and DSL storage model | Proposed | lib, agents, core, portal | ESI-14, ESI-17, ESI-18, ESI-20 |
-| [ADR-0003](./ADR-0003-connection-secret-key-management.md) | Connection secret encryption and key management | Proposed | core | ESI-15 |
-| [ADR-0004](./ADR-0004-sql-validation-and-execution-policy.md) | SQL validation and execution policy | Proposed | core, agents | ESI-16, ESI-18 |
+| [ADR-0002](./ADR-0002-a2ui-dsl-adoption-and-storage.md) | A2UI adoption and DSL storage model | Accepted | lib, agents, core, portal | ESI-14, ESI-17, ESI-18, ESI-20 |
+| [ADR-0003](./ADR-0003-connection-secret-key-management.md) | Connection secret encryption and key management | Accepted | core | ESI-15 |
+| [ADR-0004](./ADR-0004-sql-validation-and-execution-policy.md) | SQL validation and execution policy | Accepted | core, agents | ESI-16, ESI-18 |
 
 Planned, not written yet: chart component and library (phase 7, before ESI-10); authentication provider (phase 6).
 

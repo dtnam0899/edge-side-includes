@@ -1,7 +1,7 @@
 ---
 id: ADR-0004
 type: adr
-status: Proposed
+status: Accepted
 date: 2026-10-18
 projects: [core, agents]
 issues: [ESI-16, ESI-18]
@@ -20,16 +20,16 @@ keywords: [sql validation, select only, tsql parser, scriptdom, read-only, timeo
 2. **Parse with a real T-SQL parser and allow-list the syntax tree.** Robust against formatting tricks; needs maintenance as constructs appear.
 3. **Rely only on a read-only login.** Strong at the database, but not under our control and not required by the product owner.
 
-## Decision (proposed)
+## Decision
 Take option 2 as the enforced layer and recommend option 3 to users.
 
 - Parse with a T-SQL parser (proposal: ScriptDom, see ADR-0001). Reject on any parse error.
 - Accept exactly one batch with exactly one statement, and that statement must be a plain `SELECT` query expression (CTEs allowed only when every part is a query).
-- Reject: INSERT, UPDATE, DELETE, MERGE, DDL, `EXEC`/`EXECUTE`, `SELECT ... INTO`, multiple statements or batches (`GO`), `OPENROWSET`, `OPENQUERY`, `OPENDATASOURCE`, linked-server four-part names, `xp_`/`sp_` procedure references, `WAITFOR`, variable assignment, `INTO`, `OPTION` hints that change behavior, and any function call not on the allow-list (system functions are allowed by explicit allow-list; user-defined functions are rejected until a review decides otherwise).
+- Reject: INSERT, UPDATE, DELETE, MERGE, DDL, `EXEC`/`EXECUTE`, `SELECT ... INTO`, multiple statements or batches (`GO`), `OPENROWSET`, `OPENQUERY`, `OPENDATASOURCE`, linked-server four-part names, `xp_`/`sp_` procedure references, `WAITFOR`, variable assignment, `INTO`, `OPTION` hints that change behavior, and any function call not on the allow-list (system functions are allowed by explicit allow-list; user-defined functions and user-defined views are rejected until a later review decides otherwise; decided 2026-10-18).
 - The allow-list is data in code (not config the user edits). Unknown node types are rejected by default.
-- Execution: command timeout from configuration (default 30 s); open the connection with `ApplicationIntent=ReadOnly` where supported; execute within a read-only intent and never in a transaction that commits changes; fetch page by page (20 rows) plus a count of the remaining rows without loading the entire result set; stream and dispose the reader.
+- Execution: command timeout from configuration (default 30 s); set `ApplicationIntent=ReadOnly` where supported (it only routes to a readable secondary and does not enforce read-only, so it is not a safety control); execute within a read-only intent and never in a transaction that commits changes; fetch page by page (20 rows; no hard row limit, the timeout bounds the work; each cell is capped at 64 KB, truncated and marked as truncated) plus a count of the remaining rows without loading the entire result set; stream and dispose the reader.
 - Procedure handling: the agent may read definitions of existing procedures as context; nothing in the system executes a procedure; generated procedure scripts are stored as text and checked read-only (no write or DDL statements in the body) before saving.
-- Logging: inline application log with user, connection id, time, duration, outcome and the statement; no result rows, no connection string. Consider masking literals (open question).
+- Logging: inline application log with user, connection id, time, duration, outcome and the statement; no result rows, no connection string. Literals are masked: log the statement structure (literals replaced by placeholders) plus a hash of the original text, never the literal values (decided 2026-10-18).
 - UI and docs recommend a read-only database login.
 
 ## Consequences
@@ -43,6 +43,5 @@ Take option 2 as the enforced layer and recommend option 3 to users.
 - Agent evals include prompts that ask for writes, DDL and EXEC and expect refusal.
 
 ## Open questions
-- Allow-list of functions and whether user-defined functions or views with side effects are accepted.
-- Whether to log literals or mask them.
-- Maximum result size or cell size, even though no row limit was decided.
+- Resolved 2026-10-18: user-defined functions and views are rejected; literals are masked in logs; no row limit, cell size capped at 64 KB.
+- Open: the exact system-function allow-list (built in ESI-16 from the valid-SELECT corpus, each entry with a test).
