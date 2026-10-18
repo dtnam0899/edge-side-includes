@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   build:
@@ -20,13 +21,16 @@ jobs:
     defaults:
       run:
         working-directory: web/esi-portal
+    env:
+      # @dtnam0899/* packages from GitHub Packages; passed to docker build as a BuildKit secret only.
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v7
       # Lint, the feature-boundary test, unit tests and the production build run in the `check` stage.
       - name: Check
-        run: docker build --target check -t portal:check .
+        run: docker build --secret id=npm_token,env=NODE_AUTH_TOKEN --target check -t portal:check .
       - name: Build runtime image
-        run: docker build --build-arg REVISION="$GITHUB_SHA" -t portal:ci .
+        run: docker build --secret id=npm_token,env=NODE_AUTH_TOKEN --build-arg REVISION="$GITHUB_SHA" -t portal:ci .
       - name: Runtime config and health
         run: |
           docker run -d --name portal -p 8080:8080 -e ESI_PORTAL_API_BASE_URL=https://api.example.test portal:ci

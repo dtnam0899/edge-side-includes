@@ -7,15 +7,19 @@
   "engines": {
     "node": ">=22"
   },
+  "esi": {
+    "coreApiContract": "0.1.0"
+  },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
     "lint": "ng lint",
     "check": "npm run lint && npm run test:boundaries && npm test && npm run build",
-    "test:boundaries": "node scripts/test-boundaries.mjs"
+    "test:boundaries": "node scripts/test-boundaries.mjs",
+    "generate:api": "node scripts/generate-api.mjs"
   },
   "packageManager": "npm@10.9.8",
   "dependencies": {
@@ -26,6 +30,9 @@
     "@angular/forms": "21.2.25",
     "@angular/platform-browser": "21.2.25",
     "@angular/router": "21.2.25",
+    "@dtnam0899/dsl-core": "0.1.0",
+    "@dtnam0899/dsl-renderer-angular": "0.1.0",
+    "@dtnam0899/dsl-schema": "0.1.0",
     "@primeuix/themes": "2.0.3",
     "primeng": "21.1.10",
     "rxjs": "7.8.2",
@@ -36,6 +43,7 @@
     "@angular/cli": "21.2.27",
     "@angular/compiler-cli": "21.2.25",
     "@eslint/js": "9.39.5",
+    "@hey-api/openapi-ts": "0.99.0",
     "angular-eslint": "21.4.0",
     "eslint": "9.39.5",
     "jsdom": "29.1.1",

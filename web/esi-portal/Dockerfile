@@ -4,7 +4,11 @@ FROM node:22.23.3-alpine3.24 AS deps
 WORKDIR /app
 ENV CI=true NG_CLI_ANALYTICS=false
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci
+# @dtnam0899/* packages come from GitHub Packages. The token is a BuildKit secret mounted only for this step
+# (never ARG/ENV, so it is not stored in a layer): docker build --secret id=npm_token,env=NODE_AUTH_TOKEN .
+RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN \
+    if [ -z "$NODE_AUTH_TOKEN" ]; then echo "Missing BuildKit secret npm_token (NODE_AUTH_TOKEN with read:packages); see docs/process/github-setup.md" >&2; exit 1; fi \
+ && npm ci
 
 FROM deps AS check
 COPY angular.json tsconfig.json tsconfig.app.json tsconfig.spec.json eslint.config.js ./

@@ -44,6 +44,16 @@ INSERT INTO dbo.OrderLines (OrderId, LineNumber, ProductId, Quantity, UnitPrice)
 VALUES (1, 1, 1, 3, 10.50), (1, 2, 2, 1, 25.00), (2, 1, 2, 4, 25.00);
 GO
 
+-- A view: listed in the schema metadata, but executed SELECTs may not read it yet (ADR-0004).
+CREATE VIEW dbo.vw_CustomerRevenue
+AS
+SELECT c.Name, SUM(l.Quantity * l.UnitPrice) AS Revenue
+FROM dbo.Customers AS c
+JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId
+JOIN dbo.OrderLines AS l ON l.OrderId = o.OrderId
+GROUP BY c.Name;
+GO
+
 CREATE PROCEDURE dbo.usp_GetCustomerOrders
     @CustomerId int
 AS

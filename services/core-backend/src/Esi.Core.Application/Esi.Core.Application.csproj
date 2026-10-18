@@ -1,5 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Consent/Terms/*.md" LogicalName="ConsentTerms.%(Filename).md" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Esi.Core.Domain\Esi.Core.Domain.csproj" />
   </ItemGroup>
 </Project>

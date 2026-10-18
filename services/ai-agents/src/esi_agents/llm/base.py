@@ -3,9 +3,21 @@
 from typing import Protocol
 
 
+class ModelUnavailableError(RuntimeError):
+    """The model provider failed, timed out or is not configured (problem ``model-unavailable``)."""
+
+
 class ModelClient(Protocol):
-    """Minimal async completion interface; real clients add timeouts, retries and token limits."""
+    """Minimal async completion interface; ``guarded_complete`` adds timeouts and limits."""
 
     async def complete(self, prompt: str) -> str:
-        """Return the model output for ``prompt``."""
+        """Return the model output for ``prompt``; raise ``ModelUnavailableError`` on failure."""
         ...
+
+
+class UnconfiguredModel:
+    """Used until the provider ADR is accepted: every call reports the model as unavailable."""
+
+    async def complete(self, prompt: str) -> str:
+        """Always fail; no provider is configured."""
+        raise ModelUnavailableError("no model provider is configured")

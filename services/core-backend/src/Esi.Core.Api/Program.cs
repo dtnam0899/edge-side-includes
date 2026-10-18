@@ -1,4 +1,8 @@
+using Esi.Core.Api.Auth;
+using Esi.Core.Api.Endpoints;
 using Esi.Core.Api.Logging;
+using Esi.Core.Api.Problems;
+using Esi.Core.Application;
 using Esi.Core.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration.Json;
@@ -36,13 +40,26 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole(options => options.FormatterName = RedactingJsonConsoleFormatter.Name);
 builder.Logging.AddConsoleFormatter<RedactingJsonConsoleFormatter, JsonConsoleFormatterOptions>();
 
+builder.Services.AddCurrentUser(builder.Configuration);
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<EsiProblemHandler>();
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+
 // Liveness: the process serves HTTP. Readiness: dependencies (app database) are reachable.
 app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
-app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(DependencyInjection.ReadyTag) });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(Esi.Core.Infrastructure.DependencyInjection.ReadyTag) });
+
+// core-api contract operations (@dtnam0899/esi-contracts, see Contracts/CONTRACT_VERSION).
+app.MapConsentEndpoints();
+app.MapConnectionEndpoints();
+app.MapQueryEndpoints();
+app.MapChatEndpoints();
+app.MapArtifactEndpoints();
 
 await app.RunAsync();
 return 0;

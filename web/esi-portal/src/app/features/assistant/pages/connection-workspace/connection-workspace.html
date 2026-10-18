@@ -1,0 +1,68 @@
+@if (connection(); as c) {
+  <div class="workspace">
+    <app-connection-header
+      [connection]="c"
+      [testState]="testState()"
+      [busy]="consentBusy()"
+      [actionProblem]="actionProblem()"
+      (test)="test(c)"
+      (edit)="edit(c)"
+      (withdraw)="confirmWithdraw(c)"
+      (grant)="grant(c)"
+      (remove)="confirmDelete(c)"
+    />
+
+    @if (c.consent === 'granted') {
+      <p-tabs [value]="activeTab()" (valueChange)="selectTab($event)">
+        <p-tablist>
+          <p-tab value="chat">Chat</p-tab>
+          <p-tab value="dashboards">Dashboards</p-tab>
+          <p-tab value="artifacts">Saved visualizations</p-tab>
+          <p-tab value="scripts">Saved scripts</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="chat">
+            @if (activeTab() === 'chat') {
+              <app-chat-panel [connectionId]="c.id" [sessionId]="session() ?? null" />
+            }
+          </p-tabpanel>
+          <p-tabpanel value="dashboards">
+            @if (activeTab() === 'dashboards') {
+              <app-dashboards-panel [connectionId]="c.id" />
+            }
+          </p-tabpanel>
+          <p-tabpanel value="artifacts">
+            @if (activeTab() === 'artifacts') {
+              <app-artifacts-panel [connectionId]="c.id" />
+            }
+          </p-tabpanel>
+          <p-tabpanel value="scripts">
+            @if (activeTab() === 'scripts') {
+              <app-scripts-panel [connectionId]="c.id" />
+            }
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    } @else {
+      <section class="locked" aria-labelledby="locked-heading">
+        <h3 id="locked-heading">Consent withdrawn</h3>
+        <p>
+          The assistant does not use this database: its chats, saved scripts, SQL execution and
+          dashboards are hidden. Nothing was deleted. Grant consent again to restore access.
+        </p>
+      </section>
+    }
+  </div>
+} @else if (!connections.loaded() && !connections.loadProblem()) {
+  <div aria-hidden="true" class="loading">
+    <p-skeleton height="2rem" width="16rem" />
+    <p-skeleton height="12rem" />
+  </div>
+  <span class="visually-hidden" role="status">Loading the connection…</span>
+} @else if (connections.loaded()) {
+  <section class="missing">
+    <h2>Connection not found</h2>
+    <p>It was deleted or belongs to someone else.</p>
+    <a pButton routerLink="/assistant" severity="secondary" [outlined]="true">Back to databases</a>
+  </section>
+}

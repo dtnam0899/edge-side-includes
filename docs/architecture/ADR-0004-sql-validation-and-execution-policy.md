@@ -44,4 +44,4 @@ Take option 2 as the enforced layer and recommend option 3 to users.
 
 ## Open questions
 - Resolved 2026-10-18: user-defined functions and views are rejected; literals are masked in logs; no row limit, cell size capped at 64 KB.
-- Open: the exact system-function allow-list (built in ESI-16 from the valid-SELECT corpus, each entry with a test).
+- Resolved 2026-10-18 (ESI-16): the system-function and syntax-node allow-lists live in `services/core-backend` `SelectStatementValidator` (aggregates, ranking/analytic, string, math, date and `ISNULL`); the valid and bypass corpora are `SelectStatementValidatorTests`. Views are detected at execution time from `sys.all_objects` (only user tables may be read). Remaining rows are counted by streaming the reader, and each page re-runs the statement.

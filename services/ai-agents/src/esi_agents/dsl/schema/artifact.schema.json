@@ -1,0 +1,59 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "urn:esi:dsl-schema:artifact:1",
+    "title": "ESI DSL artifact",
+    "description": "A stored ESI DSL artifact (ADR-0002): the A2UI v0.9 updateComponents component list plus the columns and SELECT it is bound to. It never contains row values or layout.",
+    "type": "object",
+    "properties": {
+        "dslSchemaVersion": {
+            "const": 1,
+            "description": "Version of the artifact format; see DSL_SCHEMA_VERSIONS in versions.ts for the A2UI pair it maps to."
+        },
+        "protocolVersion": {
+            "const": "v0.9",
+            "description": "A2UI message version used when the artifact is rendered."
+        },
+        "catalogId": {
+            "const": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
+            "description": "The pinned basic catalog id, verbatim from catalog.json."
+        },
+        "columns": {
+            "type": "array",
+            "description": "Columns of the bound query result that the components may reference.",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/ColumnDefinition" }
+        },
+        "query": {
+            "type": "object",
+            "properties": {
+                "sql": { "type": "string", "minLength": 1, "description": "The SELECT the artifact is bound to." }
+            },
+            "required": ["sql"],
+            "additionalProperties": false
+        },
+        "components": {
+            "type": "array",
+            "description": "The A2UI updateComponents.components payload.",
+            "minItems": 1,
+            "items": { "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/$defs/anyComponent" }
+        }
+    },
+    "required": ["dslSchemaVersion", "protocolVersion", "catalogId", "columns", "query", "components"],
+    "additionalProperties": false,
+    "$defs": {
+        "ColumnDefinition": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[^/~]+$",
+                    "description": "Column key as returned by the query; used as a JSON Pointer segment, so '/' and '~' are not allowed."
+                },
+                "type": { "enum": ["string", "number", "boolean", "date", "datetime"] }
+            },
+            "required": ["name", "type"],
+            "additionalProperties": false
+        }
+    }
+}

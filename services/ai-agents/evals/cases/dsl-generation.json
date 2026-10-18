@@ -1,0 +1,3535 @@
+[
+  {
+    "id": "dsl-table-valid",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "revenue by country"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/protocolVersion",
+        "value": "v0.9"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.1.0"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "dsl-kpi-valid",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "TotalRevenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": true
+        }
+      ],
+      "intent": {
+        "kind": "kpi",
+        "description": "total revenue as a KPI"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "kpi-column"
+          },
+          {
+            "id": "kpi-column",
+            "component": "Column",
+            "children": [
+              "kpi-label",
+              "kpi-value"
+            ]
+          },
+          {
+            "id": "kpi-label",
+            "component": "Text",
+            "text": "Total revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "kpi-value",
+            "component": "Text",
+            "variant": "h2",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "/rows/0/TotalRevenue"
+                },
+                "decimals": 0,
+                "grouping": true
+              },
+              "returnType": "string"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/protocolVersion",
+        "value": "v0.9"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.1.0"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/components/0/component",
+        "value": "Card"
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-refused",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "show revenue per country as a pie chart"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "Charts are not available"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "table or as a KPI"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 0
+      }
+    ]
+  },
+  {
+    "id": "dsl-bar-graph-refused",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "TotalRevenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": true
+        }
+      ],
+      "intent": {
+        "kind": "kpi",
+        "description": "a bar graph of revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "kpi-column"
+          },
+          {
+            "id": "kpi-column",
+            "component": "Column",
+            "children": [
+              "kpi-label",
+              "kpi-value"
+            ]
+          },
+          {
+            "id": "kpi-label",
+            "component": "Text",
+            "text": "Total revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "kpi-value",
+            "component": "Text",
+            "variant": "h2",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "/rows/0/TotalRevenue"
+                },
+                "decimals": 0,
+                "grouping": true
+              },
+              "returnType": "string"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 0
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-refused-by-model",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "revenue trend visual"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "unsupported",
+        "reason": "A trend line needs a chart, which is not available; a table or KPI is possible."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "chart"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      }
+    ]
+  },
+  {
+    "id": "dsl-form-refused",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "a form to edit the customer country"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "name-field",
+              "save"
+            ]
+          },
+          {
+            "id": "name-field",
+            "component": "TextField",
+            "label": "Country",
+            "value": {
+              "path": "/rows/0/Country"
+            }
+          },
+          {
+            "id": "save-label",
+            "component": "Text",
+            "text": "Save"
+          },
+          {
+            "id": "save",
+            "component": "Button",
+            "child": "save-label",
+            "action": {
+              "event": {
+                "name": "save"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "Forms are not supported"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 0
+      }
+    ]
+  },
+  {
+    "id": "dsl-form-components-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "countries and revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "name-field",
+              "save"
+            ]
+          },
+          {
+            "id": "name-field",
+            "component": "TextField",
+            "label": "Country",
+            "value": {
+              "path": "/rows/0/Country"
+            }
+          },
+          {
+            "id": "save-label",
+            "component": "Text",
+            "text": "Save"
+          },
+          {
+            "id": "save",
+            "component": "Button",
+            "child": "save-label",
+            "action": {
+              "event": {
+                "name": "save"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "name-field",
+              "save"
+            ]
+          },
+          {
+            "id": "name-field",
+            "component": "TextField",
+            "label": "Country",
+            "value": {
+              "path": "/rows/0/Country"
+            }
+          },
+          {
+            "id": "save-label",
+            "component": "Text",
+            "text": "Save"
+          },
+          {
+            "id": "save",
+            "component": "Button",
+            "child": "save-label",
+            "action": {
+              "event": {
+                "name": "save"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "name-field",
+              "save"
+            ]
+          },
+          {
+            "id": "name-field",
+            "component": "TextField",
+            "label": "Country",
+            "value": {
+              "path": "/rows/0/Country"
+            }
+          },
+          {
+            "id": "save-label",
+            "component": "Text",
+            "text": "Save"
+          },
+          {
+            "id": "save",
+            "component": "Button",
+            "child": "save-label",
+            "action": {
+              "event": {
+                "name": "save"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "form-not-supported"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-unknown-component-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "countries and revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          },
+          {
+            "id": "chart",
+            "component": "BarChart",
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          },
+          {
+            "id": "chart",
+            "component": "BarChart",
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          },
+          {
+            "id": "chart",
+            "component": "BarChart",
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "unknown-component"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-unknown-column-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "countries and profit"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Profit"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Profit"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Profit"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "unknown-column"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-unknown-function-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "countries and revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          },
+          {
+            "id": "x",
+            "component": "Text",
+            "text": {
+              "call": "sum",
+              "args": {
+                "value": {
+                  "path": "/rows/0/Revenue"
+                }
+              },
+              "returnType": "string"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          },
+          {
+            "id": "x",
+            "component": "Text",
+            "text": {
+              "call": "sum",
+              "args": {
+                "value": {
+                  "path": "/rows/0/Revenue"
+                }
+              },
+              "returnType": "string"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          },
+          {
+            "id": "x",
+            "component": "Text",
+            "text": {
+              "call": "sum",
+              "args": {
+                "value": {
+                  "path": "/rows/0/Revenue"
+                }
+              },
+              "returnType": "string"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "unknown-function"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-html-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "countries and revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "<b>Revenue</b>",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "<b>Revenue</b>",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "<b>Revenue</b>",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "unsafe-content"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-missing-root-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "countries and revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "missing-root"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-kpi-intent-mismatch-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "kpi",
+        "description": "total revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "intent-mismatch"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-invalid-output-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "countries and revenue"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      "here is your table",
+      "here is your table",
+      "here is your table"
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "invalid-output"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-retry-recovers",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "revenue by country"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Profit"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/protocolVersion",
+        "value": "v0.9"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.1.0"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 2
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "THE PREVIOUS ATTEMPT WAS REJECTED"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "unknown-column"
+      }
+    ]
+  },
+  {
+    "id": "dsl-previous-issues-forwarded",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "revenue by country"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
+      "previousIssues": [
+        {
+          "code": "unknown-column",
+          "message": "core found Profit",
+          "path": "/components/8/text"
+        }
+      ]
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/protocolVersion",
+        "value": "v0.9"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.1.0"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "unknown-column at /components/8/text: core found Profit"
+      }
+    ]
+  },
+  {
+    "id": "dsl-prompt-has-only-column-definitions",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "table",
+        "description": "revenue by country"
+      },
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
+      "rows": [
+        {
+          "Country": "ROW-VALUE-SENTINEL",
+          "Revenue": 1
+        }
+      ],
+      "connectionString": "Server=x;Password=secret"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "title",
+              "header-row",
+              "rows-list",
+              "footer-row"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "Revenue by country",
+            "variant": "h3"
+          },
+          {
+            "id": "header-row",
+            "component": "Row",
+            "children": [
+              "header-country",
+              "header-revenue"
+            ]
+          },
+          {
+            "id": "header-country",
+            "component": "Text",
+            "text": "Country",
+            "variant": "caption"
+          },
+          {
+            "id": "header-revenue",
+            "component": "Text",
+            "text": "Revenue",
+            "variant": "caption"
+          },
+          {
+            "id": "rows-list",
+            "component": "List",
+            "children": {
+              "componentId": "row-template",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row-template",
+            "component": "Row",
+            "children": [
+              "cell-country",
+              "cell-revenue"
+            ]
+          },
+          {
+            "id": "cell-country",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          },
+          {
+            "id": "cell-revenue",
+            "component": "Text",
+            "text": {
+              "call": "formatNumber",
+              "args": {
+                "value": {
+                  "path": "Revenue"
+                },
+                "decimals": 2
+              },
+              "returnType": "string"
+            }
+          },
+          {
+            "id": "footer-row",
+            "component": "Row",
+            "children": [
+              "footer-label",
+              "footer-remaining"
+            ]
+          },
+          {
+            "id": "footer-label",
+            "component": "Text",
+            "text": "Rows remaining:",
+            "variant": "caption"
+          },
+          {
+            "id": "footer-remaining",
+            "component": "Text",
+            "text": {
+              "path": "/page/remaining"
+            },
+            "variant": "caption"
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/protocolVersion",
+        "value": "v0.9"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.1.0"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "Country: nvarchar(100)"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/prompts",
+        "value": "ROW-VALUE-SENTINEL"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/prompts",
+        "value": "Password="
+      }
+    ]
+  }
+]

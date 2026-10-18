@@ -6,7 +6,8 @@ namespace Esi.Core.IntegrationTests;
 /// The stand-in for a user's target database that later schema discovery and SQL execution tests (ESI-16) use.
 /// It is a separate database (esi_target) from the application's own database.
 /// </summary>
-public class TargetDatabaseTests(TargetDatabase target) : IClassFixture<TargetDatabase>
+[Collection(TargetDatabaseCollection.Name)]
+public class TargetDatabaseTests(TargetDatabase target)
 {
     [Fact]
     public void Target_database_is_separate_from_the_app_database() =>

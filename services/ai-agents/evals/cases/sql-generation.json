@@ -1,0 +1,1251 @@
+[
+  {
+    "id": "sql-query-grounded-select",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Total revenue per customer in 2026"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT c.Name AS Customer, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.Customers AS c JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId JOIN dbo.OrderLines AS ol ON ol.OrderId = o.OrderId WHERE YEAR(o.OrderDate) = 2026 GROUP BY c.Name ORDER BY Revenue DESC",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "query"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": "SELECT c.Name AS Customer, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.Customers AS c JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId JOIN dbo.OrderLines AS ol ON ol.OrderId = o.OrderId WHERE YEAR(o.OrderDate) = 2026 GROUP BY c.Name ORDER BY Revenue DESC"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": [
+          "dbo.Customers",
+          "dbo.OrderLines",
+          "dbo.Orders"
+        ]
+      },
+      {
+        "kind": "absent",
+        "path": "/response/procedureName"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "sql-cte-select",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Customers with more than 5 orders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "WITH counts AS (SELECT o.CustomerId, COUNT(*) AS OrderCount FROM dbo.Orders AS o GROUP BY o.CustomerId) SELECT c.Name, counts.OrderCount FROM counts JOIN dbo.Customers AS c ON c.CustomerId = counts.CustomerId WHERE counts.OrderCount > 5",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "query"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": [
+          "dbo.Customers",
+          "dbo.Orders"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sql-write-refused-by-model",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Delete all cancelled orders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "none",
+        "sql": "",
+        "explanation": "Deleting data is not allowed: the assistant is read-only."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "read-only"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "sql-write-output-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Delete all cancelled orders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "DELETE FROM dbo.Orders WHERE Status = 'Cancelled'",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "DELETE FROM dbo.Orders WHERE Status = 'Cancelled'",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "DELETE FROM dbo.Orders WHERE Status = 'Cancelled'",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "write-statement"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-update-output-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Mark order 7 as shipped"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "UPDATE dbo.Orders SET Status = 'Shipped' WHERE OrderId = 7",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "UPDATE dbo.Orders SET Status = 'Shipped' WHERE OrderId = 7",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "UPDATE dbo.Orders SET Status = 'Shipped' WHERE OrderId = 7",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "write-statement"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-ddl-output-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Drop the order lines table"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "DROP TABLE dbo.OrderLines",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "DROP TABLE dbo.OrderLines",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "DROP TABLE dbo.OrderLines",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "ddl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-create-table-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Make a backup table of orders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "CREATE TABLE dbo.OrdersBackup (OrderId int)",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "CREATE TABLE dbo.OrdersBackup (OrderId int)",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "CREATE TABLE dbo.OrdersBackup (OrderId int)",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "ddl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-select-into-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Copy the orders into a new table"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId INTO dbo.OrdersCopy FROM dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId INTO dbo.OrdersCopy FROM dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId INTO dbo.OrdersCopy FROM dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "select-into"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-exec-procedure-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Run usp_GetCustomerOrders for customer 5"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "EXEC dbo.usp_GetCustomerOrders @CustomerId = 5",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "EXEC dbo.usp_GetCustomerOrders @CustomerId = 5",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "EXEC dbo.usp_GetCustomerOrders @CustomerId = 5",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "exec"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-procedure-call-in-select-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Use the existing customer orders procedure"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT * FROM dbo.usp_GetCustomerOrders",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT * FROM dbo.usp_GetCustomerOrders",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT * FROM dbo.usp_GetCustomerOrders",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "procedure-reference"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-dynamic-exec-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Count orders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT COUNT(*) AS Total FROM dbo.Orders; EXECUTE('DROP TABLE dbo.Orders')",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT COUNT(*) AS Total FROM dbo.Orders; EXECUTE('DROP TABLE dbo.Orders')",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT COUNT(*) AS Total FROM dbo.Orders; EXECUTE('DROP TABLE dbo.Orders')",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "exec"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-comment-obfuscated-batch-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "List orders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId FROM dbo.Orders AS o;/**/DELETE/**/FROM dbo.Orders",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId FROM dbo.Orders AS o;/**/DELETE/**/FROM dbo.Orders",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId FROM dbo.Orders AS o;/**/DELETE/**/FROM dbo.Orders",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "multiple-statements"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-openrowset-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Read orders from the other server"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT * FROM OPENROWSET('SQLNCLI', 'Server=x;', 'SELECT 1')",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT * FROM OPENROWSET('SQLNCLI', 'Server=x;', 'SELECT 1')",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT * FROM OPENROWSET('SQLNCLI', 'Server=x;', 'SELECT 1')",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "external-data"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-linked-server-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Read orders from the archive server"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId FROM Archive.Sales.dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId FROM Archive.Sales.dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId FROM Archive.Sales.dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "linked-server"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-procedure-script-read-only",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Create a stored procedure with revenue by product category"
+    },
+    "stub_outputs": [
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_RevenueByCategory AS BEGIN SET NOCOUNT ON; SELECT p.Category AS Category, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.OrderLines AS ol JOIN dbo.Products AS p ON p.ProductId = ol.ProductId GROUP BY p.Category; END",
+        "explanation": "Assumptions and tables used.",
+        "procedureName": "usp_RevenueByCategory"
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "stored-procedure"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": "CREATE PROCEDURE dbo.usp_RevenueByCategory AS BEGIN SET NOCOUNT ON; SELECT p.Category AS Category, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.OrderLines AS ol JOIN dbo.Products AS p ON p.ProductId = ol.ProductId GROUP BY p.Category; END"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/procedureName",
+        "value": "dbo.usp_RevenueByCategory"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": [
+          "dbo.OrderLines",
+          "dbo.Products"
+        ]
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "sql-procedure-body-write-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Create a procedure that archives old orders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_ArchiveOrders AS BEGIN UPDATE dbo.Orders SET Status = 'Archived'; SELECT 1 AS Done; END",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_ArchiveOrders AS BEGIN UPDATE dbo.Orders SET Status = 'Archived'; SELECT 1 AS Done; END",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_ArchiveOrders AS BEGIN UPDATE dbo.Orders SET Status = 'Archived'; SELECT 1 AS Done; END",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "write-statement"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-procedure-body-exec-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Create a procedure that wraps the customer orders procedure"
+    },
+    "stub_outputs": [
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_Wrapper AS BEGIN EXEC dbo.usp_GetCustomerOrders @CustomerId = 1; SELECT 1 AS Done; END",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_Wrapper AS BEGIN EXEC dbo.usp_GetCustomerOrders @CustomerId = 1; SELECT 1 AS Done; END",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_Wrapper AS BEGIN EXEC dbo.usp_GetCustomerOrders @CustomerId = 1; SELECT 1 AS Done; END",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "exec"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-procedure-replace-existing-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Improve usp_GetCustomerOrders"
+    },
+    "stub_outputs": [
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE OR ALTER PROCEDURE dbo.usp_GetCustomerOrders AS SELECT o.OrderId FROM dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE OR ALTER PROCEDURE dbo.usp_GetCustomerOrders AS SELECT o.OrderId FROM dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE OR ALTER PROCEDURE dbo.usp_GetCustomerOrders AS SELECT o.OrderId FROM dbo.Orders AS o",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "procedure-exists"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-procedure-retry-recovers",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Create a stored procedure with revenue by product category"
+    },
+    "stub_outputs": [
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_RevenueByCategory AS BEGIN DELETE FROM dbo.OrderLines; SELECT 1 AS Done; END",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "stored-procedure",
+        "sql": "CREATE PROCEDURE dbo.usp_RevenueByCategory AS BEGIN SET NOCOUNT ON; SELECT p.Category AS Category, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.OrderLines AS ol JOIN dbo.Products AS p ON p.ProductId = ol.ProductId GROUP BY p.Category; END",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "stored-procedure"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 2
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "YOUR PREVIOUS ANSWER WAS REJECTED"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "write-statement"
+      }
+    ]
+  },
+  {
+    "id": "sql-grounding-unknown-table-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Total invoice amount"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT SUM(i.Amount) AS Total FROM dbo.Invoices AS i",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT SUM(i.Amount) AS Total FROM dbo.Invoices AS i",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT SUM(i.Amount) AS Total FROM dbo.Invoices AS i",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "unknown-table"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-grounding-unknown-column-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Customer emails"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT c.Name, c.Email FROM dbo.Customers AS c",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT c.Name, c.Email FROM dbo.Customers AS c",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT c.Name, c.Email FROM dbo.Customers AS c",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "unknown-column"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-grounding-unknown-bare-column-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Order discounts"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT OrderId, Discount FROM dbo.Orders",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT OrderId, Discount FROM dbo.Orders",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT OrderId, Discount FROM dbo.Orders",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "unknown-column"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-grounding-udf-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Revenue with tax"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT dbo.fn_WithTax(ol.UnitPrice) AS Gross FROM dbo.OrderLines AS ol",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT dbo.fn_WithTax(ol.UnitPrice) AS Gross FROM dbo.OrderLines AS ol",
+        "explanation": "Assumptions and tables used."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT dbo.fn_WithTax(ol.UnitPrice) AS Gross FROM dbo.OrderLines AS ol",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "unknown-"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "sql-grounding-missing-info-surfaced",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Average delivery time per country"
+    },
+    "stub_outputs": [
+      {
+        "kind": "none",
+        "sql": "",
+        "explanation": "The schema has no delivery date column, so delivery time cannot be computed."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "no delivery date"
+      }
+    ]
+  },
+  {
+    "id": "sql-invalid-output-retried",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Total revenue per customer in 2026"
+    },
+    "stub_outputs": [
+      "Sure! Here is the query: SELECT ...",
+      {
+        "kind": "query",
+        "sql": "SELECT c.Name AS Customer, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.Customers AS c JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId JOIN dbo.OrderLines AS ol ON ol.OrderId = o.OrderId WHERE YEAR(o.OrderDate) = 2026 GROUP BY c.Name ORDER BY Revenue DESC",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "query"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 2
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "invalid-output"
+      }
+    ]
+  },
+  {
+    "id": "sql-prompt-has-no-row-values-or-literals",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Orders of customer 5",
+      "rows": [
+        {
+          "Name": "ROW-VALUE-SENTINEL"
+        }
+      ],
+      "connectionString": "Server=x;Password=secret"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT o.OrderId, o.OrderDate FROM dbo.Orders AS o WHERE o.CustomerId = 5",
+        "explanation": "Assumptions and tables used."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "query"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "usp_GetCustomerOrders"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "never execute"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/prompts",
+        "value": "Cancelled"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/prompts",
+        "value": "ROW-VALUE-SENTINEL"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/prompts",
+        "value": "Password="
+      }
+    ]
+  }
+]
