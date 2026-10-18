@@ -26,8 +26,13 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | P0-06 | contracts | Scaffold contracts project | P0-02 | lint, breaking-change check, pack, Dockerfile | ESI-26 (closed) |
 | P0-07 | lib | Scaffold Nx workspace and packages | P0-02 | five empty packages build, test, lint | ESI-27 (closed) |
 | P0-08 | core | Scaffold core-backend with test SQL Server | P0-02 | API skeleton, migrations, compose with SQL Server | ESI-28 |
+
 | P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 (in review) |
 | P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 |
+
+| P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 |
+| P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 (in review) |
+
 | P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` | ESI-31 |
 | P0-12 | esi | Prove publish and pin flow with a prerelease | P0-06, P0-07, P0-11 | one prerelease package published and installed by a consumer | ESI-32 |
 | P0-13 | esi | Update skills and project docs after ADRs | P0-02..P0-05 | placeholders filled, DSL skills match ADR-0002 | ESI-33 (closed) |
@@ -107,6 +112,7 @@ Same pattern for each: a human reviews the ADR in [architecture/](../architectur
 - `.npmrc` for the registry, environment configuration injected at start (not at build), `Dockerfile` (Node build, static web server runtime), `compose.yaml`.
 - Done when: `npm ci`, `npm test -- --watch=false --browsers=ChromeHeadless`, `npm run lint`, `npm run build` and the Docker build pass; the folder layout is written into `web/esi-portal/CLAUDE.md`.
 - Out of scope: chat, connections, DSL rendering (ESI-19, ESI-20).
+- Status 2026-10-18: scaffold on branch `feat/ESI-30-scaffold-portal`; `npm ci` and `npm run check` (lint, boundary test, 11 unit tests, build) pass locally. Angular 21 uses Vitest, so the test command is `npm test`, not the Karma `--browsers=ChromeHeadless` form above. Docker image, runtime config and health are verified only in CI (`.github/workflows/portal.yml`).
 
 ### P0-11 `[esi]` Configure GitHub
 - Registry: confirm GitHub Packages permissions for `@dtnam0899` scope; define `ESI_PACKAGE_REGISTRY_URL`, `ESI_IMAGE_REGISTRY`, `NODE_AUTH_TOKEN` handling in CI (use `GITHUB_TOKEN`, PAT with `read:packages` locally). Document, never commit tokens.

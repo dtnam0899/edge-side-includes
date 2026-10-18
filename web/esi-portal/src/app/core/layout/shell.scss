@@ -1,0 +1,45 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+
+  &:focus {
+    left: 1rem;
+    top: 1rem;
+    z-index: 10;
+  }
+}
+
+.shell-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--p-content-border-color, #e5e7eb);
+
+  ul {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a.active {
+    font-weight: 600;
+  }
+}
+
+.shell-brand {
+  font-weight: 700;
+}
+
+.shell-main {
+  flex: 1;
+  padding: 1.5rem;
+}
