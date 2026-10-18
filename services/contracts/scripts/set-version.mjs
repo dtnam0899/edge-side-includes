@@ -1,5 +1,6 @@
 // Release tooling: sets the package version and info.version of every spec to the same value.
-// Used by CI before publishing; never run it to hand-edit a released version.
+// Run it in the PR that changes the contract (stable versions) or let the prerelease workflow run it;
+// never use it to rewrite a released version.
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const version = process.argv[2];

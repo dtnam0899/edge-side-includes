@@ -6,9 +6,10 @@ OpenAPI contracts between ESI components, published as the npm package `@dtnam08
 
 | Path | Content |
 |------|---------|
-| `core-api/openapi.yaml` | API of `services/core-backend` (no operations yet) |
-| `agents-api/openapi.yaml` | API of `services/ai-agents` (no operations yet) |
-| `common/components.yaml` | Shared `Problem` (RFC 9457), `FieldError`, `PageInfo`, `ProblemResponse`; re-exported by each spec under its own `components` |
+| `core-api/openapi.yaml` | API of `services/core-backend`, called by the portal's assistant module |
+| `agents-api/openapi.yaml` | Internal API of `services/ai-agents`, called only by `core-backend` |
+| `common/components.yaml` | Shared schemas (`Problem`, `PageInfo`, `ColumnDefinition`, `SchemaMetadata`, `DslDocument`, ...) and `ProblemResponse`; re-exported by each spec under its own `components` |
+| `bundled/` (package only, not in git) | One self-contained file per API (`core-api.yaml`, `agents-api.yaml`), built by `npm run bundle` at pack time; use these with generators |
 
 ## Commands
 
