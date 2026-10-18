@@ -6,21 +6,30 @@
 Angular management web app; renders DSL through `lib/dsl-renderer-angular`. It hosts large features as independent modules, including the AI assistant (chat, database connections, DSL dashboards).
 
 ## Stack
-- Angular 21 line (21.2.x; exact patch pinned at scaffold), TypeScript strict, standalone components, lazy-loaded feature modules, Angular CDK drag-drop. Not Angular 22: `@a2ui/angular` peers require `^21.2.5` (ADR-0001).
+- Angular 21 line (`@angular/core` 21.2.25, CLI/build 21.2.27, CDK 21.2.14; exact pins in `package.json`), TypeScript 5.9.3 strict, zoneless, standalone components, lazy-loaded feature modules, Angular CDK drag-drop. Not Angular 22: `@a2ui/angular` peers require `^21.2.5` (ADR-0001).
 - DSL rendering: `lib/dsl-renderer-angular`, which wraps `@a2ui/angular/v0_9` (never the package root, which is protocol v1.0; ADR-0002).
-- UI library: PrimeNG (use the pinned version and project theme/design tokens; see the `angular-conventions` skill).
+- UI library: PrimeNG 21.1.10 with `@primeuix/themes` 2.0.3, Aura preset in `app.config.ts` (PrimeNG 22 needs Angular 22). See the `angular-conventions` skill.
+- Tests: Vitest 4.0.18 with jsdom through `@angular/build:unit-test` (no Karma, no browser). Vitest 4.1.x crashes npm 10 during install (ADR-0001).
 - State management: use Angular signals for local synchronous UI state and RxJS for asynchronous streams by default; add a shared state library only if a verified project requirement justifies it.
-- Backend/API: `services/core-backend` through the published `lib/api-client` package; the base URL config location is set in the scaffold task.
+- Backend/API: `services/core-backend` through the published `lib/api-client` package; base URL from the runtime `APP_CONFIG` (`apiBaseUrl`).
 
 ## Commands (run from this directory)
 - Install: `npm ci`
 - Dev server: `npm start`
-- Unit tests: `npm test -- --watch=false --browsers=ChromeHeadless`
-- Lint: `npm run lint`
+- Unit tests: `npm test` (single run; also the pre-commit command in `.esi-test-cmd`)
+- Lint: `npm run lint`; feature-boundary rule test: `npm run test:boundaries`
+- Everything CI runs: `npm run check` (lint, boundary test, unit tests, build)
 - Build: `npm run build`
-- Docker: `docker compose up` (local dependencies) and `docker build -t <project>:<version> .`; see the `esi-project-standards` skill. This project must not depend on other projects' sources.
+- Docker: `docker build --target check .` (same as `npm run check`), `docker build -t esi-portal:<version> .` (nginx-unprivileged, port 8080, `HEALTHCHECK` on `/healthz`), `docker compose up` (portal on http://localhost:4200). Build context is this directory only.
 
 ## Structure
+- `src/main.ts` - loads `/config.json`, then bootstraps `core/layout/Shell` with `createAppConfig(config)`
+- `src/app/app.routes.ts` - shell routes; lazy-loads each `features/<name>/<name>.routes.ts`
+- `src/app/core/` - `config/` (runtime config token and loader), `layout/` (app shell); app-wide services, interceptors and auth go here
+- `src/app/shared/` - deliberately reusable UI and helpers (empty)
+- `src/app/features/assistant/` - AI assistant module; only `assistant.routes.ts` is public
+- `eslint/feature-boundaries.mjs` - local lint rule for the module rules below; `scripts/test-boundaries.mjs` proves it rejects forbidden imports
+- `docker/` - nginx config and the start script that writes `/config.json`
 - `src/app/` - `core/`, `shared/`, and isolated `features/<feature>/` folders. Each feature owns its routes, components, `apis/` (HTTP endpoint calls), services (data processing and business logic), types/models, constants, and tests as needed. Keep pure transformations in feature-local `helpers/` or `utils/` when useful.
 
 ## Module rules
@@ -32,9 +41,9 @@ Angular management web app; renders DSL through `lib/dsl-renderer-angular`. It h
 - If modules must interact, do it through navigation (routes and URL parameters) or a small public API exposed from `core` (service, injection token, typed event), never through component references.
 - Each module exposes only its routes to the app shell; its internals stay private.
 - Removing or disabling a module must not break the build of the others.
-- Enforce the boundaries with lint rules (for example restricted imports between feature folders) once the folder layout is decided.
+- Enforced by the `esi/feature-boundaries` lint rule: a feature must not import another feature; `core/` and `shared/` must not import features; the app root may import only `features/<name>/<name>.routes`.
 
 ## Project context
-- Environments and API base URLs: <file reference>
-- Auth integration (Identity Server): <file reference>
-- <Generated code or files not to edit by hand>
+- Environments and API base URLs: runtime only. `public/config.json` is the dev default (`/api`); the container writes it at start from `ESI_PORTAL_API_BASE_URL` (`docker/40-esi-config.sh`). There are no build-time `environment.ts` files; add new settings to `AppConfig` and the start script.
+- Auth integration: not chosen yet (ADR-0001, no identity provider); goes in `core/` when decided.
+- Generated code: none yet; the API client comes from the published `lib/api-client` package, never generated or edited here.
