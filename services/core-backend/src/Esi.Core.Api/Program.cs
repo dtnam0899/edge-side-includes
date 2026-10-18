@@ -58,6 +58,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check 
 app.MapConsentEndpoints();
 app.MapConnectionEndpoints();
 app.MapQueryEndpoints();
+app.MapChatEndpoints();
 
 await app.RunAsync();
 return 0;

@@ -32,6 +32,8 @@ public class CoreApiFactory : WebApplicationFactory<Program>
 
     public TestTermsProvider Terms { get; } = new();
 
+    public FakeAgents Agents { get; } = new();
+
     public HttpClient ClientFor(Guid userId)
     {
         var client = CreateClient();
@@ -46,6 +48,7 @@ public class CoreApiFactory : WebApplicationFactory<Program>
             services.AddScoped<ICurrentUser, HeaderCurrentUser>();
             services.AddSingleton<IConsentTermsProvider>(Terms);
             services.AddSingleton<ILoggerProvider>(new CapturingLoggerProvider(Logs));
+            services.AddSingleton<Esi.Core.Application.Agents.IAgentsClient>(Agents);
         });
 
     private sealed class HeaderCurrentUser(IHttpContextAccessor accessor) : ICurrentUser

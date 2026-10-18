@@ -30,7 +30,9 @@ public sealed partial class EsiProblemHandler(IProblemDetailsService problems, I
 
                 if (problem.Issues.Count > 0)
                 {
-                    details.Extensions["issues"] = problem.Issues.Select(i => new { code = i.Code, message = i.Message }).ToArray();
+                    details.Extensions["issues"] = problem.Issues.Select(i => i.Path is null
+                        ? (object)new { code = i.Code, message = i.Message }
+                        : new { code = i.Code, message = i.Message, path = i.Path }).ToArray();
                 }
 
                 break;

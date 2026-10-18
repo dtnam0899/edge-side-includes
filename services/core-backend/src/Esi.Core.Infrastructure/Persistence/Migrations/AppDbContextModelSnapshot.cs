@@ -22,6 +22,62 @@ namespace Esi.Core.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Esi.Core.Domain.Chat.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId", "CreatedAt");
+
+                    b.ToTable("ChatMessages", (string)null);
+                });
+
+            modelBuilder.Entity("Esi.Core.Domain.Chat.ChatSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("LastActivityAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId", "ConnectionId", "LastActivityAt");
+
+                    b.ToTable("ChatSessions", (string)null);
+                });
+
             modelBuilder.Entity("Esi.Core.Domain.Connections.Connection", b =>
                 {
                     b.Property<Guid>("Id")
@@ -84,6 +140,83 @@ namespace Esi.Core.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId", "AcceptedAt");
 
                     b.ToTable("ConsentAcceptances", (string)null);
+                });
+
+            modelBuilder.Entity("Esi.Core.Domain.Scripts.Script", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConnectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Sql")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId", "ConnectionId", "CreatedAt");
+
+                    b.ToTable("Scripts", (string)null);
+                });
+
+            modelBuilder.Entity("Esi.Core.Domain.Chat.ChatMessage", b =>
+                {
+                    b.HasOne("Esi.Core.Domain.Chat.ChatSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Esi.Core.Domain.Chat.GeneratedSql", "GeneratedSql", b1 =>
+                        {
+                            b1.Property<Guid>("ChatMessageId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Kind")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)")
+                                .HasColumnName("SqlKind");
+
+                            b1.Property<string>("ReferencedTables")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("ReferencedTables");
+
+                            b1.Property<Guid?>("SavedScriptId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasColumnName("SavedScriptId");
+
+                            b1.Property<string>("Sql")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("SqlText");
+
+                            b1.HasKey("ChatMessageId");
+
+                            b1.ToTable("ChatMessages");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ChatMessageId");
+                        });
+
+                    b.Navigation("GeneratedSql");
                 });
 
             modelBuilder.Entity("Esi.Core.Domain.Connections.Connection", b =>

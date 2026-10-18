@@ -26,7 +26,7 @@ public sealed class EsiProblem : Exception
     public IReadOnlyList<(string Field, string Message)> FieldErrors { get; private init; } = [];
 
     /// <summary>Validation findings for <c>sql-rejected</c> and <c>dsl-validation-failed</c>.</summary>
-    public IReadOnlyList<(string Code, string Message)> Issues { get; private init; } = [];
+    public IReadOnlyList<(string Code, string Message, string? Path)> Issues { get; private init; } = [];
 
     public static EsiProblem NotFound(string what) => new("not-found", 404, "Not found", $"{what} was not found.");
 
@@ -44,13 +44,25 @@ public sealed class EsiProblem : Exception
     public static EsiProblem SqlRejected(IEnumerable<Queries.SqlIssue> issues) =>
         new("sql-rejected", 422, "SQL rejected", "Only a single read-only SELECT statement can be executed.")
         {
-            Issues = issues.Select(i => (i.Code, i.Message)).ToArray(),
+            Issues = issues.Select(i => (i.Code, i.Message, (string?)null)).ToArray(),
         };
 
     public static EsiProblem ExecutionFailed(string detail) => new("execution-failed", 422, "Execution failed", detail);
 
     public static EsiProblem ExecutionTimeout(int seconds) =>
         new("execution-timeout", 504, "Execution timed out", $"The statement did not finish within {seconds} seconds.");
+
+    public static EsiProblem VisualizationNotSupported(string reason) =>
+        new("visualization-not-supported", 422, "Visualization not supported", reason);
+
+    public static EsiProblem DslValidationFailed(IEnumerable<Visualizations.DslIssue> issues) =>
+        new("dsl-validation-failed", 422, "DSL validation failed", "The generated DSL stayed invalid after the retries; nothing was rendered or saved.")
+        {
+            Issues = issues.Select(i => (i.Code, i.Message, (string?)i.Path)).ToArray(),
+        };
+
+    /// <summary>The AI agents service did not answer usably (not running, no model provider, timeout).</summary>
+    public static EsiProblem AgentsUnavailable(string detail) => new("agents-unavailable", 503, "AI agents unavailable", detail);
 
     public static EsiProblem InvalidResultColumns(string detail) => new("invalid-result-columns", 422, "Invalid result columns", detail);
 
