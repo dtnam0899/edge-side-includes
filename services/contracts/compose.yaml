@@ -1,0 +1,5 @@
+# The contracts project has no runtime dependencies. This runs the same checks as CI.
+services:
+  contracts:
+    build: .
+    image: contracts:dev

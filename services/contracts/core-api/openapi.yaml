@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: ESI core API
+  version: 0.0.0
+  description: HTTP API of services/core-backend. No operations yet; they are added by the feature issues (for example ESI-13).
+paths: {}
+components:
+  schemas:
+    Problem:
+      $ref: '../common/components.yaml#/components/schemas/Problem'
+    FieldError:
+      $ref: '../common/components.yaml#/components/schemas/FieldError'
+    PageInfo:
+      $ref: '../common/components.yaml#/components/schemas/PageInfo'
+  responses:
+    ProblemResponse:
+      $ref: '../common/components.yaml#/components/responses/ProblemResponse'

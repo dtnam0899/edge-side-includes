@@ -1,0 +1,10 @@
+extends: ["spectral:oas"]
+rules:
+  # No contact or servers are decided yet; revisit when the first API is published (ESI-13).
+  info-contact: off
+  oas3-api-servers: off
+  # Shared components are the published surface for consumers even before an operation uses them.
+  oas3-unused-component: off
+  # Every operation must have an operationId and a tag once paths exist.
+  operation-operationId: error
+  operation-tags: error

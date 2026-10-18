@@ -1,0 +1,27 @@
+name: contracts
+
+on:
+  pull_request:
+    paths:
+      - "services/contracts/**"
+      - ".github/workflows/contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "services/contracts/**"
+      - ".github/workflows/contracts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/contracts
+    steps:
+      - uses: actions/checkout@v7
+      # Lints the specs, checks info.version against package.json and packs them, all inside the Docker build.
+      - name: Build and check
+        run: docker build --build-arg REVISION="$GITHUB_SHA" -t contracts:ci .

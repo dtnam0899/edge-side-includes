@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: ESI shared components
+  version: 0.0.0
+paths: {}
+components:
+  schemas:
+    Problem:
+      type: object
+      description: Error body, RFC 9457 problem details (application/problem+json).
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          description: URI that identifies the problem type; use about:blank when there is nothing more specific.
+          example: about:blank
+        title:
+          type: string
+          description: Short, human-readable summary of the problem type.
+        status:
+          type: integer
+          description: HTTP status code.
+        detail:
+          type: string
+          description: Explanation specific to this occurrence.
+        instance:
+          type: string
+          description: URI that identifies this occurrence.
+        traceId:
+          type: string
+          description: Correlation id to find the request in logs.
+        errors:
+          type: array
+          description: Field-level validation errors.
+          items:
+            $ref: '#/components/schemas/FieldError'
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          description: Name or JSON pointer of the invalid field.
+        message:
+          type: string
+    PageInfo:
+      type: object
+      description: Paging metadata for list responses. Baseline only; the real paging rules (page size 20, remaining count) are fixed with the first list endpoints.
+      required: [pageSize]
+      properties:
+        pageSize:
+          type: integer
+          minimum: 1
+        remainingCount:
+          type: integer
+          minimum: 0
+          description: Number of items after this page.
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque cursor for the next page; null when there is none.
+  responses:
+    ProblemResponse:
+      description: Error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'

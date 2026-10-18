@@ -1,0 +1,32 @@
+{
+  "name": "@dtnam0899/esi-contracts",
+  "version": "0.0.0",
+  "description": "OpenAPI contracts between ESI components (spec files only).",
+  "license": "UNLICENSED",
+  "private": false,
+  "files": [
+    "core-api/",
+    "agents-api/",
+    "common/"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dtnam0899/edge-side-includes.git",
+    "directory": "services/contracts"
+  },
+  "scripts": {
+    "lint": "spectral lint --fail-severity=warn core-api/openapi.yaml agents-api/openapi.yaml",
+    "check:versions": "node scripts/check-versions.mjs",
+    "check": "npm run lint && npm run check:versions",
+    "pack:dry": "npm pack --dry-run"
+  },
+  "devDependencies": {
+    "@stoplight/spectral-cli": "6.17.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

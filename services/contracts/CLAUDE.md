@@ -11,16 +11,18 @@ Design-first source of truth for the network APIs between ESI components. It is 
 - Workflow: change the spec in a PR -> lint and breaking-change check pass -> release a new version -> consumers bump the version and regenerate. Additive = minor; remove/rename/tighten = major plus an ADR in `docs/architecture/`.
 
 ## Stack
-- OpenAPI 3.x YAML; lint with Spectral and breaking-change diff with oasdiff (both run in Docker, no host install)
+- OpenAPI 3.0.3 YAML; Spectral 6.17.0 (npm, pinned) for lint, oasdiff v1.33.0 (binary from the `tufin/oasdiff` image) for breaking-change diff; everything runs in Docker, no host install needed
 
 ## Commands (run from this directory)
-- Lint: `<verified command>`
-- Breaking-change check against the last release: `<verified command>`
-- Docker: `docker build -t contracts:<version> .` lints, checks and packs the specs (`npm pack`); publishing runs in CI (see the `esi-project-standards` skill)
+- Lint: `npm run lint` (Spectral, warnings fail); version consistency: `npm run check:versions`; both: `npm run check`
+- Breaking-change check against the last release: `scripts/check-breaking.sh <dir with last released specs>` (needs `oasdiff`; available in the Docker image, see README)
+- Docker: `docker build -t contracts:dev .` runs `npm run check` and `npm pack` (tarball in `/out`); `docker compose run --rm contracts` does the same; publishing runs in CI (see the `esi-project-standards` skill)
 
 ## Structure
 - `core-api/` - OpenAPI spec of `services/core-backend`
 - `agents-api/` - OpenAPI spec of `services/ai-agents` (including streaming endpoints used by the AI assistant module of `web/esi-portal`)
+- `common/components.yaml` - shared `Problem` (RFC 9457, `application/problem+json`), `FieldError`, `PageInfo`, `ProblemResponse`; each spec re-exports them under its own `components` via `$ref`
+- `scripts/` - `check-versions.mjs` (spec `info.version` equals `package.json` version), `check-breaking.sh`
 
 ## Project context
 - `info.version` in each spec is the contract version and the release version; never edit it by hand outside the release flow.
