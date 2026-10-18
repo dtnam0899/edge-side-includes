@@ -39,7 +39,7 @@ Take option 2.
 
 ## Consequences
 - The `dsl-authoring` and `dsl-renderer-parity` skills assumed custom `table/chart/dashboard/form` nodes and must be updated when this ADR is accepted.
-- `core-backend` validates DSL itself when saving (decided 2026-10-18): a .NET implementation of the ESI rules (unique component ids, `root` exists, only components and functions from the pinned catalog, bound paths exist in the column definitions, no HTML or script content, no row data). The A2UI JSON Schema and the ESI rule fixtures from `lib/dsl-core` are the shared test corpus, so the two implementations cannot drift; both must pass the same fixtures. Producers (agents, lib) still validate first.
+- `core-backend` validates DSL itself when saving (decided 2026-10-18): a .NET implementation of the ESI rules (unique component ids, `root` exists, only components and functions from the pinned catalog, bound paths exist in the column definitions, no HTML or script content, no row data). The A2UI JSON Schema and the ESI rule fixtures from `lib/dsl-core` are the shared test corpus, so the two implementations cannot drift; both must pass the same fixtures. Producers (agents, lib) still validate first. Implemented in ESI-17: `services/core-backend` `DslValidator` (JsonSchema.Net for the A2UI component schemas) passes every `@dtnam0899/dsl-schema` 0.1.0 fixture with the same error codes as dsl-core.
 - Agents must emit only components from the pinned catalog; validation errors drive at most 2 retries (ESI-18).
 
 ## Verification
