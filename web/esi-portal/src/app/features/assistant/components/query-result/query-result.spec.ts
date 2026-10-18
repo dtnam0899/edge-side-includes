@@ -39,6 +39,19 @@ describe('QueryResultView', () => {
     expect(el.textContent).toContain('No more rows.');
   });
 
+  it('shows a decimal cell with the scale of its column type', async () => {
+    const { el } = await render(
+      toResultPage(
+        mockQueryResult({
+          columns: [{ name: 'Revenue', sqlType: 'decimal(38,2)', nullable: true }],
+          rows: [{ Revenue: 275 }],
+          page: { number: 1, size: 20, remainingRows: 0 },
+        }),
+      ),
+    );
+    expect(el.querySelector('td .value')?.textContent).toBe('275.00');
+  });
+
   it('requests another page from the paginator', async () => {
     const { fixture, el } = await render();
     const pages: number[] = [];
