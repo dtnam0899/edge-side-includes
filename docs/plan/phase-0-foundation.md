@@ -28,7 +28,7 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | P0-08 | core | Scaffold core-backend with test SQL Server | P0-02 | API skeleton, migrations, compose with SQL Server | ESI-28 (in review) |
 | P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 (closed) |
 | P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 (closed) |
-| P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` | ESI-31 |
+| P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` (deferred: not available on GitHub Free for private repos) | ESI-31 (in review) |
 | P0-12 | esi | Prove publish and pin flow with a prerelease | P0-06, P0-07, P0-11 | one prerelease package published and installed by a consumer | ESI-32 |
 | P0-13 | esi | Update skills and project docs after ADRs | P0-02..P0-05 | placeholders filled, DSL skills match ADR-0002 | ESI-33 (closed) |
 | P0-14 | esi | Define test data policy | P0-08, P0-09 | shared understanding of fixtures per project | ESI-34 |
@@ -115,6 +115,7 @@ Same pattern for each: a human reviews the ADR in [architecture/](../architectur
 - Labels `User Requirement` and `System Requirement` exist; issue and PR templates follow `ESI-<n> [PROJECT] <title>`.
 - Master key for ADR-0003 is created only for deployment environments later; no value is stored in the repo.
 - Done when: a test PR cannot be merged without approval and CI.
+- Status (2026-10-18): registry, tokens and repository variables documented in [github-setup](../process/github-setup.md). Branch protection and rulesets are unavailable for this private repository on GitHub Free, so the merge rules are a convention and the test-PR criterion is deferred until the plan changes.
 
 ### P0-12 `[esi]` Prove publish and pin flow
 - Publish a prerelease of `@dtnam0899/esi-contracts` and one `lib` package (`nx release --preid`), from CI.
