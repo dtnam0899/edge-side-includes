@@ -24,7 +24,7 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | P0-04 | esi | Review and accept ADR-0003 key management | none | ADR-0003 Accepted | ESI-24 (closed) |
 | P0-05 | esi | Review and accept ADR-0004 SQL policy | none | ADR-0004 Accepted | ESI-25 (closed) |
 | P0-06 | contracts | Scaffold contracts project | P0-02 | lint, breaking-change check, pack, Dockerfile | ESI-26 (closed) |
-| P0-07 | lib | Scaffold Nx workspace and packages | P0-02 | five empty packages build, test, lint | ESI-27 |
+| P0-07 | lib | Scaffold Nx workspace and packages | P0-02 | five empty packages build, test, lint | ESI-27 (closed) |
 | P0-08 | core | Scaffold core-backend with test SQL Server | P0-02 | API skeleton, migrations, compose with SQL Server | ESI-28 |
 | P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 |
 | P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 |

@@ -1,0 +1,39 @@
+{
+  "name": "api-client",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "api-client/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": [
+        "dist/{projectRoot}"
+      ],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": [
+    "scope:api"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/api-client",
+        "main": "api-client/src/index.ts",
+        "tsConfig": "api-client/tsconfig.lib.json",
+        "assets": [
+          "api-client/*.md"
+        ]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    }
+  }
+}

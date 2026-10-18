@@ -1,0 +1,59 @@
+{
+  "name": "@dtnam0899/esi-lib",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ESI shared TypeScript workspace (Nx). Packages are published individually.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "nx run-many -t build test lint",
+    "test:boundaries": "node scripts/test-boundaries.mjs"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "2.6.4",
+    "@analogjs/vitest-angular": "2.6.4",
+    "@angular-devkit/core": "21.2.27",
+    "@angular-devkit/schematics": "21.2.27",
+    "@angular/build": "21.2.27",
+    "@angular/common": "21.2.25",
+    "@angular/compiler": "21.2.25",
+    "@angular/compiler-cli": "21.2.25",
+    "@angular/core": "21.2.25",
+    "@angular/platform-browser": "21.2.25",
+    "@eslint/js": "9.39.5",
+    "@nx/angular": "23.3.0",
+    "@nx/eslint": "23.3.0",
+    "@nx/eslint-plugin": "23.3.0",
+    "@nx/js": "23.3.0",
+    "@nx/vite": "23.3.0",
+    "@nx/vitest": "23.3.0",
+    "@oxc-project/runtime": "0.115.0",
+    "@schematics/angular": "21.2.27",
+    "@swc/helpers": "0.5.23",
+    "@types/node": "22.20.5",
+    "@typescript-eslint/utils": "8.71.2",
+    "@vitest/coverage-v8": "4.0.18",
+    "@vitest/ui": "4.0.18",
+    "angular-eslint": "21.4.0",
+    "autoprefixer": "10.6.1",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "jsdom": "29.1.1",
+    "jsonc-eslint-parser": "2.4.2",
+    "ng-packagr": "21.2.7",
+    "nx": "23.3.0",
+    "postcss": "8.5.30",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.2",
+    "vite": "7.3.3",
+    "vitest": "4.0.18",
+    "zone.js": "0.16.3"
+  },
+  "nx": {
+    "includedScripts": []
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "dsl-schema",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "dsl-schema/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": [
+        "dist/{projectRoot}"
+      ],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": [
+    "scope:schema"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/dsl-schema",
+        "main": "dsl-schema/src/index.ts",
+        "tsConfig": "dsl-schema/tsconfig.lib.json",
+        "assets": [
+          "dsl-schema/*.md"
+        ]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    }
+  }
+}

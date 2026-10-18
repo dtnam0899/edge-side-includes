@@ -12,14 +12,19 @@ Shared TypeScript workspace used by the portal. Packages: `dsl-schema` (source o
 - `web/*` consume packages by registry version, never by path
 
 ## Commands (run from this directory)
-- Install: `<verified command>`
-- Build/test/lint: `nx run-many -t build test lint` (affected only: `nx affected -t build test lint`)
-- Release: `nx release` (independent per package; do not hand-edit versions)
-- Docker: `<image build command>`; the image builds and tests the workspace without access to other projects
+- Install: `npm ci` (lockfile is committed; all dependencies are pinned exactly)
+- Build/test/lint: `npm run check` (= `nx run-many -t build test lint`; affected only: `nx affected -t build test lint`). Set `NX_DAEMON=false CI=true` in scripts and CI.
+- Module boundaries: `npm run test:boundaries` (proves a forbidden import fails lint)
+- Release: `nx release` (independent per package; do not hand-edit versions). Preview with `nx release --dry-run --first-release --skip-publish`.
+- Docker: `docker build -t lib:dev .` (or `docker compose build`); the image runs `check` and `test:boundaries` without access to other projects
 
 ## Structure
 - `dsl-schema/`, `dsl-core/`, `dsl-renderer-angular/`, `api-client/`, `ui-tokens/` - one package each; no package imports from `web/` or `services/`. Nx module-boundary tags: `scope:schema` (`dsl-schema`, no deps) <- `scope:core` (`dsl-core`) <- `scope:renderer` (+ `scope:tokens` = `ui-tokens`); framework tags (`framework:angular`, and e.g. `framework:react` if another renderer is added) must not import each other; `api-client` is `scope:api`.
 - Release tags: `lib-<package>@vX.Y.Z`, published to GitHub Packages (`$ESI_PACKAGE_REGISTRY_URL`).
 
 ## Project context
-- <Non-obvious constraints, generated files, pitfalls>
+- Pins that look odd but are required: TypeScript 5.9.3 (`@angular/build` 21.2.x needs `>=5.9 <6.0`), vitest and `@vitest/*` 4.0.18 (4.1.x triggers an npm 10 Arborist crash on install). Do not bump them without rerunning `npm ci` and `npm run check`.
+- `tsconfig.base.json` must keep `module`/`moduleResolution` = `nodenext` and must not set `emitDeclarationOnly` (breaks `@nx/js:tsc` and ng-packagr).
+- `dsl-renderer-angular/vite.config.mts` passes `tsconfig.spec.json` to the Analog plugin; otherwise components with `templateUrl` fail in tests.
+- Each package declares `publishConfig.registry` (GitHub Packages); `.npmrc` only references `NODE_AUTH_TOKEN`.
+- Known warnings: `nxViteTsPaths`/`nxCopyAssetsPlugin` deprecations (removed in Nx 24) and the legacy `@nx/eslint:lint` executor on the Angular package.

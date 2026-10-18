@@ -1,0 +1,12 @@
+{
+  "name": "@dtnam0899/dsl-renderer-angular",
+  "version": "0.0.0",
+  "peerDependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/core": "^21.2.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "sideEffects": false
+}

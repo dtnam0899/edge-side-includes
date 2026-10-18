@@ -1,0 +1,10 @@
+node_modules
+dist
+.nx
+.angular
+coverage
+tmp
+*.tgz
+.git
+Dockerfile
+compose.yaml

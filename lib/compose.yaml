@@ -1,0 +1,5 @@
+# The lib workspace has no runtime services. This runs the same checks as CI.
+services:
+  lib:
+    build: .
+    image: lib:dev

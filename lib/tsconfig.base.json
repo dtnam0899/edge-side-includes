@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "importHelpers": true,
+    "isolatedModules": true,
+    "lib": [
+      "es2022"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2022",
+    "paths": {
+      "@dtnam0899/dsl-schema": [
+        "./dsl-schema/src/index.ts"
+      ],
+      "@dtnam0899/dsl-core": [
+        "./dsl-core/src/index.ts"
+      ],
+      "@dtnam0899/api-client": [
+        "./api-client/src/index.ts"
+      ],
+      "@dtnam0899/ui-tokens": [
+        "./ui-tokens/src/index.ts"
+      ],
+      "@dtnam0899/dsl-renderer-angular": [
+        "./dsl-renderer-angular/src/index.ts"
+      ]
+    }
+  }
+}
