@@ -1,0 +1,57 @@
+{
+    "description": "A literal string contains a script URL.",
+    "artifact": {
+        "dslSchemaVersion": 1,
+        "protocolVersion": "v0.9",
+        "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
+        "columns": [
+            {
+                "name": "total_revenue",
+                "type": "number"
+            }
+        ],
+        "query": {
+            "sql": "SELECT SUM(amount) AS total_revenue FROM sales"
+        },
+        "components": [
+            {
+                "id": "root",
+                "component": "Card",
+                "child": "kpi-column"
+            },
+            {
+                "id": "kpi-column",
+                "component": "Column",
+                "children": [
+                    "kpi-label",
+                    "kpi-value"
+                ]
+            },
+            {
+                "id": "kpi-label",
+                "component": "Text",
+                "text": "javascript:alert(1)",
+                "variant": "caption"
+            },
+            {
+                "id": "kpi-value",
+                "component": "Text",
+                "text": {
+                    "call": "formatNumber",
+                    "args": {
+                        "value": {
+                            "path": "/rows/0/total_revenue"
+                        },
+                        "decimals": 0,
+                        "grouping": true
+                    },
+                    "returnType": "string"
+                },
+                "variant": "h2"
+            }
+        ]
+    },
+    "expectedErrors": [
+        "unsafe-content"
+    ]
+}
