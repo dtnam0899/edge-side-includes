@@ -1,6 +1,23 @@
-# UR-1 issue drafts (for review, not filed)
+# UR-1 issue drafts (phase 1 filed on 2026-10-18; phase 2 filed earlier)
 
-Parent: [UR-1](./UR-1-bi-ai-assistant-web-application.md), ticket #1. Each draft touches one project (`esi-workflow`), uses the label `System Requirement`, and the title `ESI-<n> [PROJECT] <title>` (numbers are assigned when filed). Acceptance criteria are summarized; the full text is in the SR sections of the UR file.
+Parent: [UR-1](./UR-1-bi-ai-assistant-web-application.md), ticket #1. Each draft touches one project (`esi-workflow`), uses the label `System Requirement`, and the title `ESI-<n> [PROJECT] <title>`. Acceptance criteria are summarized; the full text is in the SR sections of the UR file.
+
+## Filing status (checked against GitHub on 2026-10-18)
+
+| Draft | Issue | Note |
+|-------|-------|------|
+| D1 | ESI-13 | Filed |
+| D2 | ESI-14 | Filed |
+| D3 | ESI-15 | Filed |
+| D4 | ESI-16 | Filed |
+| D5 | ESI-17 | Filed |
+| D6 | ESI-18 | Filed |
+| D7 | ESI-19 | Filed |
+| D8 | ESI-20 | Filed |
+| D9 | ESI-10 | Filed earlier (2026-10-17), still valid |
+| D10 | ESI-11 (agents), ESI-12 (portal) | Filed earlier; ESI-12 retitled to `[portal]` on 2026-10-18 |
+
+ESI-2..ESI-9 are duplicates of D1..D8 filed before the structure change (`[assistant]`, React renderer in ESI-3). They were closed as superseded by ESI-13..ESI-20 on 2026-10-18. `scripts/create-ur1-issues.sh --apply` has already been run for phase 1; running it again creates duplicates.
 
 ## Release order
 
@@ -71,5 +88,5 @@ ADRs needed before or alongside: A2UI adoption and storage model, key management
 ### D10 `[agents]` and `[portal]` chart support (follow-up)
 - Agent: allow `EsiChart` with validation of numeric `valueKey` columns; portal: render and "view as table".
 
-## Cross-cutting before production (not filed yet)
+## Cross-cutting before production (no issue filed yet)
 - Admin approval of consent terms; real authentication replacing the assumed admin; key-management review; read-only login recommendation shown to users.

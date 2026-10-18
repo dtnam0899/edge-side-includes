@@ -70,4 +70,4 @@ sequenceDiagram
 
 | UR | SRs | Projects | Review status |
 |----|-----|----------|---------------|
-| [UR-1](./UR-1-bi-ai-assistant-web-application.md) | Proposed SR-1..SR-9 (not yet filed) | portal, agents, core, contracts, lib | Draft proposal; key decisions recorded, details open |
+| [UR-1](./UR-1-bi-ai-assistant-web-application.md) | SR-1..SR-9 analyzed; filed as ESI-13..ESI-20 (phase 1) and ESI-10..ESI-12 (phase 2); ESI-2..ESI-9 closed as superseded; foundation tasks ESI-21..ESI-34 | portal, agents, core, contracts, lib | Issues filed, open; key decisions recorded, details open. Last verified 2026-10-18 |

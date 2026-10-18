@@ -1,23 +1,44 @@
 # UR-1 BI AI Assistant web application
-Ticket: [#1](https://github.com/dtnam0899/edge-side-includes/issues/1) | Status: open | Last reviewed: 2026-10-17
+Ticket: [#1](https://github.com/dtnam0899/edge-side-includes/issues/1) | Status: open | Last reviewed: 2026-10-18
 
 > **Structure change (2026-10-18):** the AI assistant is no longer a separate React project (`web/esi-assistant`). It is an independent Angular feature module inside `web/esi-portal` (project code `portal`). Rules for such modules are in `web/esi-portal/CLAUDE.md`. Statements below that still say "assistant" mean this module.
 
-> Draft analysis only. The SRs below are proposals derived from the user requirement; they are not approved or filed as GitHub issues.
+> Status (verified against GitHub on 2026-10-18, `main` at `ee34931`): the phase 1 SRs are filed as one-project issues ESI-13..ESI-20, sub-issues of #1 (all open). Phase 2 (chart) issues for the Angular portal are not filed yet. ESI-2..ESI-9 were an earlier set filed before the structure change and are closed as superseded; see "Filed issues" below. Phase 0 foundation tasks are ESI-21..ESI-34 ([plan](../plan/phase-0-foundation.md)). The SR sections and decisions are the product owner's analysis and are not yet approved as final.
 
 ## System requirements
 
-| SR | Title | Projects | Status |
-|----|-------|----------|--------|
-| SR-1 | Configuring a SQL Server data source and discovering its schema | core, portal | Proposed |
-| SR-2 | Asking database questions through the AI Assistant | portal, core, agents | Proposed |
-| SR-3 | Generating SQL Server queries and stored-procedure SQL | agents, core, portal | Proposed |
-| SR-4 | Running approved SQL and previewing result data | core, portal | Proposed |
-| SR-5 | Converting query results into validated UI DSL (table, KPI) | agents, core, lib | Proposed |
-| SR-6 | Rendering DSL in the portal | assistant, lib | Proposed |
-| SR-7 | Saving reusable DSL artifacts | portal, core | Proposed |
-| SR-8 | Creating personalized dashboards from saved artifacts | portal, core | Proposed |
-| SR-9 | Protecting connections, SQL execution, and user-owned assets | core, agents, portal | Proposed |
+SRs are analysis units; the filed issues are split by project, so one issue can cover several SRs.
+
+| SR | Title | Projects | Filed in |
+|----|-------|----------|----------|
+| SR-1 | Configuring a SQL Server data source and discovering its schema | core, portal | ESI-13, ESI-15, ESI-16, ESI-19 |
+| SR-2 | Asking database questions through the AI Assistant | portal, core, agents | ESI-13, ESI-17, ESI-19 |
+| SR-3 | Generating SQL Server queries and stored-procedure SQL | agents, core, portal | ESI-18 |
+| SR-4 | Running approved SQL and previewing result data | core, portal | ESI-13, ESI-16, ESI-19 |
+| SR-5 | Converting query results into validated UI DSL (table, KPI) | agents, core, lib | ESI-14, ESI-18 |
+| SR-6 | Rendering DSL in the portal | portal, lib | ESI-14, ESI-20 |
+| SR-7 | Saving reusable DSL artifacts | portal, core | ESI-17, ESI-20 |
+| SR-8 | Creating personalized dashboards from saved artifacts | portal, core | ESI-17, ESI-20 |
+| SR-9 | Protecting connections, SQL execution, and user-owned assets | core, agents, portal | ESI-13, ESI-15 |
+
+## Filed issues
+
+All are sub-issues of #1 with the label `System Requirement`. Order of release: contracts and lib first, then core, then agents, then portal.
+
+| Issue | Project | Title | Draft | Status |
+|-------|---------|-------|-------|--------|
+| ESI-13 | contracts | Define core-api and agents-api for the BI assistant | D1 | Open |
+| ESI-14 | lib | Pin A2UI v0.9.1, add DSL validator and Angular renderer wrapper | D2 | Open |
+| ESI-15 | core | Connections, consent and encrypted storage | D3 | Open |
+| ESI-16 | core | Schema discovery and read-only SQL execution | D4 | Open |
+| ESI-17 | core | Chat sessions, saved artifacts and dashboards | D5 | Open |
+| ESI-18 | agents | SQL and DSL generation with safety rules and evals | D6 | Open |
+| ESI-19 | portal | Chat, connection and consent UI, SQL review and paged results | D7 | Open |
+| ESI-20 | portal | Render DSL, save artifacts and drag-and-drop dashboards | D8 | Open |
+| ESI-2..ESI-9 | contracts, lib, core, agents, assistant | Earlier duplicates of D1..D8 (`[assistant]`, and ESI-3 said "React renderer") | - | Closed (not planned) on 2026-10-18, superseded by ESI-13..ESI-20 |
+| ESI-10 | lib | Custom A2UI catalog with Chart.js chart component | D9 | Open; `[lib]` scope still valid (phase 2) |
+| ESI-11 | agents | Generate chart DSL with EsiChart | D10 | Open; still valid (phase 2) |
+| ESI-12 | portal | Render charts and view-as-table | D10 | Open; retitled from `[assistant]` on 2026-10-18 (phase 2) |
 
 ## Interpretation
 
@@ -105,9 +126,9 @@ The system shall map result metadata/data, plus the user's visualization intent,
 - DSL changes, if needed, are versioned through `lib/dsl-schema`; consumers use published versions rather than cross-project source imports.
 - A request for a form is answered as unsupported in this version rather than producing a partial DSL.
 
-### SR-6 — Rendering DSL in the assistant
+### SR-6 — Rendering DSL in the portal
 
-The DSL (JSON data) is the core of the feature: the assistant module of `web/esi-portal` shall validate and render DSL documents bound to query results, both for previews in chat and for saved dashboards, through `lib/dsl-renderer-angular`, which wraps the maintained A2UI Angular renderer (`@a2ui/angular`) for v0.9.1. The portal does not display this content in this version. Renderer parity with the Angular renderer is not required for UR-1, but the DSL must stay framework-neutral so the portal can adopt it later.
+The DSL (JSON data) is the core of the feature: the assistant module of `web/esi-portal` shall validate and render DSL documents bound to query results, both for previews in chat and for saved dashboards, through `lib/dsl-renderer-angular`, which wraps the maintained A2UI Angular renderer (`@a2ui/angular`) for v0.9.1. Angular is the only renderer, so renderer parity is not required; the DSL still stays framework-neutral so another renderer could be added later.
 
 **Acceptance criteria**
 - Invalid DSL is rejected before rendering.
@@ -300,7 +321,8 @@ sequenceDiagram
 ## Findings
 
 - UR-1 is a single high-level feature spanning multiple independently released projects; implementation should be split into focused SR tickets/PRs by project and integrated through published contracts and packages.
-- The ticket had no acceptance criteria; the criteria above were derived from product-owner answers and are proposals until the SRs are filed.
+- The ticket had no acceptance criteria; the criteria above were derived from product-owner answers. The SRs were filed as issues ESI-13..ESI-20 on 2026-10-18 (see "Filed issues"), but the criteria are still not formally approved.
+- **Duplicate issues.** ESI-2..ESI-9 were filed on 2026-10-17 before the structure change and duplicate ESI-13..ESI-20 with the old `[assistant]` project code (ESI-3 even targets `@a2ui/react`). They were closed as superseded on 2026-10-18. Chart issues ESI-10..ESI-12 have no replacement; ESI-12 was retitled `[portal]`.
 - **Read-only by statement validation only (risk).** The product owner chose statement checking as the sole guarantee. T-SQL parsing is hard to make complete (e.g. `SELECT ... INTO`, `OPENROWSET`/linked-server constructs, or functions with side effects inside a SELECT). Recommend an allow-list parser plus, as defense in depth, advising users to connect with a read-only database login. This is a recommendation, not a decision.
 - **Stored procedures cannot be a DSL data source (confirmed).** Since the assistant never executes procedures and new ones are only scripts, DSL data comes from SELECT queries only. Procedure scripts are a deliverable for the user to run themselves. This differs from the ticket wording ("query/store procedure to DSL") and needs confirmation.
 - **Consent drives lifecycle.** Per-database consent withdrawal disables chat history, artifacts and dashboards for that database; this crosses core and assistant and needs one authorization check in core-backend.
@@ -358,7 +380,7 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 32. **Vendoring.** `lib/dsl-renderer-angular` depends on `@a2ui/angular` at a pinned version; code is copied only when a patch is unavoidable.
 33. **KPI totals** come from the SQL aggregate, not from the visible 20-row page.
 
-34. **Issue split.** SRs are filed as one-project issues following `esi-workflow`; drafts are in `UR-1-issue-drafts.md` (pending review).
+34. **Issue split.** SRs are filed as one-project issues following `esi-workflow`: ESI-13..ESI-20 (phase 1) were filed on 2026-10-18 from `UR-1-issue-drafts.md`; ESI-2..ESI-12 are an earlier, partly superseded set (see "Filed issues").
 
 35. **Structure change.** The assistant is an independent Angular module in `web/esi-portal`; `web/esi-assistant` and `lib/dsl-renderer-react` were removed. The portal gets module-isolation rules (no component-level dependency between feature modules); the folder layout is decided later.
 36. **Drag-and-drop.** Use the Angular CDK drag-drop in a wrapper component inside the assistant module (proposal; the wrapper stays private to the module).
@@ -367,6 +389,9 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 
 1. Release checklist before production: admin approval of the consent text, the read-only login recommendation shown in the UI, a key-management review, and replacing the assumed local admin with real authentication.
 2. Confirm the chart proposal below (types, binding, accessibility). It is a proposal for the chart ADR, not a decision.
+3. Portal prerequisites: A2UI's Angular renderer needs Angular 21+, and the portal's Angular version and its folder layout for modules are not decided yet. Does the module's chat need streaming through the portal's HTTP stack?
+4. Which parts of the assistant (for example the connection list) may other portal modules reach, and through which `core` API?
+5. Issue hygiene is done (ESI-2..ESI-9 closed, ESI-12 retitled, task ESI-21). The file `scripts/create-ur1-issues.sh` (untracked) was already applied for phase 1; do not re-run it with `--apply`, which would create duplicates.
 
 ## Chart proposal (follow-up phase, pending ADR)
 
@@ -376,5 +401,3 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 - **Validation:** `categoryKey` and every `valueKey` must exist in the query's column definitions; each `valueKey` column must be numeric; pie allows exactly one series.
 - **Data scope:** as decided, a chart uses the rows of the current page (20), and its caption states "first 20 of N rows". Aggregation should be done in the SQL.
 - **Accessibility and safety:** the canvas has a text alternative (title plus summary) and a "view as table" toggle that renders the same rows with the basic catalog table; series must be distinguishable without color alone; colors come from `lib/ui-tokens`; labels are drawn as text, never as HTML.
-3. Portal prerequisites: A2UI's Angular renderer needs Angular 21+, and the portal's Angular version and its folder layout for modules are not decided yet. Does the module's chat need streaming through the portal's HTTP stack?
-4. Which parts of the assistant (for example the connection list) may other portal modules reach, and through which `core` API?
