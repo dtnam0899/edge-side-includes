@@ -45,6 +45,7 @@ Angular management web app; renders DSL through `lib/dsl-renderer-angular`. It h
 - Enforced by the `esi/feature-boundaries` lint rule: a feature must not import another feature; `core/` and `shared/` must not import features; the app root may import only `features/<name>/<name>.routes`.
 
 ## Project context
+- Installing `@dtnam0899/*` packages needs `NODE_AUTH_TOKEN` (CI: `GITHUB_TOKEN` with `packages: read`; locally: `docs/process/github-setup.md`); the project `.npmrc` only references it. Packages are added at an exact version (`npm install --save-exact`); the `prerelease` workflow proved this install path with a throwaway `--no-save` install.
 - Environments and API base URLs: runtime only. `public/config.json` is the dev default (`/api`); the container writes it at start from `ESI_PORTAL_API_BASE_URL` (`docker/40-esi-config.sh`). There are no build-time `environment.ts` files; add new settings to `AppConfig` and the start script.
 - Auth integration: not chosen yet (ADR-0001, no identity provider); goes in `core/` when decided.
 - Generated code: none yet; the API client comes from the published `lib/api-client` package, never generated or edited here.

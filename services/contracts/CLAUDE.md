@@ -22,10 +22,12 @@ Design-first source of truth for the network APIs between ESI components. It is 
 - `core-api/` - OpenAPI spec of `services/core-backend`
 - `agents-api/` - OpenAPI spec of `services/ai-agents` (including streaming endpoints used by the AI assistant module of `web/esi-portal`)
 - `common/components.yaml` - shared `Problem` (RFC 9457, `application/problem+json`), `FieldError`, `PageInfo`, `ProblemResponse`; each spec re-exports them under its own `components` via `$ref`
-- `scripts/` - `check-versions.mjs` (spec `info.version` equals `package.json` version), `check-breaking.sh`
+- `scripts/` - `check-versions.mjs` (spec `info.version` equals `package.json` version), `set-version.mjs` (release tooling used by CI: sets the package and spec versions together), `check-breaking.sh`
 
 ## Project context
 - `info.version` in each spec is the contract version and the release version; never edit it by hand outside the release flow.
 - Published as an npm package (`@dtnam0899/esi-contracts`, one package, `info.version` of each spec kept in sync with the package version) to GitHub Packages (`$ESI_PACKAGE_REGISTRY_URL`), tag `contracts@vX.Y.Z`. The package contains the spec files only.
 - Consumers get the specs by installing that package at a pinned version (in a Docker build stage or CI step, e.g. `npm pack`/`npm install` into a temp dir), which also works for .NET and Python projects; nobody reads this directory by path.
 - Auth: `NODE_AUTH_TOKEN` env var referenced from this project's `.npmrc`; no token in the repo.
+- Prerelease (proven in P0-12): the `prerelease` workflow (Actions, manual, from `develop` or `main`, version must have a `-<preid>`) runs `node scripts/set-version.mjs <version>`, `npm run check` and `npm publish --tag rc` with `GITHUB_TOKEN`; it commits nothing and creates no tag. The same workflow with `mode=cleanup` deletes that version. Stable releases publish from `main` only.
+- Consuming a version in Docker: `.npmrc` with the `@dtnam0899` registry line and `_authToken=${NODE_AUTH_TOKEN}`, then `RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN npm install --save-exact @dtnam0899/esi-contracts@<version>` built with `docker build --secret id=npm_token,env=NODE_AUTH_TOKEN`; never pass the token as `ARG`/`ENV`. Token setup: `docs/process/github-setup.md`.

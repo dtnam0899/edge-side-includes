@@ -16,6 +16,7 @@ Shared TypeScript workspace used by the portal. Packages: `dsl-schema` (source o
 - Build/test/lint: `npm run check` (= `nx run-many -t build test lint`; affected only: `nx affected -t build test lint`). Set `NX_DAEMON=false CI=true` in scripts and CI.
 - Module boundaries: `npm run test:boundaries` (proves a forbidden import fails lint)
 - Release: `nx release` (independent per package; do not hand-edit versions). Preview with `nx release --dry-run --first-release --skip-publish`.
+- Prerelease of one package (what the `prerelease` workflow runs in CI, from `develop` or `main`): `npx nx release version <x.y.z-rc.n> --projects=<pkg> --git-commit=false --git-tag=false --stage-changes=false` (builds first, writes the version into `dist/<pkg>/package.json` only) then `npx nx release publish --projects=<pkg> --tag=rc`. `nx affected` compares against `develop` (`defaultBase`).
 - Docker: `docker build -t lib:dev .` (or `docker compose build`); the image runs `check` and `test:boundaries` without access to other projects
 
 ## Structure
