@@ -21,6 +21,7 @@ Entry point for humans and AI agents. Read this first, then open only the file y
 | What is the HTTP API? | `api/` (empty until the contracts project publishes; the source of truth is `services/contracts`) |
 | What is the UI DSL? | [dsl/](./dsl/README.md) (A2UI v0.9 basic catalog, pinned versions, component selection; source of truth is `lib/dsl-schema`) |
 | Registry, tokens, repository variables, branch protection? | [process/github-setup.md](./process/github-setup.md) |
+| Where does test data live? | [process/test-data.md](./process/test-data.md) |
 | How do I work in one project? | that project's `CLAUDE.md` (`services/*`, `web/esi-portal`, `lib`) |
 | Repo-wide rules (independence, Docker, versioning, workflow) | root [CLAUDE.md](../CLAUDE.md) and `.claude/skills/esi-project-standards/SKILL.md` |
 

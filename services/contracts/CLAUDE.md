@@ -25,6 +25,7 @@ Design-first source of truth for the network APIs between ESI components. It is 
 - `scripts/` - `check-versions.mjs` (spec `info.version` equals `package.json` version), `set-version.mjs` (release tooling used by CI: sets the package and spec versions together), `check-breaking.sh`
 
 ## Project context
+- Every operation carries request/response `examples`; consumers generate their mocks and fixtures from them (P0-14, `docs/process/test-data.md`).
 - `info.version` in each spec is the contract version and the release version; never edit it by hand outside the release flow.
 - Published as an npm package (`@dtnam0899/esi-contracts`, one package, `info.version` of each spec kept in sync with the package version) to GitHub Packages (`$ESI_PACKAGE_REGISTRY_URL`), tag `contracts@vX.Y.Z`. The package contains the spec files only.
 - Consumers get the specs by installing that package at a pinned version (in a Docker build stage or CI step, e.g. `npm pack`/`npm install` into a temp dir), which also works for .NET and Python projects; nobody reads this directory by path.
