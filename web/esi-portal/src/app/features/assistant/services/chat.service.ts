@@ -1,0 +1,222 @@
+import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  EMPTY,
+  Observable,
+  Subscription,
+  catchError,
+  finalize,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
+
+import { ApiProblem, ChatMessage, ChatSessionSummary, toApiProblem } from '../../../core/api';
+import { ChatApi } from '../apis/chat.api';
+import { ExecutionsApi } from '../apis/executions.api';
+import { isConsentWithdrawn, needsTermsAcceptance } from '../helpers/problem-message';
+import { ResultPage, toResultPage } from '../helpers/query-page';
+import { ConnectionsService } from './connections.service';
+import { ConsentService } from './consent.service';
+
+/** State of running one assistant answer's SELECT. Only `success` means the SQL ran and produced `result`. */
+export type ExecutionState =
+  | { readonly status: 'running'; readonly pageNumber: number; readonly result?: ResultPage }
+  | { readonly status: 'success'; readonly result: ResultPage }
+  | { readonly status: 'failure'; readonly pageNumber: number; readonly problem: ApiProblem };
+
+export interface FailedQuestion {
+  readonly text: string;
+  readonly problem: ApiProblem;
+}
+
+/**
+ * Chat of one connection: its sessions, the open session's messages, the question in progress, and the
+ * execution state of generated queries. Provided by the chat panel, so its state disappears with the panel
+ * (for example the moment consent is withdrawn).
+ */
+@Injectable()
+export class ChatService {
+  private readonly chatApi = inject(ChatApi);
+  private readonly executionsApi = inject(ExecutionsApi);
+  private readonly connections = inject(ConnectionsService);
+  private readonly consent = inject(ConsentService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private connectionId = '';
+  private sessionSubscription: Subscription | null = null;
+  private readonly runSubscriptions = new Map<string, Subscription>();
+
+  readonly sessions = signal<readonly ChatSessionSummary[]>([]);
+  readonly sessionsLoading = signal(false);
+  readonly sessionsProblem = signal<ApiProblem | null>(null);
+
+  readonly activeSessionId = signal<string | null>(null);
+  readonly messages = signal<readonly ChatMessage[]>([]);
+  readonly sessionLoading = signal(false);
+  readonly sessionProblem = signal<ApiProblem | null>(null);
+
+  /** The question being answered right now. */
+  readonly pendingQuestion = signal<string | null>(null);
+  readonly failedQuestion = signal<FailedQuestion | null>(null);
+
+  readonly executions = signal<ReadonlyMap<string, ExecutionState>>(new Map());
+
+  constructor() {
+    this.destroyRef.onDestroy(() => this.cancelAll());
+  }
+
+  /** Switches to a connection and clears everything that belonged to the previous one. */
+  setConnection(connectionId: string): void {
+    if (connectionId === this.connectionId) {
+      return;
+    }
+    this.cancelAll();
+    this.connectionId = connectionId;
+    this.sessions.set([]);
+    this.sessionsProblem.set(null);
+    this.resetSession(null);
+    this.loadSessions();
+  }
+
+  loadSessions(): void {
+    this.sessionsLoading.set(true);
+    this.sessionsProblem.set(null);
+    this.chatApi
+      .listSessions(this.connectionId)
+      .pipe(
+        finalize(() => this.sessionsLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (sessions) => this.sessions.set(sessions),
+        error: (error: unknown) => this.sessionsProblem.set(this.handleProblem(error)),
+      });
+  }
+
+  /** Opens a past session, or a new empty chat for `null`. */
+  openSession(sessionId: string | null): void {
+    // A session started by `send` is already active; navigating to it must not reload or clear it.
+    if (sessionId === this.activeSessionId()) {
+      return;
+    }
+    this.resetSession(sessionId);
+    if (sessionId === null) {
+      return;
+    }
+    this.sessionLoading.set(true);
+    this.sessionSubscription = this.chatApi
+      .getSession(sessionId)
+      .pipe(finalize(() => this.sessionLoading.set(false)))
+      .subscribe({
+        next: (session) => this.messages.set(session.messages),
+        error: (error: unknown) => this.sessionProblem.set(this.handleProblem(error)),
+      });
+  }
+
+  /**
+   * Asks a question in the open session, starting a session first when none is open. Emits the session id on
+   * success; failures are kept in `failedQuestion` (the stream then completes without a value).
+   */
+  send(text: string): Observable<string> {
+    const question = text.trim();
+    if (!question || this.pendingQuestion() !== null) {
+      return EMPTY;
+    }
+    this.pendingQuestion.set(question);
+    this.failedQuestion.set(null);
+    const current = this.activeSessionId();
+    const sessionId$ = current
+      ? of(current)
+      : this.chatApi.createSession(this.connectionId).pipe(
+          tap((session) => this.activeSessionId.set(session.id)),
+          map((session) => session.id),
+        );
+    return sessionId$.pipe(
+      switchMap((sessionId) =>
+        this.chatApi.sendMessage(sessionId, question).pipe(
+          tap((turn) =>
+            this.messages.update((messages) => [...messages, turn.question, turn.answer]),
+          ),
+          map(() => sessionId),
+        ),
+      ),
+      tap(() => this.loadSessions()),
+      catchError((error: unknown) => {
+        this.failedQuestion.set({ text: question, problem: this.handleProblem(error) });
+        if (!current && this.activeSessionId()) {
+          // The session was created before the question failed; list it so it can be reopened.
+          this.loadSessions();
+        }
+        return EMPTY;
+      }),
+      finalize(() => this.pendingQuestion.set(null)),
+      takeUntilDestroyed(this.destroyRef),
+    );
+  }
+
+  /** Runs an answer's SELECT for one page. Only ever called from an explicit user action. */
+  run(message: ChatMessage, pageNumber = 1): void {
+    const sql = message.generatedSql;
+    if (!sql || sql.kind !== 'query' || !sql.sql) {
+      return;
+    }
+    const previous = this.executions().get(message.id);
+    this.runSubscriptions.get(message.id)?.unsubscribe();
+    this.setExecution(message.id, {
+      status: 'running',
+      pageNumber,
+      result:
+        previous?.status === 'success'
+          ? previous.result
+          : previous?.status === 'running'
+            ? previous.result
+            : undefined,
+    });
+    const subscription = this.executionsApi
+      .execute(this.connectionId, sql.sql, pageNumber)
+      .subscribe({
+        next: (result) =>
+          this.setExecution(message.id, { status: 'success', result: toResultPage(result) }),
+        error: (error: unknown) =>
+          this.setExecution(message.id, {
+            status: 'failure',
+            pageNumber,
+            problem: this.handleProblem(error),
+          }),
+      });
+    this.runSubscriptions.set(message.id, subscription);
+  }
+
+  private setExecution(messageId: string, state: ExecutionState): void {
+    this.executions.update((current) => new Map(current).set(messageId, state));
+  }
+
+  private resetSession(sessionId: string | null): void {
+    this.sessionSubscription?.unsubscribe();
+    this.sessionSubscription = null;
+    for (const subscription of this.runSubscriptions.values()) subscription.unsubscribe();
+    this.runSubscriptions.clear();
+    this.activeSessionId.set(sessionId);
+    this.messages.set([]);
+    this.sessionProblem.set(null);
+    this.failedQuestion.set(null);
+    this.executions.set(new Map());
+  }
+
+  private cancelAll(): void {
+    this.resetSession(null);
+  }
+
+  /** Reads an error and reacts to consent problems: a withdrawn connection is locked at once. */
+  private handleProblem(error: unknown): ApiProblem {
+    const problem = toApiProblem(error);
+    if (isConsentWithdrawn(problem)) {
+      this.connections.markWithdrawn(this.connectionId);
+    } else if (needsTermsAcceptance(problem)) {
+      this.consent.invalidate();
+    }
+    return problem;
+  }
+}

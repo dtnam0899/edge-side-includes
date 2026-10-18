@@ -1,0 +1,56 @@
+<h1 class="visually-hidden">AI assistant</h1>
+<div class="assistant">
+  <aside class="sidebar" aria-labelledby="connections-heading">
+    <div class="sidebar-head">
+      <h2 id="connections-heading">Databases</h2>
+      <button pButton type="button" size="small" (click)="editor.openCreate()">
+        Add connection
+      </button>
+    </div>
+    @if (showOutdatedBanner()) {
+      <p-message severity="warn">
+        <div class="banner">
+          <span
+            >The consent terms changed. Accept the new version before your connections are used
+            again.</span
+          >
+          <button pButton type="button" size="small" severity="warn" (click)="reviewTerms()">
+            Review terms
+          </button>
+        </div>
+      </p-message>
+    }
+    <app-connection-list
+      [connections]="connections.connections()"
+      [selectedId]="selectedId()"
+      [loading]="connections.loading()"
+      [problem]="connections.loadProblem()"
+      (retry)="connections.load()"
+    />
+  </aside>
+  <section class="workspace">
+    <router-outlet />
+  </section>
+</div>
+
+<app-consent-terms-dialog
+  [visible]="consent.dialogOpen()"
+  [terms]="consent.terms()"
+  [outdated]="consent.isOutdated()"
+  [loading]="consent.loading()"
+  [accepting]="consent.accepting()"
+  [problem]="consent.acceptProblem() ?? consent.loadProblem()"
+  (accepted)="consent.accept()"
+  (dismissed)="consent.dismiss()"
+/>
+
+<app-connection-form-dialog
+  [visible]="editor.open()"
+  [connection]="editor.editing()"
+  [saving]="editor.saving()"
+  [problem]="editor.problem()"
+  (saved)="editor.save($event)"
+  (dismissed)="editor.close()"
+/>
+
+<p-confirmdialog [style]="{ width: 'min(30rem, calc(100vw - 2rem))' }" />
