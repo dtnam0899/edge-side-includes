@@ -4,8 +4,17 @@
   "tools": {
     "dotnet-ef": {
       "version": "10.0.13",
-      "commands": ["dotnet-ef"],
+      "commands": [
+        "dotnet-ef"
+      ],
       "rollForward": false
+    },
+    "nswag.consolecore": {
+      "version": "14.7.1",
+      "commands": [
+        "nswag"
+      ],
+      "rollForward": true
     }
   }
 }

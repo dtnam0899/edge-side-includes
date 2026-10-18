@@ -1,6 +1,5 @@
 using System.Net;
 using Esi.Core.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,8 +32,5 @@ public class AppDatabaseTests : IClassFixture<AppDatabaseTests.Factory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    public sealed class Factory : WebApplicationFactory<Program>
-    {
-        public Factory() => Environment.SetEnvironmentVariable("ESI_CORE_AppDb__ConnectionString", TestDatabases.AppDb);
-    }
+    public sealed class Factory : CoreApiFactory;
 }

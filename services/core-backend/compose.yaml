@@ -8,6 +8,12 @@
 # two separate databases: esi_core (the application's own database) and esi_target (stand-in for a user's
 # target database in integration tests). Never point the application at esi_target.
 x-sa-password: &sa-password ${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026}
+# Local-only stand-ins (never use in a deployment): the assumed local admin user (no identity provider yet, SR-9)
+# and a dummy master key for connection-string encryption (ADR-0003; 32 bytes, base64). Override in .env.
+x-core-env: &core-env
+  ESI_CORE_Auth__Mode: LocalAdmin
+  ESI_CORE_Encryption__ActiveKeyVersion: "1"
+  ESI_CORE_Encryption__MasterKeys__1: ${ESI_CORE_MASTER_KEY_V1:-bG9jYWwtZGV2LW9ubHkta2V5LW5vdC1hLXNlY3JldCE=}
 
 services:
   sqlserver:
@@ -47,6 +53,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      <<: *core-env
       ESI_CORE_AppDb__ConnectionString: *appdb-connection
       ESI_CORE_Logging__LogLevel__Default: ${ESI_CORE_LOG_LEVEL:-Information}
     depends_on:
@@ -60,6 +67,7 @@ services:
     image: esi-core-integration-tests:dev
     profiles: [integration]
     environment:
+      <<: *core-env
       ESI_CORE_TEST_APPDB: *appdb-connection
       # Server-level connection; the tests recreate esi_target from tests/Esi.Core.IntegrationTests/Fixtures/target-sample-schema.sql.
       ESI_CORE_TEST_TARGETDB: "Server=sqlserver;Database=master;User Id=sa;Password=${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026};TrustServerCertificate=True"
