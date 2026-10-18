@@ -15,7 +15,10 @@ import {
   mockConnection,
   mockFullQueryPage,
   mockGeneratedSql,
+  mockKpiResult,
   mockProblem,
+  mockVisualization,
+  MOCK_KPI_COLUMNS,
 } from '../../../../testing/mocks/core-api.mocks';
 import { ChatService } from './chat.service';
 import { ConnectionsService } from './connections.service';
@@ -146,5 +149,86 @@ describe('ChatService', () => {
 
     expect(connections.find(MOCK_ID)?.consent).toBe('withdrawn');
     expect(chat.sessionsProblem()?.name).toBe('consent-withdrawn');
+  });
+
+  describe('visualizations', () => {
+    function ranAnswer() {
+      chat.openSession(MOCK_ID_2);
+      httpTesting().expectOne(`/api/chat-sessions/${MOCK_ID_2}`).flush(mockChatSession());
+      const answer = chat.messages()[1];
+      chat.run(answer);
+      httpTesting().expectOne(`/api/connections/${MOCK_ID}/executions`).flush(mockKpiResult());
+      return answer;
+    }
+
+    it('sends only the result columns and the intent, then keeps the ready preview', () => {
+      const answer = ranAnswer();
+      chat.visualize(answer, { kind: 'kpi', description: 'total revenue' });
+      expect(chat.visualizations().get(answer.id)?.status).toBe('pending');
+
+      const request = httpTesting().expectOne({
+        method: 'POST',
+        url: `/api/chat-sessions/${MOCK_ID_2}/visualizations`,
+      });
+      expect(request.request.body).toEqual({
+        columns: MOCK_KPI_COLUMNS,
+        intent: { kind: 'kpi', description: 'total revenue' },
+      });
+      expect(JSON.stringify(request.request.body)).not.toContain('156.5');
+      request.flush(mockVisualization());
+
+      const state = chat.visualizations().get(answer.id);
+      expect(state?.status).toBe('ready');
+      expect(state?.status === 'ready' && state.renderer.status).toBe('ready');
+    });
+
+    it('keeps a refusal as a failure with its problem', () => {
+      const answer = ranAnswer();
+      chat.visualize(answer, { kind: 'table', description: 'as a pie chart' });
+      httpTesting()
+        .expectOne(`/api/chat-sessions/${MOCK_ID_2}/visualizations`)
+        .flush(mockProblem('visualization-not-supported', 422), problemResponse(422));
+      const state = chat.visualizations().get(answer.id);
+      expect(state?.status === 'failure' && state.problem.name).toBe('visualization-not-supported');
+    });
+
+    it('does nothing before the query ran', () => {
+      chat.openSession(MOCK_ID_2);
+      httpTesting().expectOne(`/api/chat-sessions/${MOCK_ID_2}`).flush(mockChatSession());
+      chat.visualize(chat.messages()[1], { kind: 'table' });
+      httpTesting().expectNone((r) => r.url.endsWith('/visualizations'));
+    });
+
+    it('saves a ready visualization with the answer SELECT as an artifact', () => {
+      const answer = ranAnswer();
+      chat.visualize(answer, { kind: 'kpi' });
+      httpTesting()
+        .expectOne(`/api/chat-sessions/${MOCK_ID_2}/visualizations`)
+        .flush(mockVisualization());
+
+      chat.saveArtifact(answer, 'Total revenue');
+      const save = httpTesting().expectOne({
+        method: 'POST',
+        url: `/api/connections/${MOCK_ID}/artifacts`,
+      });
+      expect(save.request.body).toEqual({
+        name: 'Total revenue',
+        kind: 'kpi',
+        dsl: mockVisualization().dsl,
+        sql: mockGeneratedSql().sql,
+        columns: MOCK_KPI_COLUMNS,
+      });
+      save.flush({
+        ...mockVisualization(),
+        id: MOCK_ID_2,
+        connectionId: MOCK_ID,
+        name: 'Total revenue',
+        kind: 'kpi',
+        status: 'available',
+        createdAt: '2026-10-18T09:30:00Z',
+        sql: mockGeneratedSql().sql,
+      });
+      expect(chat.saves().get(answer.id)?.status).toBe('saved');
+    });
   });
 });

@@ -35,6 +35,11 @@
             ],
             "styles": [
               "src/styles.scss"
+            ],
+            "allowedCommonJsDependencies": [
+              "@dtnam0899/dsl-core",
+              "@dtnam0899/dsl-schema",
+              "validate-color"
             ]
           },
           "configurations": {

@@ -2,11 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { ButtonDirective } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 
-import type { ChatMessage } from '../../../../core/api';
-import type { ExecutionState, FailedQuestion } from '../../services/chat.service';
+import type { ChatMessage, VisualizationIntent } from '../../../../core/api';
+import type {
+  ExecutionState,
+  FailedQuestion,
+  SaveState,
+  VisualizationState,
+} from '../../services/chat.service';
 import { GeneratedSqlView } from '../generated-sql/generated-sql';
 import { ProblemMessage } from '../problem-message/problem-message';
 import { ExecutionOutcome } from '../execution-outcome/execution-outcome';
+import { VisualizationPanel } from '../visualization-panel/visualization-panel';
 
 export interface RunRequest {
   readonly message: ChatMessage;
@@ -16,7 +22,14 @@ export interface RunRequest {
 /** The messages of a chat session with in-progress, success and failure states of questions and query runs. */
 @Component({
   selector: 'app-chat-thread',
-  imports: [ButtonDirective, ProgressSpinner, GeneratedSqlView, ProblemMessage, ExecutionOutcome],
+  imports: [
+    ButtonDirective,
+    ProgressSpinner,
+    GeneratedSqlView,
+    ProblemMessage,
+    ExecutionOutcome,
+    VisualizationPanel,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ol class="thread" aria-label="Conversation">
@@ -38,6 +51,16 @@ export interface RunRequest {
                   [execution]="execution"
                   (pageChange)="run.emit({ message, page: $event })"
                 />
+                @if (execution.status === 'success' && execution.raw.columns.length) {
+                  <app-visualization-panel
+                    [key]="message.id"
+                    [result]="execution.raw"
+                    [state]="visualizations().get(message.id)"
+                    [save]="saves().get(message.id)"
+                    (visualize)="visualize.emit({ message, intent: $event })"
+                    (saveRequested)="saveVisualization.emit(message)"
+                  />
+                }
               }
             }
           }
@@ -140,9 +163,13 @@ export class ChatThread {
   readonly pendingQuestion = input<string | null>(null);
   readonly failedQuestion = input<FailedQuestion | null>(null);
   readonly executions = input<ReadonlyMap<string, ExecutionState>>(new Map());
+  readonly visualizations = input<ReadonlyMap<string, VisualizationState>>(new Map());
+  readonly saves = input<ReadonlyMap<string, SaveState>>(new Map());
   readonly canRun = input(true);
 
   readonly run = output<RunRequest>();
+  readonly visualize = output<{ message: ChatMessage; intent: VisualizationIntent }>();
+  readonly saveVisualization = output<ChatMessage>();
   readonly retry = output<string>();
 
   /** Short status for screen readers; the visible states are in the list itself. */

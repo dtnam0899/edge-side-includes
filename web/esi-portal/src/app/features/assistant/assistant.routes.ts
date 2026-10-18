@@ -20,6 +20,18 @@ export const ASSISTANT_ROUTES: Routes = [
           import('./pages/assistant-home/assistant-home').then((m) => m.AssistantHome),
       },
       {
+        path: 'connections/:connectionId/artifacts/:artifactId',
+        title: 'Saved visualization – AI assistant',
+        loadComponent: () =>
+          import('./pages/artifact-page/artifact-page').then((m) => m.ArtifactPage),
+      },
+      {
+        path: 'connections/:connectionId/dashboards/:dashboardId',
+        title: 'Dashboard – AI assistant',
+        loadComponent: () =>
+          import('./pages/dashboard-page/dashboard-page').then((m) => m.DashboardPage),
+      },
+      {
         path: 'connections/:connectionId',
         title: 'Database – AI assistant',
         loadComponent: () =>

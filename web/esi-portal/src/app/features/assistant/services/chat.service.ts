@@ -12,10 +12,21 @@ import {
   tap,
 } from 'rxjs';
 
-import { ApiProblem, ChatMessage, ChatSessionSummary, toApiProblem } from '../../../core/api';
+import {
+  ApiProblem,
+  Artifact,
+  ChatMessage,
+  ChatSessionSummary,
+  QueryResult,
+  Visualization,
+  VisualizationIntent,
+  toApiProblem,
+} from '../../../core/api';
+import { ArtifactsApi } from '../apis/artifacts.api';
 import { ChatApi } from '../apis/chat.api';
 import { ExecutionsApi } from '../apis/executions.api';
 import { isConsentWithdrawn, needsTermsAcceptance } from '../helpers/problem-message';
+import { RendererArtifact, toRendererArtifact } from '../helpers/dsl-adapter';
 import { ResultPage, toResultPage } from '../helpers/query-page';
 import { ConnectionsService } from './connections.service';
 import { ConsentService } from './consent.service';
@@ -23,8 +34,29 @@ import { ConsentService } from './consent.service';
 /** State of running one assistant answer's SELECT. Only `success` means the SQL ran and produced `result`. */
 export type ExecutionState =
   | { readonly status: 'running'; readonly pageNumber: number; readonly result?: ResultPage }
-  | { readonly status: 'success'; readonly result: ResultPage }
+  | { readonly status: 'success'; readonly result: ResultPage; readonly raw: QueryResult }
   | { readonly status: 'failure'; readonly pageNumber: number; readonly problem: ApiProblem };
+
+/** A table or KPI requested for one answer's result. Only `ready` has a validated document. */
+export type VisualizationState =
+  | { readonly status: 'pending'; readonly intent: VisualizationIntent }
+  | {
+      readonly status: 'ready';
+      readonly intent: VisualizationIntent;
+      readonly visualization: Visualization;
+      readonly renderer: RendererArtifact;
+    }
+  | {
+      readonly status: 'failure';
+      readonly intent: VisualizationIntent;
+      readonly problem: ApiProblem;
+    };
+
+/** Saving a ready visualization as an artifact. */
+export type SaveState =
+  | { readonly status: 'saving' }
+  | { readonly status: 'saved'; readonly artifact: Artifact }
+  | { readonly status: 'failure'; readonly problem: ApiProblem };
 
 export interface FailedQuestion {
   readonly text: string;
@@ -40,6 +72,7 @@ export interface FailedQuestion {
 export class ChatService {
   private readonly chatApi = inject(ChatApi);
   private readonly executionsApi = inject(ExecutionsApi);
+  private readonly artifactsApi = inject(ArtifactsApi);
   private readonly connections = inject(ConnectionsService);
   private readonly consent = inject(ConsentService);
   private readonly destroyRef = inject(DestroyRef);
@@ -62,6 +95,8 @@ export class ChatService {
   readonly failedQuestion = signal<FailedQuestion | null>(null);
 
   readonly executions = signal<ReadonlyMap<string, ExecutionState>>(new Map());
+  readonly visualizations = signal<ReadonlyMap<string, VisualizationState>>(new Map());
+  readonly saves = signal<ReadonlyMap<string, SaveState>>(new Map());
 
   constructor() {
     this.destroyRef.onDestroy(() => this.cancelAll());
@@ -178,7 +213,11 @@ export class ChatService {
       .execute(this.connectionId, sql.sql, pageNumber)
       .subscribe({
         next: (result) =>
-          this.setExecution(message.id, { status: 'success', result: toResultPage(result) }),
+          this.setExecution(message.id, {
+            status: 'success',
+            result: toResultPage(result),
+            raw: result,
+          }),
         error: (error: unknown) =>
           this.setExecution(message.id, {
             status: 'failure',
@@ -187,6 +226,75 @@ export class ChatService {
           }),
       });
     this.runSubscriptions.set(message.id, subscription);
+  }
+
+  /**
+   * Asks core for a table or KPI for an answer whose query ran: only the result's column definitions are
+   * sent, never rows. The preview renders with the rows of the current page.
+   */
+  visualize(message: ChatMessage, intent: VisualizationIntent): void {
+    const execution = this.executions().get(message.id);
+    const sessionId = this.activeSessionId();
+    const sql = message.generatedSql?.sql;
+    if (execution?.status !== 'success' || !sessionId || !sql) {
+      return;
+    }
+    this.saves.update((current) => {
+      const next = new Map(current);
+      next.delete(message.id);
+      return next;
+    });
+    this.setVisualization(message.id, { status: 'pending', intent });
+    this.chatApi
+      .createVisualization(sessionId, execution.raw.columns, intent)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (visualization) =>
+          this.setVisualization(message.id, {
+            status: 'ready',
+            intent,
+            visualization,
+            renderer: toRendererArtifact(visualization.dsl, sql, visualization.columns),
+          }),
+        error: (error: unknown) =>
+          this.setVisualization(message.id, {
+            status: 'failure',
+            intent,
+            problem: this.handleProblem(error),
+          }),
+      });
+  }
+
+  /** Saves a ready visualization with the answer's SELECT as an artifact of this connection. */
+  saveArtifact(message: ChatMessage, name: string): void {
+    const state = this.visualizations().get(message.id);
+    const sql = message.generatedSql?.sql;
+    if (state?.status !== 'ready' || !sql) {
+      return;
+    }
+    this.setSave(message.id, { status: 'saving' });
+    this.artifactsApi
+      .create(this.connectionId, {
+        name,
+        kind: state.intent.kind,
+        dsl: state.visualization.dsl,
+        sql,
+        columns: state.visualization.columns,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (artifact) => this.setSave(message.id, { status: 'saved', artifact }),
+        error: (error: unknown) =>
+          this.setSave(message.id, { status: 'failure', problem: this.handleProblem(error) }),
+      });
+  }
+
+  private setVisualization(messageId: string, state: VisualizationState): void {
+    this.visualizations.update((current) => new Map(current).set(messageId, state));
+  }
+
+  private setSave(messageId: string, state: SaveState): void {
+    this.saves.update((current) => new Map(current).set(messageId, state));
   }
 
   private setExecution(messageId: string, state: ExecutionState): void {
@@ -203,6 +311,8 @@ export class ChatService {
     this.sessionProblem.set(null);
     this.failedQuestion.set(null);
     this.executions.set(new Map());
+    this.visualizations.set(new Map());
+    this.saves.set(new Map());
   }
 
   private cancelAll(): void {
