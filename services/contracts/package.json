@@ -1,13 +1,14 @@
 {
   "name": "@dtnam0899/esi-contracts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "OpenAPI contracts between ESI components (spec files only).",
   "license": "UNLICENSED",
   "private": false,
   "files": [
     "core-api/",
     "agents-api/",
-    "common/"
+    "common/",
+    "bundled/"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -20,10 +21,13 @@
   "scripts": {
     "lint": "spectral lint --fail-severity=warn core-api/openapi.yaml agents-api/openapi.yaml",
     "check:versions": "node scripts/check-versions.mjs",
-    "check": "npm run lint && npm run check:versions",
+    "bundle": "redocly bundle core-api/openapi.yaml -o bundled/core-api.yaml && redocly bundle agents-api/openapi.yaml -o bundled/agents-api.yaml",
+    "check": "npm run lint && npm run check:versions && npm run bundle",
+    "prepack": "npm run bundle",
     "pack:dry": "npm pack --dry-run"
   },
   "devDependencies": {
+    "@redocly/cli": "2.57.0",
     "@stoplight/spectral-cli": "6.17.0"
   },
   "engines": {

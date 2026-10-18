@@ -1,0 +1,146 @@
+{
+  "description": "Table: a Column with a header Row and a List whose template Row iterates /rows with relative column paths.",
+  "artifact": {
+    "dslSchemaVersion": 1,
+    "protocolVersion": "v0.9",
+    "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
+    "columns": [
+      {
+        "name": "region",
+        "type": "string"
+      },
+      {
+        "name": "revenue",
+        "type": "number"
+      }
+    ],
+    "query": {
+      "sql": "SELECT region, SUM(amount) AS revenue FROM sales GROUP BY region ORDER BY region"
+    },
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": [
+          "title",
+          "header-row",
+          "rows-list",
+          "footer-row"
+        ]
+      },
+      {
+        "id": "title",
+        "component": "Text",
+        "text": "Revenue by region",
+        "variant": "h3"
+      },
+      {
+        "id": "header-row",
+        "component": "Row",
+        "children": [
+          "header-region",
+          "header-revenue"
+        ]
+      },
+      {
+        "id": "header-region",
+        "component": "Text",
+        "text": "Region",
+        "variant": "caption"
+      },
+      {
+        "id": "header-revenue",
+        "component": "Text",
+        "text": "Revenue",
+        "variant": "caption"
+      },
+      {
+        "id": "rows-list",
+        "component": "List",
+        "children": {
+          "componentId": "row-template",
+          "path": "/rows"
+        }
+      },
+      {
+        "id": "row-template",
+        "component": "Row",
+        "children": [
+          "cell-region",
+          "cell-revenue"
+        ]
+      },
+      {
+        "id": "cell-region",
+        "component": "Text",
+        "text": {
+          "path": "region"
+        }
+      },
+      {
+        "id": "cell-revenue",
+        "component": "Text",
+        "text": {
+          "call": "formatNumber",
+          "args": {
+            "value": {
+              "path": "revenue"
+            },
+            "decimals": 2
+          },
+          "returnType": "string"
+        }
+      },
+      {
+        "id": "footer-row",
+        "component": "Row",
+        "children": [
+          "footer-label",
+          "footer-remaining"
+        ]
+      },
+      {
+        "id": "footer-label",
+        "component": "Text",
+        "text": "Rows remaining:",
+        "variant": "caption"
+      },
+      {
+        "id": "footer-remaining",
+        "component": "Text",
+        "text": {
+          "path": "/page/remaining"
+        },
+        "variant": "caption"
+      }
+    ]
+  },
+  "result": {
+    "columns": [
+      {
+        "name": "region",
+        "type": "string"
+      },
+      {
+        "name": "revenue",
+        "type": "number"
+      }
+    ],
+    "rows": [
+      {
+        "region": "North",
+        "revenue": 1234.5
+      },
+      {
+        "region": "South",
+        "revenue": 987
+      }
+    ],
+    "page": {
+      "page": 1,
+      "pageSize": 20,
+      "totalRows": 2,
+      "remaining": 0
+    }
+  }
+}

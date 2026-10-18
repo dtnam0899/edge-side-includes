@@ -1,1 +1,2 @@
-export * from './lib/dsl-renderer-angular/dsl-renderer-angular';
+export * from './lib/dsl-surface/dsl-surface';
+export * from './lib/dsl-surface/plain-text-markdown-renderer';

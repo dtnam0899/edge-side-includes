@@ -12,8 +12,10 @@ components:
       properties:
         type:
           type: string
-          description: URI that identifies the problem type; use about:blank when there is nothing more specific.
-          example: about:blank
+          description: >-
+            URI that identifies the problem type: `urn:esi:problem:<name>` for the documented ESI problems, or
+            about:blank when there is nothing more specific.
+          example: urn:esi:problem:consent-withdrawn
         title:
           type: string
           description: Short, human-readable summary of the problem type.
@@ -34,6 +36,11 @@ components:
           description: Field-level validation errors.
           items:
             $ref: '#/components/schemas/FieldError'
+        issues:
+          type: array
+          description: DSL or SQL validation findings (problem types `dsl-validation-failed` and `sql-rejected`).
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
     FieldError:
       type: object
       required: [field, message]
@@ -45,20 +52,180 @@ components:
           type: string
     PageInfo:
       type: object
-      description: Paging metadata for list responses. Baseline only; the real paging rules (page size 20, remaining count) are fixed with the first list endpoints.
-      required: [pageSize]
+      description: >-
+        Paging of a query result. Pages are numbered from 1 and hold at most `size` rows (20). Paging is stateless:
+        every page re-runs the statement, so live data may shift between pages.
+      required: [number, size, remainingRows]
       properties:
-        pageSize:
+        number:
           type: integer
           minimum: 1
-        remainingCount:
+          example: 1
+        size:
           type: integer
+          minimum: 1
+          example: 20
+        remainingRows:
+          type: integer
+          format: int64
           minimum: 0
-          description: Number of items after this page.
-        nextCursor:
+          description: Rows after this page.
+          example: 42
+    ColumnDefinition:
+      type: object
+      description: One column of a query result or table. Names are unique within a result.
+      required: [name, sqlType, nullable]
+      properties:
+        name:
           type: string
-          nullable: true
-          description: Opaque cursor for the next page; null when there is none.
+          example: CustomerName
+        sqlType:
+          type: string
+          description: SQL Server type name with length/precision where it applies.
+          example: nvarchar(200)
+        nullable:
+          type: boolean
+    SchemaMetadata:
+      type: object
+      description: >-
+        Schema of a SQL Server database as read by core-backend. Contains structure and stored procedure
+        definitions as text; never row values or connection details.
+      required: [schemas]
+      properties:
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatabaseSchema'
+    DatabaseSchema:
+      type: object
+      required: [name, tables, procedures]
+      properties:
+        name:
+          type: string
+          example: dbo
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/TableMetadata'
+        procedures:
+          type: array
+          description: Existing stored procedures. Their definitions may be read as context; nothing executes them.
+          items:
+            $ref: '#/components/schemas/ProcedureMetadata'
+    TableMetadata:
+      type: object
+      required: [name, kind, columns]
+      properties:
+        name:
+          type: string
+          example: Orders
+        kind:
+          type: string
+          enum: [table, view]
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDefinition'
+        primaryKey:
+          type: array
+          description: Column names of the primary key, in key order.
+          items:
+            type: string
+        foreignKeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKey'
+    ForeignKey:
+      type: object
+      required: [name, columns, referencedSchema, referencedTable, referencedColumns]
+      properties:
+        name:
+          type: string
+          example: FK_Orders_Customers
+        columns:
+          type: array
+          items:
+            type: string
+        referencedSchema:
+          type: string
+        referencedTable:
+          type: string
+        referencedColumns:
+          type: array
+          items:
+            type: string
+    ProcedureMetadata:
+      type: object
+      required: [name, definition]
+      properties:
+        name:
+          type: string
+          example: usp_GetCustomerOrders
+        definition:
+          type: string
+          description: The CREATE PROCEDURE text as stored by SQL Server.
+    SqlOutputKind:
+      type: string
+      description: >-
+        What generated SQL is: `query` (a single SELECT that may be executed after review), `stored-procedure`
+        (a script the user runs themselves; never executed or created by the system), or `none` (no SQL; the
+        explanation says why, for example missing schema information or a refused request).
+      enum: [query, stored-procedure, none]
+    VisualizationIntent:
+      type: object
+      description: >-
+        What the user wants to see. Only `table` and `kpi` exist in this version; charts and forms are refused
+        with a `visualization-not-supported` problem.
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [table, kpi]
+        description:
+          type: string
+          maxLength: 2000
+          description: The user's wording, for example "total revenue as a KPI".
+    DslDocument:
+      type: object
+      description: >-
+        A UI DSL document: the A2UI `updateComponents` payload plus the metadata needed to render it later
+        (ADR-0002). It holds column keys only, never row values. The authoritative schema and validator are the
+        published `@dtnam0899/dsl-schema` and `@dtnam0899/dsl-core` packages; this contract only carries the
+        document.
+      required: [catalogId, protocolVersion, dslSchemaVersion, components]
+      properties:
+        catalogId:
+          type: string
+          description: Exact catalogId of the pinned A2UI catalog.
+          example: https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json
+        protocolVersion:
+          type: string
+          example: 0.9.1
+        dslSchemaVersion:
+          type: string
+          description: Version of `@dtnam0899/dsl-schema` the document was validated with.
+          example: 0.1.0
+        components:
+          type: array
+          minItems: 1
+          description: A2UI component definitions; exactly one has the id `root`.
+          items:
+            type: object
+            additionalProperties: true
+    ValidationIssue:
+      type: object
+      description: One DSL or SQL validation finding.
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: unknown-bound-column
+        message:
+          type: string
+        path:
+          type: string
+          description: JSON pointer into the validated document, when it applies.
+          example: /components/3/text
   responses:
     ProblemResponse:
       description: Error.

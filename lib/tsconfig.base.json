@@ -18,6 +18,9 @@
       "@dtnam0899/dsl-schema": [
         "./dsl-schema/src/index.ts"
       ],
+      "@dtnam0899/dsl-schema/fixtures": [
+        "./dsl-schema/src/fixtures/index.ts"
+      ],
       "@dtnam0899/dsl-core": [
         "./dsl-core/src/index.ts"
       ],

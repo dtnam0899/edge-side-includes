@@ -20,6 +20,8 @@ export default defineConfig(() => ({
     environment: 'jsdom',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     setupFiles: ['src/test-setup.ts'],
+    // @a2ui/angular ships partially compiled Angular code; let the Analog plugin link it.
+    server: { deps: { inline: [/@a2ui\//] } },
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../coverage/dsl-renderer-angular',

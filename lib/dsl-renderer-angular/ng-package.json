@@ -3,5 +3,10 @@
   "dest": "../dist/dsl-renderer-angular",
   "lib": {
     "entryFile": "src/index.ts"
-  }
+  },
+  "allowedNonPeerDependencies": [
+    "@a2ui/angular",
+    "@a2ui/web_core",
+    "@dtnam0899/dsl-core"
+  ]
 }

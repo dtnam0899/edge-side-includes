@@ -1,17 +1,174 @@
 openapi: 3.0.3
 info:
   title: ESI agents API
-  version: 0.0.0
-  description: HTTP API of services/ai-agents. No operations yet; they are added by the feature issues (for example ESI-13).
-paths: {}
+  version: 0.1.0
+  description: |
+    HTTP API of services/ai-agents. Internal: only services/core-backend calls it; the browser never does.
+    Core sends schema metadata and column definitions, never connection strings or row values (UR-1 SR-3, SR-5).
+    Agents return candidates; core validates SQL (ADR-0004) and DSL (ADR-0002) and decides what reaches the user.
+
+    **Authentication.** Service-to-service authentication is added with the authentication ADR; this version
+    declares no security scheme and the service must not be exposed outside the internal network.
+
+    **Problems** (`application/problem+json`, type `urn:esi:problem:<name>`): `invalid-request` (400),
+    `model-unavailable` (503, the model provider failed or timed out).
+tags:
+  - name: Generation
+    description: "SQL and DSL generation for core-backend."
+paths:
+  /sql-generations:
+    post:
+      tags: [Generation]
+      operationId: generateSql
+      summary: Generate SQL Server SQL for a question, grounded in the given schema.
+      description: >-
+        Never executes anything. Returns `kind: none` with an explanation when the schema lacks what the question
+        needs or the request asks for writes, DDL or executing procedures. Stored procedures are returned as
+        read-only scripts only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SqlGenerationRequest'
+      responses:
+        '200':
+          description: Generated SQL candidate.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SqlGenerationResult'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+        '503':
+          $ref: '#/components/responses/ProblemResponse'
+        default:
+          $ref: '#/components/responses/ProblemResponse'
+  /dsl-generations:
+    post:
+      tags: [Generation]
+      operationId: generateDsl
+      summary: Map result column definitions and a visualization intent to a DSL candidate.
+      description: >-
+        Input has column definitions only, no row values. Core validates the candidate and, on failure, calls
+        again with `previousIssues` (at most 2 retries). Charts and forms are answered with `unsupported`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DslGenerationRequest'
+      responses:
+        '200':
+          description: DSL candidate, or `unsupported` with a reason.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DslGenerationResult'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+        '503':
+          $ref: '#/components/responses/ProblemResponse'
+        default:
+          $ref: '#/components/responses/ProblemResponse'
 components:
   schemas:
     Problem:
       $ref: '../common/components.yaml#/components/schemas/Problem'
     FieldError:
       $ref: '../common/components.yaml#/components/schemas/FieldError'
+    ValidationIssue:
+      $ref: '../common/components.yaml#/components/schemas/ValidationIssue'
     PageInfo:
       $ref: '../common/components.yaml#/components/schemas/PageInfo'
+    ColumnDefinition:
+      $ref: '../common/components.yaml#/components/schemas/ColumnDefinition'
+    SchemaMetadata:
+      $ref: '../common/components.yaml#/components/schemas/SchemaMetadata'
+    SqlOutputKind:
+      $ref: '../common/components.yaml#/components/schemas/SqlOutputKind'
+    VisualizationIntent:
+      $ref: '../common/components.yaml#/components/schemas/VisualizationIntent'
+    DslDocument:
+      $ref: '../common/components.yaml#/components/schemas/DslDocument'
+    ConversationMessage:
+      type: object
+      required: [role, text]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        text:
+          type: string
+    SqlGenerationRequest:
+      type: object
+      required: [question, schema]
+      properties:
+        question:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          example: Total revenue per customer in 2026
+        schema:
+          $ref: '#/components/schemas/SchemaMetadata'
+        history:
+          type: array
+          description: Earlier messages of the chat session, oldest first, for follow-up questions.
+          items:
+            $ref: '#/components/schemas/ConversationMessage'
+    SqlGenerationResult:
+      type: object
+      required: [kind, sql, explanation, referencedTables]
+      properties:
+        kind:
+          $ref: '#/components/schemas/SqlOutputKind'
+        sql:
+          type: string
+          description: Empty when `kind` is `none`.
+        explanation:
+          type: string
+          description: Assumptions, tables and joins used, or why no SQL was produced.
+        referencedTables:
+          type: array
+          items:
+            type: string
+            example: dbo.Orders
+        procedureName:
+          type: string
+          description: Name of the generated procedure when `kind` is `stored-procedure`.
+          example: usp_RevenuePerCustomer
+    DslGenerationRequest:
+      type: object
+      required: [columns, intent, catalogId]
+      properties:
+        columns:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ColumnDefinition'
+        intent:
+          $ref: '#/components/schemas/VisualizationIntent'
+        catalogId:
+          type: string
+          description: The pinned A2UI catalog the DSL must use.
+          example: https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json
+        previousIssues:
+          type: array
+          description: Validation findings of the previous attempt (retry only).
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+    DslGenerationResult:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [generated, unsupported]
+        dsl:
+          $ref: '#/components/schemas/DslDocument'
+        reason:
+          type: string
+          description: Why the request is unsupported (for example "charts are not available yet").
   responses:
     ProblemResponse:
       $ref: '../common/components.yaml#/components/responses/ProblemResponse'

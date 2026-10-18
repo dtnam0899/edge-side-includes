@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+/* Colors and spacing come from the host theme (lib/ui-tokens once it defines tokens). */
+.esi-dsl-error {
+  padding: var(--esi-space-3, 0.75rem);
+  border: 1px solid var(--esi-color-danger, currentColor);
+  border-radius: var(--esi-radius-2, 0.25rem);
+  color: var(--esi-color-danger-text, inherit);
+}
+
+.esi-dsl-error p,
+.esi-dsl-error ul {
+  margin: 0;
+}
