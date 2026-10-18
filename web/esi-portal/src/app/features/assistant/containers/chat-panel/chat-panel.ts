@@ -42,7 +42,13 @@ import { ChatService } from '../../services/chat.service';
         } @else if (chat.sessionLoading()) {
           <p role="status" class="muted">Loading the chat…</p>
         } @else if (!chat.messages().length && !chat.pendingQuestion() && !chat.failedQuestion()) {
-          <p class="muted">Ask a question to start a new chat about this database.</p>
+          <p class="muted">
+            @if (chat.activeSessionId()) {
+              This chat has no messages yet. Ask a question below.
+            } @else {
+              Ask a question to start a new chat about this database.
+            }
+          </p>
         }
         <app-chat-thread
           [messages]="chat.messages()"

@@ -20,6 +20,16 @@ describe('problemMessage', () => {
     expect(problemMessage(problem('execution-failed'))).toMatch(/No result was produced/);
   });
 
+  it('explains that the AI agents are unavailable (503 agents-unavailable)', () => {
+    expect(
+      problemMessage(
+        problem('agents-unavailable', 503, 'The AI agents service has no usable model right now.'),
+      ),
+    ).toBe(
+      'The AI assistant is not available right now, so no SQL was generated. Try again later. The AI agents service has no usable model right now.',
+    );
+  });
+
   it('hides details of unexpected server errors', () => {
     expect(problemMessage(problem('http-500', 500, 'stack trace'))).not.toContain('stack trace');
   });

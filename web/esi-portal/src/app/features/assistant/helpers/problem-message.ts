@@ -19,6 +19,11 @@ export function problemMessage(problem: ApiProblem): string {
       return 'The query timed out before it returned a result.';
     case 'invalid-result-columns':
       return withDetail('The query result has empty or duplicate column names.', problem.detail);
+    case 'agents-unavailable':
+      return withDetail(
+        'The AI assistant is not available right now, so no SQL was generated. Try again later.',
+        problem.detail,
+      );
     case 'not-found':
       return 'This item no longer exists or is not yours.';
     case 'network-error':

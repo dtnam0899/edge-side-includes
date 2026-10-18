@@ -39,7 +39,7 @@ import { ProblemMessage } from '../problem-message/problem-message';
                 [class.active]="session.id === activeId()"
                 [attr.aria-current]="session.id === activeId() ? 'page' : null"
               >
-                <span class="title">{{ session.title }}</span>
+                <span class="title">{{ session.title || 'Untitled chat' }}</span>
                 <span class="when">{{ session.lastActivityAt | date: 'short' }}</span>
               </a>
             </li>
