@@ -36,15 +36,17 @@ Tickets are labelled `User Requirement` (UR, user-level feature request) and `Sy
 Per project; see its `CLAUDE.md`. A project may set the pre-commit test command in `<dir>/.esi-test-cmd`.
 
 ## Critical project context
+- GitHub setup (package/image registry, `NODE_AUTH_TOKEN`, repository variables, branch protection limits): `docs/process/github-setup.md`.
 - Generated code (API clients, DSL models) is never edited by hand; regenerate it from the pinned contract or schema version.
 
 ## ESI workflow
 - Issues and PRs: `ESI-<number> [PROJECT] <title>`; `[PROJECT]` is the project directory code.
-- Branches: `type/ESI-<number>-short-description`.
+- Branches: `type/ESI-<number>-short-description`, always created from the latest `develop` (integration); `main` is production.
 - Commits: `type(project): subject`, with `Refs: ESI-<number>`; keep one commit to one project where possible.
-- PRs: keep them focused, pass CI, and request one approval before squash-merging to `main`.
+- PRs: target `develop`; keep them focused, pass CI, and request one approval before squash-merging into `develop`.
+- Production release: a PR from `develop` into `main`, merged with a merge commit after CI and one approval. Feature PRs never target `main`.
 
 ## Do not
 - Commit secrets, credentials, or `.env` files.
-- Force-push to `main`.
+- Commit directly to or force-push `develop` or `main`.
 - Add cross-project imports, path dependencies or a shared build between projects.

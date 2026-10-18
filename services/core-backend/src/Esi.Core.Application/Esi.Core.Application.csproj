@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Esi.Core.Domain\Esi.Core.Domain.csproj" />
+  </ItemGroup>
+</Project>

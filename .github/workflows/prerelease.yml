@@ -1,0 +1,129 @@
+name: prerelease
+
+# Manually started. Publishes prerelease versions of @dtnam0899/esi-contracts and one lib package
+# (dsl-schema) to GitHub Packages, then installs them by pinned version in a clean container and in the
+# portal. Only versions with a prerelease identifier, only from develop or main (docs/process/github-setup.md).
+# mode=cleanup deletes that prerelease version again. No commits or git tags are created.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Prerelease version for both packages, e.g. 0.0.1-rc.0"
+        required: true
+        type: string
+      mode:
+        description: "publish (publish and verify) or cleanup (delete this version)"
+        required: true
+        default: publish
+        type: choice
+        options: [publish, cleanup]
+
+permissions:
+  contents: read
+
+env:
+  VERSION: ${{ inputs.version }}
+  NX_DAEMON: "false"
+  NX_NO_CLOUD: "true"
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch and version
+        run: |
+          case "$GITHUB_REF_NAME" in develop|main) ;; *) echo "::error::run from develop or main, not $GITHUB_REF_NAME"; exit 1;; esac
+          echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$' \
+            || { echo "::error::$VERSION is not a prerelease version (needs -<preid>)"; exit 1; }
+
+  publish:
+    needs: guard
+    if: inputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.3
+      - name: Publish contracts
+        working-directory: services/contracts
+        run: |
+          npm ci
+          node scripts/set-version.mjs "$VERSION"
+          npm run check
+          npm publish --tag rc
+      - name: Publish lib dsl-schema
+        working-directory: lib
+        run: |
+          npm ci
+          npx nx release version "$VERSION" --projects=dsl-schema --git-commit=false --git-tag=false --stage-changes=false
+          npx nx release publish --projects=dsl-schema --tag=rc
+
+  verify:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      # Clean container, as a Docker-built consumer would install them: token only as a build secret.
+      - name: Install by version in a clean Docker build
+        run: |
+          mkdir -p "$RUNNER_TEMP/consumer" && cd "$RUNNER_TEMP/consumer"
+          cat > Dockerfile <<'EOF'
+          # syntax=docker/dockerfile:1
+          FROM node:22.23.3-alpine3.24
+          ARG VERSION
+          WORKDIR /consumer
+          RUN printf '%s\n' '@dtnam0899:registry=https://npm.pkg.github.com' '//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}' > .npmrc \
+           && npm init -y >/dev/null
+          RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN \
+              npm install --save-exact "@dtnam0899/esi-contracts@${VERSION}" "@dtnam0899/dsl-schema@${VERSION}" \
+           && rm .npmrc \
+           && test -f node_modules/@dtnam0899/esi-contracts/core-api/openapi.yaml \
+           && node -e "require('@dtnam0899/dsl-schema'); for (const p of ['esi-contracts','dsl-schema']) { const v = require('@dtnam0899/' + p + '/package.json').version; if (v !== process.env.VERSION) throw new Error(p + ' ' + v); } console.log('installed', process.env.VERSION)"
+          EOF
+          docker build --no-cache --progress=plain --build-arg VERSION="$VERSION" --secret id=npm_token,env=NODE_AUTH_TOKEN .
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.3
+      # Throwaway: nothing is saved to the portal's package.json or lockfile.
+      - name: Install by version in the portal
+        working-directory: web/esi-portal
+        run: |
+          npm ci
+          npm install --no-save "@dtnam0899/esi-contracts@$VERSION" "@dtnam0899/dsl-schema@$VERSION"
+          npm ls @dtnam0899/esi-contracts @dtnam0899/dsl-schema
+          git diff --exit-code package.json package-lock.json
+
+  cleanup:
+    needs: guard
+    if: inputs.mode == 'cleanup'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Delete the prerelease version
+        run: |
+          for pkg in esi-contracts dsl-schema; do
+            base="/users/$GITHUB_REPOSITORY_OWNER/packages/npm/$pkg"
+            versions=$(gh api "$base/versions" --paginate -q '.[] | "\(.id) \(.name)"')
+            id=$(echo "$versions" | awk -v v="$VERSION" '$2 == v {print $1}')
+            [ -n "$id" ] || { echo "$pkg@$VERSION not found"; continue; }
+            if [ "$(echo "$versions" | wc -l)" -eq 1 ]; then
+              # GitHub refuses to delete the last version; delete the package instead.
+              gh api -X DELETE "$base" && echo "deleted package $pkg (only had $VERSION)"
+            else
+              gh api -X DELETE "$base/versions/$id" && echo "deleted $pkg@$VERSION"
+            fi
+          done

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <UserSecretsId>esi-core-backend</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Esi.Core.Application\Esi.Core.Application.csproj" />
+    <ProjectReference Include="..\Esi.Core.Infrastructure\Esi.Core.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

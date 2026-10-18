@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Esi.Core.Api/Esi.Core.Api.csproj" />
+    <Project Path="src/Esi.Core.Application/Esi.Core.Application.csproj" />
+    <Project Path="src/Esi.Core.Domain/Esi.Core.Domain.csproj" />
+    <Project Path="src/Esi.Core.Infrastructure/Esi.Core.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Esi.Core.IntegrationTests/Esi.Core.IntegrationTests.csproj" />
+    <Project Path="tests/Esi.Core.UnitTests/Esi.Core.UnitTests.csproj" />
+  </Folder>
+</Solution>

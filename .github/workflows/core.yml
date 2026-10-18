@@ -1,0 +1,43 @@
+name: core
+
+on:
+  pull_request:
+    paths:
+      - "services/core-backend/**"
+      - ".github/workflows/core.yml"
+  push:
+    branches: [develop, main]
+    paths:
+      - "services/core-backend/**"
+      - ".github/workflows/core.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/core-backend
+    steps:
+      - uses: actions/checkout@v7
+      # Format check, Release build and unit tests run in the `test` stage.
+      - name: Test
+        run: docker build --target test -t core:test .
+      - name: Generate throwaway SQL Server password
+        run: echo "ESI_CORE_SA_PASSWORD=Ci-$(openssl rand -hex 12)A1!" >> "$GITHUB_ENV"
+      # SQL Server + migrations, then the integration test project.
+      - name: Integration tests
+        run: docker compose --profile integration run --rm --build integration-tests
+      - name: Compose up and health check
+        run: |
+          docker compose up -d --build --wait api
+          curl -fsS http://127.0.0.1:8080/health
+          curl -fsS http://127.0.0.1:8080/health/ready
+      - name: Logs on failure
+        if: failure()
+        run: docker compose --profile integration logs
+      - name: Tear down
+        if: always()
+        run: docker compose --profile integration down -v
