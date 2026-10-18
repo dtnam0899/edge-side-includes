@@ -1,0 +1,16 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="shell-header">
+  <span class="shell-brand">ESI Portal</span>
+  <nav aria-label="Primary">
+    <ul>
+      @for (item of navItems; track item.path) {
+        <li>
+          <a [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{ item.label }}</a>
+        </li>
+      }
+    </ul>
+  </nav>
+</header>
+<main id="main" class="shell-main" tabindex="-1">
+  <router-outlet />
+</main>

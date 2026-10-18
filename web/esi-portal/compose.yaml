@@ -1,0 +1,11 @@
+# Local run of the built portal. The API is not part of this project; point ESI_PORTAL_API_BASE_URL at a running core-backend.
+services:
+  portal:
+    build:
+      context: .
+      target: runtime
+    image: esi-portal:dev
+    ports:
+      - "4200:8080"
+    environment:
+      ESI_PORTAL_API_BASE_URL: ${ESI_PORTAL_API_BASE_URL:-/api}
