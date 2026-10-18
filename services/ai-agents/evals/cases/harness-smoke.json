@@ -1,0 +1,11 @@
+[
+  {
+    "id": "harness-smoke-select-only",
+    "prompt": "harness smoke: return a single SELECT",
+    "stub_output": "SELECT 1",
+    "checks": [
+      {"kind": "contains", "value": "SELECT"},
+      {"kind": "not_contains", "value": "EXEC"}
+    ]
+  }
+]

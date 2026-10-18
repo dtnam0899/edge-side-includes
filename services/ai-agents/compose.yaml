@@ -1,0 +1,11 @@
+# Local dev for services/ai-agents. No external dependencies yet; the model provider is added by its ADR.
+services:
+  agents:
+    build:
+      context: .
+      target: runtime
+    image: esi-agents:dev
+    ports:
+      - "8000:8000"
+    environment:
+      ESI_AGENTS_LOG_LEVEL: ${ESI_AGENTS_LOG_LEVEL:-INFO}
