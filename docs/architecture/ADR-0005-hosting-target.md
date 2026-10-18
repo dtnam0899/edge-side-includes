@@ -37,11 +37,10 @@ keywords: [hosting, auth0, budget, demo-up, demo-down, deployment, demo, free ti
 Take option 1, scoped to **one demo environment**. Production hosting is a later ADR (see Consequences).
 
 Portal on Vercel Hobby
-- One Vercel project with Root Directory `web/esi-portal`, framework preset none, build `npm ci && npm run build`, output the Angular browser build directory. `NODE_AUTH_TOKEN` is a Vercel build-time environment variable (a dedicated classic token with only `read:packages`).
-- `web/esi-portal/vercel.json` (Vercel reads it from the Root Directory) holds routing only: rewrite `/api/:path*` to the demo core URL (prefix removed, as in `proxy.conf.json` and the e2e gateway), then an SPA fallback to `/index.html`. `/config.json` stays the committed `{ "apiBaseUrl": "/api" }`, so the browser sees one origin and core keeps no CORS.
-- The Vercel production branch is `develop` (the demo shows the integration build); PRs get previews that use the same demo core. Vercel's ignored build step skips builds when nothing under `web/esi-portal` changed.
+- Vercel does not build the portal. The `portal` GitHub workflow builds and tests it in Docker as today, exports the static files of the `check` stage and deploys them with `vercel deploy --prebuilt` (Build Output API). The deployed files are exactly the ones CI tested, rule 3 holds, and the npm token for `@dtnam0899/*` stays in GitHub (`GITHUB_TOKEN`), not in Vercel.
+- The Vercel project is not connected to the Git repository. Pushes to `develop` deploy Vercel production (the demo shows the integration build); PRs from this repository get previews that use the same demo core. Fork PRs and `main` do not deploy.
+- Routing lives in the Build Output API config written by `infra/vercel/build-output.sh`: `/api/*` is proxied to the demo core URL (GitHub variable `ESI_DEMO_CORE_URL`, prefix removed, as in `proxy.conf.json` and the e2e gateway), then static files with the portal nginx cache headers, then an SPA fallback to `/index.html`. `/config.json` stays the committed `{ "apiBaseUrl": "/api" }`, so the browser sees one origin and core keeps no CORS.
 - Vercel Authentication is on for preview deployments only; the production (demo) deployment is protected by Auth0 sign-in (ADR-0006), so demo viewers need only their invited Auth0 account.
-- The Vercel deployment builds the portal sources, not the `esi-portal` image. This is the one exception to rule 3: the Docker image stays the CI check, and the Vercel build uses the same commands and Node major as the Dockerfile.
 
 Core and agents on Azure Container Apps (consumption plan)
 - One consumption-only Container Apps environment (no workload profiles, no VNet, no NAT gateway), in one resource group `esi-demo` so the whole demo can be deleted at once.
@@ -85,7 +84,7 @@ Rules others must follow
 - Going to production needs a new ADR that revisits: Vercel Pro, an identity provider, Key Vault (ADR-0003 Phase 6), private endpoint, a static outbound IP for users' firewalls, min replicas 1 and no auto-pause, separate staging and production.
 - Idle SQL connections block auto-pause and keep consuming vCore-seconds. Core's connection pool closes when core scales to zero; never leave a query tool (SSMS, Azure Data Studio, the portal query editor) connected to the demo databases.
 - Forgetting `demo-down` leaves core reachable but still costs nothing until someone uses it (scale to zero); the risk is only heavy use while it is on, which the budget email backstops.
-- Follow-up work: `infra/azure` IaC and demo-target seed script; `web/esi-portal/vercel.json` and Vercel project setup; deploy workflows (GHCR push on release tag, migration job, Container Apps update); `demo-up` / `demo-down` workflows; budget alert.
+- Follow-up work: `infra/azure` IaC and demo-target seed script; Vercel project setup (`infra/vercel/README.md`, ESI-72); deploy workflows (GHCR push on release tag, migration job, Container Apps update); `demo-up` / `demo-down` workflows; budget alert.
 
 ## Verification
 - After each demo deploy, run the `infra/e2e` scenario against the deployed URLs (connection → chat → visualization → dashboard).
