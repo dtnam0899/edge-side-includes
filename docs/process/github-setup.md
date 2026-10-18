@@ -24,7 +24,7 @@ Set under Settings → Secrets and variables → Actions → Variables (`gh vari
 
 ## Package registry (GitHub Packages, npm)
 
-- Scope `@dtnam0899` maps to `https://npm.pkg.github.com` in each consuming or publishing project's own `.npmrc` (`services/contracts`, `lib`, `web/esi-portal`). The `.npmrc` contains only `//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN-}`; no token is ever committed.
+- Scope `@dtnam0899` maps to `https://npm.pkg.github.com` in each consuming or publishing project's own `.npmrc` (`services/contracts`, `lib`, `web/esi-portal`). The `.npmrc` contains only `//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}`; no token is ever committed. Use exactly `${NAME}`: npm 10 does not support shell defaults such as `${NAME-}` and would send that text as the token (401).
 - Packages published from this repository are linked to it and inherit its (private) visibility. Installing them needs a token with `read:packages` even for public consumers.
 - GitHub Free includes 500 MB of private package storage; remove or deprecate prereleases that only proved a flow (P0-12).
 
