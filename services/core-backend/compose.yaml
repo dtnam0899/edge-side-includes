@@ -1,0 +1,74 @@
+# Local dev for services/core-backend. Requires ESI_CORE_SA_PASSWORD (SQL Server complexity rules) in the
+# shell or an uncommitted .env file next to this file.
+#   docker compose up                                              -> appdb, migrations, api on :8080
+#   docker compose --profile integration run --rm integration-tests -> also starts targetdb
+x-mssql: &mssql
+  # SQL Server publishes amd64 images only; Apple silicon runs them under emulation.
+  image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
+  platform: linux/amd64
+  environment:
+    ACCEPT_EULA: "Y"
+    MSSQL_PID: Developer
+    MSSQL_SA_PASSWORD: ${ESI_CORE_SA_PASSWORD:?set ESI_CORE_SA_PASSWORD}
+  healthcheck:
+    test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null"]
+    interval: 5s
+    timeout: 5s
+    retries: 30
+    start_period: 20s
+
+x-appdb-connection: &appdb-connection "Server=appdb;Database=esi_core;User Id=sa;Password=${ESI_CORE_SA_PASSWORD:?set ESI_CORE_SA_PASSWORD};TrustServerCertificate=True"
+
+services:
+  # The application's own database.
+  appdb:
+    <<: *mssql
+    volumes:
+      - appdb-data:/var/opt/mssql
+
+  # Stand-in for a user's target database in integration tests; never used as the app database.
+  targetdb:
+    <<: *mssql
+    profiles: [integration]
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    image: esi-core-migrator:dev
+    environment:
+      ESI_CORE_AppDb__ConnectionString: *appdb-connection
+    depends_on:
+      appdb:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      target: runtime
+    image: esi-core:dev
+    ports:
+      - "8080:8080"
+    environment:
+      ESI_CORE_AppDb__ConnectionString: *appdb-connection
+      ESI_CORE_Logging__LogLevel__Default: ${ESI_CORE_LOG_LEVEL:-Information}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  integration-tests:
+    build:
+      context: .
+      target: integration-test
+    profiles: [integration]
+    environment:
+      ESI_CORE_TEST_APPDB: *appdb-connection
+      ESI_CORE_TEST_TARGETDB: "Server=targetdb;Database=master;User Id=sa;Password=${ESI_CORE_SA_PASSWORD:?set ESI_CORE_SA_PASSWORD};TrustServerCertificate=True"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      targetdb:
+        condition: service_healthy
+
+volumes:
+  appdb-data:
