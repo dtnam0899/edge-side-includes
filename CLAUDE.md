@@ -30,7 +30,7 @@ Applies to every project; details and templates in the `esi-project-standards` s
 5. **lib uses Nx** for build, test, affected runs, module-boundary lint and independent per-package versioning and publishing (`nx release`) to GitHub Packages. Nx is not used outside `lib/`.
 
 ## Requirements
-Tickets are labelled `User Requirement` (UR, user-level feature request) and `System Requirement` (SR, a UR analyzed into technical features). When asked to read, analyze or sync requirement tickets, follow the `requirement-review` skill: read tickets read-only, review them against the project skills, then update `docs/requirements/` and, for reusable knowledge, the skills. Never modify tickets unless asked.
+Tickets are labelled `User Requirement` (UR, user-level feature request) and `System Requirement` (SR, a UR analyzed into technical features). The standard process from a new UR to filed tasks (stages, gates, roles, templates, change handling) is `docs/process/README.md`. When asked to read, analyze or sync requirement tickets, follow the `requirement-review` skill: read tickets read-only, review them against the project skills, then update `docs/requirements/` and, for reusable knowledge, the skills. Never modify tickets unless asked.
 
 ## Commands
 Per project; see its `CLAUDE.md`. A project may set the pre-commit test command in `<dir>/.esi-test-cmd`.

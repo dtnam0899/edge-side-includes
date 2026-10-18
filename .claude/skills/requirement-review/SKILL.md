@@ -5,7 +5,7 @@ description: Read and review GitHub requirement tickets (labels "User Requiremen
 
 # Requirement review
 
-Ticket hierarchy in GitHub (repo `dtnam0899/edge-side-includes`):
+Ticket hierarchy in GitHub (repo `dtnam0899/edge-side-includes`). The full lifecycle (intake, clarify, analyze, ADRs, breakdown, filing, execution, change handling, gates and roles) is in `docs/process/README.md`; this skill covers the analysis steps of that process (stages 2-3, the sync check, and drafting in stage 5).
 
 | Level | Label | Meaning |
 |-------|-------|---------|
@@ -40,5 +40,8 @@ If the real label names differ from the above (e.g. prefixes, casing), use the a
 ## Rules
 
 - Do not invent requirements, acceptance criteria or labels; mark gaps as open questions.
+- Ask the product owner in one batch (with recommended answers) before analyzing ambiguous scope; record answers as numbered decisions.
+- Run the sync check (sub-issues on GitHub vs the "Filed issues" table) at the start and before reporting; docs that disagree with GitHub are a defect.
+- Do not file issues, accept ADRs or approve gates; follow `docs/process/README.md`.
 - Never record secrets or personal data from tickets in docs or skills.
 - Use ESI conventions when proposing follow-up work: branch `type/ESI-<n>-...`, commit `type(project): ...` with `Refs: ESI-<n>` (see `esi-workflow`).
