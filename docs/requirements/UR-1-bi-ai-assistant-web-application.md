@@ -391,7 +391,7 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 2. Confirm the chart proposal below (types, binding, accessibility). It is a proposal for the chart ADR, not a decision.
 3. Portal prerequisites: A2UI's Angular renderer needs Angular 21+, and the portal's Angular version and its folder layout for modules are not decided yet. Does the module's chat need streaming through the portal's HTTP stack?
 4. Which parts of the assistant (for example the connection list) may other portal modules reach, and through which `core` API?
-5. Issue hygiene is done (ESI-2..ESI-9 closed, ESI-12 retitled, task ESI-21). The file `scripts/create-ur1-issues.sh` (untracked) was already applied for phase 1; do not re-run it with `--apply`, which would create duplicates.
+5. Issue hygiene is done (ESI-2..ESI-9 closed, ESI-12 retitled, task ESI-21 closed). The file `scripts/create-ur1-issues.sh` was already applied for phase 1; do not re-run it with `--apply`, which would create duplicates.
 
 ## Chart proposal (follow-up phase, pending ADR)
 
