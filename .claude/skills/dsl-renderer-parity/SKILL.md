@@ -14,7 +14,7 @@ Every renderer must produce the same behavior for the same DSL document. Only `l
 - [ ] Same semantics in all renderers: paging (20 rows, remaining count), validation messages, empty/loading/error states, action dispatch and events.
 - [ ] Styling comes from `lib/ui-tokens`; no per-renderer hard-coded colors or spacing.
 - [ ] Accessible: roles, labels, keyboard navigation, focus handling.
-- [ ] Input is validated through `dsl-core` before rendering; no `innerHTML`/`dangerouslySetInnerHTML` from DSL values.
+- [ ] Input is validated through `dsl-core` (`planSurface`) before rendering; no `innerHTML`/`dangerouslySetInnerHTML` from DSL values. The A2UI `Text` renders Markdown into `innerHTML`, so the renderer replaces the Markdown renderer with one that HTML-escapes text (`PlainTextMarkdownRenderer` in Angular).
 - [ ] Shared fixtures from `dsl-schema` are rendered in each renderer's tests; assertions are on behavior (DOM roles/text/events), not framework internals.
 - [ ] Behavior difference that cannot be avoided is documented in `docs/dsl/` and noted in the PR.
 
