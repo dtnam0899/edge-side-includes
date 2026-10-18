@@ -67,8 +67,8 @@ test('a user goes from a new connection to a live dashboard', async ({ page, req
     const result = answer.getByRole('region', { name: 'Query result' });
     await expect(result).toContainText('Rows 1–20. 5 more rows after this page.');
     await expect(result.getByRole('row').nth(1)).toContainText('Customer 25');
-    // The cell shows 275, not 275.00: JSON numbers lose the decimal scale in the browser (known, see README).
-    await expect(result.getByRole('row').nth(1)).toContainText(/Canada\s*275$/);
+    // decimal(38,2): the cell keeps the scale (ESI-66).
+    await expect(result.getByRole('row').nth(1)).toContainText(/Canada\s*275\.00$/);
 
     await result.getByRole('button', { name: '2', exact: true }).click();
     await expect(result).toContainText('Rows 21–25. No more rows.');
@@ -91,7 +91,7 @@ test('a user goes from a new connection to a live dashboard', async ({ page, req
     await answer.getByRole('button', { name: 'Run query' }).click();
     const result = answer.getByRole('region', { name: 'Query result' });
     await expect(result).toContainText('Rows 1–1. No more rows.');
-    await expect(result.getByRole('row').nth(1)).toHaveText(/^\s*3875\s*$/);
+    await expect(result.getByRole('row').nth(1)).toHaveText(/^\s*3875\.00\s*$/);
 
     await answer.getByRole('button', { name: 'KPI', exact: true }).click();
     const preview = answer.getByRole('group', { name: 'Visualization preview' });
