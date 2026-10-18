@@ -1,0 +1,53 @@
+{
+  "description": "A function call that is not in the pinned basic catalog.",
+  "artifact": {
+    "dslSchemaVersion": 1,
+    "protocolVersion": "v0.9",
+    "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
+    "columns": [
+      {
+        "name": "total_revenue",
+        "type": "number"
+      }
+    ],
+    "query": {
+      "sql": "SELECT SUM(amount) AS total_revenue FROM sales"
+    },
+    "components": [
+      {
+        "id": "root",
+        "component": "Card",
+        "child": "kpi-column"
+      },
+      {
+        "id": "kpi-column",
+        "component": "Column",
+        "children": [
+          "kpi-label",
+          "kpi-value"
+        ]
+      },
+      {
+        "id": "kpi-label",
+        "component": "Text",
+        "text": "Total revenue",
+        "variant": "caption"
+      },
+      {
+        "id": "kpi-value",
+        "component": "Text",
+        "text": {
+          "call": "eval",
+          "args": {
+            "value": "1+1"
+          },
+          "returnType": "string"
+        },
+        "variant": "h2"
+      }
+    ]
+  },
+  "expectedErrors": [
+    "unknown-function"
+  ]
+}

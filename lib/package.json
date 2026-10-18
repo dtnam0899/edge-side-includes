@@ -12,6 +12,8 @@
     "test:boundaries": "node scripts/test-boundaries.mjs"
   },
   "devDependencies": {
+    "@a2ui/angular": "0.13.0",
+    "@a2ui/web_core": "0.14.0",
     "@analogjs/vite-plugin-angular": "2.6.4",
     "@analogjs/vitest-angular": "2.6.4",
     "@angular-devkit/core": "21.2.27",
@@ -36,6 +38,7 @@
     "@typescript-eslint/utils": "8.71.2",
     "@vitest/coverage-v8": "4.0.18",
     "@vitest/ui": "4.0.18",
+    "ajv": "8.20.0",
     "angular-eslint": "21.4.0",
     "autoprefixer": "10.6.1",
     "eslint": "9.39.5",
