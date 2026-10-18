@@ -5,7 +5,7 @@ description: Angular implementation conventions for ESI web code. Use when creat
 
 # Angular conventions
 
-Commands, Angular/PrimeNG versions, and project-specific authentication and generated-code rules live in the project's `CLAUDE.md`.
+Commands, Angular/PrimeNG versions, and project-specific authentication and generated-code rules live in the project's `CLAUDE.md`. For screen hierarchy, visual direction, and browser-based UI iteration, use `portal-ui-design`; this skill covers Angular implementation architecture.
 
 ## UI and component responsibilities
 

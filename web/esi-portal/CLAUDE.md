@@ -10,6 +10,7 @@ Angular management web app; renders DSL through `lib/dsl-renderer-angular`. It h
 - DSL rendering: `lib/dsl-renderer-angular`, which wraps `@a2ui/angular/v0_9` (never the package root, which is protocol v1.0; ADR-0002).
 - UI library: PrimeNG 21.1.10 with `@primeuix/themes` 2.0.3, Aura preset in `app.config.ts` (PrimeNG 22 needs Angular 22). See the `angular-conventions` skill.
 - Tests: Vitest 4.0.18 with jsdom through `@angular/build:unit-test` (no Karma, no browser). Vitest 4.1.x crashes npm 10 during install (ADR-0001).
+- Screen hierarchy, visual direction, and rendered-browser iteration: follow `portal-ui-design`; accessibility requirements and checks: follow `frontend-accessibility`.
 - State management: use Angular signals for local synchronous UI state and RxJS for asynchronous streams by default; add a shared state library only if a verified project requirement justifies it.
 - Backend/API: `services/core-backend` through the published `lib/api-client` package; base URL from the runtime `APP_CONFIG` (`apiBaseUrl`).
 
