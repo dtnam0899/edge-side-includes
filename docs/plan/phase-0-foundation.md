@@ -19,7 +19,7 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | ID | Project | Title | Needs | Produces | Issue |
 |----|---------|-------|-------|----------|-------|
 | P0-01 | esi | Clean up superseded GitHub issues | none | ESI-2..9 closed, ESI-12 retitled (done) | ESI-21 (closed) |
-| P0-02 | esi | Review and accept ADR-0001 technology baseline | none | ADR-0001 Accepted with verified versions | ESI-22 |
+| P0-02 | esi | Review and accept ADR-0001 technology baseline | none | ADR-0001 Accepted with verified versions | ESI-22 (closed) |
 | P0-03 | esi | Review and accept ADR-0002 A2UI and DSL storage | none | ADR-0002 Accepted | ESI-23 |
 | P0-04 | esi | Review and accept ADR-0003 key management | none | ADR-0003 Accepted | ESI-24 |
 | P0-05 | esi | Review and accept ADR-0004 SQL policy | none | ADR-0004 Accepted | ESI-25 |
