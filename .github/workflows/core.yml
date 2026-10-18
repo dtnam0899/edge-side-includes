@@ -27,7 +27,7 @@ jobs:
         run: docker build --target test -t core:test .
       - name: Generate throwaway SQL Server password
         run: echo "ESI_CORE_SA_PASSWORD=Ci-$(openssl rand -hex 12)A1!" >> "$GITHUB_ENV"
-      # appdb + migrations + targetdb, then the integration test project.
+      # SQL Server + migrations, then the integration test project.
       - name: Integration tests
         run: docker compose --profile integration run --rm --build integration-tests
       - name: Compose up and health check
