@@ -28,10 +28,10 @@ Task IDs `P0-NN` are drafts. When filed on GitHub, record the issue number in th
 | P0-08 | core | Scaffold core-backend with test SQL Server | P0-02 | API skeleton, migrations, compose with SQL Server | ESI-28 (closed) |
 | P0-09 | agents | Scaffold ai-agents with eval harness | P0-02 | service skeleton, pytest, ruff, empty evals runner | ESI-29 (closed) |
 | P0-10 | portal | Scaffold Angular portal and module boundaries | P0-02 | app shell, lazy `assistant` module, lint boundaries | ESI-30 (closed) |
-| P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` (deferred: not available on GitHub Free for private repos) | ESI-31 (open: protection deferred) |
+| P0-11 | esi | Configure GitHub: registry access, secrets, branch protection | none | secrets and permissions documented, protection on `main` (deferred: not available on GitHub Free for private repos) | ESI-31 (closed; protection deferred) |
 | P0-12 | esi | Prove publish and pin flow with a prerelease | P0-06, P0-07, P0-11 | one prerelease package published and installed by a consumer | ESI-32 (closed) |
 | P0-13 | esi | Update skills and project docs after ADRs | P0-02..P0-05 | placeholders filled, DSL skills match ADR-0002 | ESI-33 (closed) |
-| P0-14 | esi | Define test data policy | P0-08, P0-09 | shared understanding of fixtures per project | ESI-34 |
+| P0-14 | esi | Define test data policy | P0-08, P0-09 | shared understanding of fixtures per project | ESI-34 (in review) |
 
 ```mermaid
 flowchart LR

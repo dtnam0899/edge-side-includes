@@ -24,6 +24,7 @@ Shared TypeScript workspace used by the portal. Packages: `dsl-schema` (source o
 - Release tags: `lib-<package>@vX.Y.Z`, published to GitHub Packages (`$ESI_PACKAGE_REGISTRY_URL`).
 
 ## Project context
+- Test data (P0-14, `docs/process/test-data.md`): fixtures live next to each package's tests; DSL fixtures come from the package's own schema, never from other projects.
 - Pins that look odd but are required: TypeScript 5.9.3 (`@angular/build` 21.2.x needs `>=5.9 <6.0`), vitest and `@vitest/*` 4.0.18 (4.1.x triggers an npm 10 Arborist crash on install). Do not bump them without rerunning `npm ci` and `npm run check`.
 - `tsconfig.base.json` must keep `module`/`moduleResolution` = `nodenext` and must not set `emitDeclarationOnly` (breaks `@nx/js:tsc` and ng-packagr).
 - `dsl-renderer-angular/vite.config.mts` passes `tsconfig.spec.json` to the Analog plugin; otherwise components with `templateUrl` fail in tests.

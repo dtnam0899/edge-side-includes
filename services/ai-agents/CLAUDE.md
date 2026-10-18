@@ -28,7 +28,7 @@ AI agents and tools that answer user requests and emit DSL documents (validated 
 
 ## Project context
 - Database safety rules (UR-1): the agent may read definitions of existing stored procedures as schema context but must never call or execute them. Any stored procedure it writes is a script only, and its body must be read-only (no INSERT/UPDATE/DELETE/DDL or other side effects). Generated SQL for execution must be a single SELECT statement. Add evals that fail when an output breaks these rules.
-- Test data (P0-14, pending): evals use static schema metadata fixtures committed in `evals/`, never core's files or database.
+- Test data (P0-14, `docs/process/test-data.md`): evals use static schema-metadata fixtures in `evals/fixtures/`, in the shape of the pinned `agents-api` contract and regenerated when that version changes; never core's files or database. The folder is created with the first contract version that defines schema metadata (ESI-13/ESI-18).
 - API keys and model settings: environment variables only (`ESI_AGENTS_*`); never commit keys or prompts containing secrets.
 - Non-deterministic behavior: unit tests and evals use `StubModel`; evals against the real model are added with the provider ADR and rerun when prompts or models change.
 - Known: Starlette warns that `httpx` in `TestClient` is deprecated in favour of `httpx2`; harmless for now, revisit when bumping FastAPI.
