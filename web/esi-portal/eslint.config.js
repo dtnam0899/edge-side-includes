@@ -6,6 +6,7 @@ const angular = require('angular-eslint');
 module.exports = (async () => {
   const { default: featureBoundaries } = await import('./eslint/feature-boundaries.mjs');
   return tseslint.config(
+    { ignores: ['src/app/core/api/generated/**'] },
     {
       files: ['**/*.ts'],
       extends: [eslint.configs.recommended, ...tseslint.configs.recommended, ...tseslint.configs.stylistic, ...angular.configs.tsRecommended],
