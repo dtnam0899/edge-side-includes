@@ -8,6 +8,9 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Esi.Core.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Esi.Core.Application\Esi.Core.Application.csproj" />
   </ItemGroup>
 </Project>

@@ -21,8 +21,6 @@ public class HealthEndpointTests : IClassFixture<HealthEndpointTests.Factory>
 
     public sealed class Factory : WebApplicationFactory<Program>
     {
-        public Factory() =>
-            // Never opened by the liveness check; only satisfies the required setting.
-            Environment.SetEnvironmentVariable("ESI_CORE_AppDb__ConnectionString", "Server=unused;Database=esi_core");
+        public Factory() => TestEnvironment.Apply("Server=unused;Database=esi_core"); // never opened by the liveness check
     }
 }

@@ -1,4 +1,10 @@
+using Esi.Core.Application.Connections;
+using Esi.Core.Application.Consent;
+using Esi.Core.Application.Security;
+using Esi.Core.Infrastructure.Connections;
 using Esi.Core.Infrastructure.Persistence;
+using Esi.Core.Infrastructure.Persistence.Repositories;
+using Esi.Core.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +30,14 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options => ConfigureSqlServer(options, connectionString));
         services.AddHealthChecks().AddDbContextCheck<AppDbContext>("appdb", tags: [ReadyTag]);
+
+        // Fails at startup when the master keys are missing or invalid (ADR-0003).
+        services.AddSingleton(MasterKeyRing.FromConfiguration(configuration));
+        services.AddSingleton<ISecretProtector, AesGcmSecretProtector>();
+        services.AddSingleton<IConnectionStringInspector, SqlConnectionStringInspector>();
+        services.AddSingleton<IConnectionProbe, SqlConnectionProbe>();
+        services.AddScoped<IConnectionRepository, ConnectionRepository>();
+        services.AddScoped<IConsentAcceptanceRepository, ConsentAcceptanceRepository>();
         return services;
     }
 
