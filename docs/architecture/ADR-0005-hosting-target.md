@@ -48,7 +48,7 @@ Core and agents on Azure Container Apps (consumption plan)
 - `esi-agents`: `ghcr.io/dtnam0899/esi-agents:<version>`, **internal ingress only**, 0.25 vCPU / 0.5 GiB, min replicas 0, max 1. `ESI_CORE_Agents__BaseUrl` points at its internal FQDN.
 - Migrations: a manually triggered Container Apps Job runs the `migrator` image of the same core version before each core update.
 - Secrets (app DB connection string, `ESI_CORE_Encryption__MasterKeys__1`, model API key) are Container Apps secrets, set by the deploy workflow from GitHub environment secrets. No Key Vault for the demo (ADR-0003 option 1 as decided).
-- Logs: Log Analytics workspace with a low daily cap, kept within the free monthly ingestion.
+- Logs: no Log Analytics workspace (`--logs-destination none`, no cost); live logs through `az containerapp logs show`. Add a workspace with a daily cap only if history is needed.
 
 Database: Azure SQL Database free offer
 - One logical server with two free-offer databases: `esi_core` (the app database) and `esi_demo_target` (a sample target database for the demo, seeded from a script owned by `infra/azure/`, not read from core's test fixtures).
@@ -58,8 +58,8 @@ Database: Azure SQL Database free offer
 Free-tier limits and on/off use
 - Goal: no charge, kept simple. The demo is **off by default**: it is switched on only when it is used and switched off right after.
 - Nothing paid is created: no VNet, NAT gateway, private endpoint, Key Vault, dedicated workload profile, container registry or Azure Monitor alert rules. The subscription holds only `esi-demo`, because the Container Apps free grant is per subscription.
-- Monthly allowance vs. use: Container Apps 180,000 vCPU-s / 360,000 GiB-s is about 66 h with both apps running (0.75 vCPU / 1.5 GiB); each Azure SQL free database is about 55 h at 0.5 vCore; Log Analytics 5 GB. Switched-off demos use none of it.
-- Built-in limits: Azure SQL free-limit behavior `AutoPause` (never bills); Container Apps min replicas 0, max 1; Log Analytics daily cap 0.1 GB.
+- Monthly allowance vs. use: Container Apps 180,000 vCPU-s / 360,000 GiB-s is about 66 h with both apps running (0.75 vCPU / 1.5 GiB); each Azure SQL free database is about 55 h at 0.5 vCore. Switched-off demos use none of it.
+- Built-in limits: Azure SQL free-limit behavior `AutoPause` (never bills); Container Apps min replicas 0, max 1.
 - On/off: two manual GitHub Actions workflows (or the same `az` commands by hand):
   - `demo-up`: enables external ingress of `esi-core` (`az containerapp ingress enable`), then calls `/api/health/ready` until it answers, which also wakes the database and agents.
   - `demo-down`: disables external ingress of `esi-core` (`az containerapp ingress disable`). No request can reach core, so core and agents scale to zero and stay there; the databases auto-pause on their own after the idle delay. Data is untouched.
@@ -90,7 +90,7 @@ Rules others must follow
 - After each demo deploy, run the `infra/e2e` scenario against the deployed URLs (connection → chat → visualization → dashboard).
 - The deploy workflow checks `/health/ready` on the new core revision and fails on a failed migration job.
 - A post-deploy probe from outside the environment to `esi-agents` must fail (internal ingress only).
-- The Azure budget alert, the SQL free-limit behavior (`AutoPause`), the Log Analytics daily cap and max replicas 1 are checked in the IaC.
+- The Azure budget alert, the SQL free-limit behavior (`AutoPause`) and max replicas 1 are checked in the IaC or, until IaC exists, by following `infra/azure/README.md`.
 - After setup, run `demo-down` and confirm core is unreachable, then `demo-up` and confirm the e2e scenario passes.
 
 ## Open questions
