@@ -44,7 +44,7 @@ Every project has `Dockerfile`, `.dockerignore` and `compose.yaml` (its own depe
 - SemVer per project and per published package, independent of other projects.
 - Source of truth is the stack's native manifest: `package.json`, `Directory.Build.props` `<Version>`, `pyproject.toml`, or `info.version` for API/schema contracts.
 - Each project has its own `CHANGELOG.md`, generated from Conventional Commits (`feat` = minor, `fix`/`perf` = patch, `!` or `BREAKING CHANGE:` = major).
-- Release tag follows `ESI_RELEASE_TAG_FORMAT`; docker image tag, package version and tag always carry the same version. Release and publish run in CI from `main` after the `develop` → `main` release merge; do not bump versions by hand in feature branches unless the project's `CLAUDE.md` says so.
+- Release tag follows `ESI_RELEASE_TAG_FORMAT`; docker image tag, package version and tag always carry the same version. Release and publish run in CI from `main` after the `develop` → `main` release merge; do not bump versions by hand in feature branches unless the project's `CLAUDE.md` says so. Version bumps happen in a release PR, step by step as in the `esi-release` skill.
 - Contracts and schemas: additive = minor, removal/rename/tightening = major plus an ADR.
 
 ## 4. Nx workspaces (TypeScript multi-package projects)
