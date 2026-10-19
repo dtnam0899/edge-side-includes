@@ -11,6 +11,10 @@ services:
       - "4200:8080"
     environment:
       ESI_PORTAL_API_BASE_URL: ${ESI_PORTAL_API_BASE_URL:-/api}
+      # Auth0 sign-in (all three, or none for sign-in off); see infra/auth0/README.md.
+      ESI_PORTAL_AUTH_DOMAIN: ${ESI_PORTAL_AUTH_DOMAIN:-}
+      ESI_PORTAL_AUTH_CLIENT_ID: ${ESI_PORTAL_AUTH_CLIENT_ID:-}
+      ESI_PORTAL_AUTH_AUDIENCE: ${ESI_PORTAL_AUTH_AUDIENCE:-}
 
 # Token for @dtnam0899/* packages during the image build (export NODE_AUTH_TOKEN=$(gh auth token)).
 secrets:

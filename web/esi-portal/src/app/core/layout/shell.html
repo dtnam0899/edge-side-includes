@@ -10,6 +10,14 @@
       }
     </ul>
   </nav>
+  @if (session.user(); as user) {
+    <div class="shell-account">
+      <span class="shell-user"><span class="visually-hidden">Signed in as </span>{{ user.displayName }}</span>
+      <button pButton type="button" size="small" severity="secondary" [outlined]="true" (click)="session.signOut()">
+        Sign out
+      </button>
+    </div>
+  }
 </header>
 <main id="main" class="shell-main" tabindex="-1">
   <router-outlet />
