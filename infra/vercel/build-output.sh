@@ -4,7 +4,8 @@
 #   build-output.sh <static-dir> <output-dir> [core-url]
 # <output-dir> is replaced. With a core URL, /api/* is proxied to it with the prefix removed (as in the portal's
 # proxy.conf.json and infra/e2e/gateway); without one, /api/* answers 503 so API calls never get index.html.
-# Cache headers match web/esi-portal/docker/nginx.conf.
+# Cache headers match web/esi-portal/docker/nginx.conf; the long asset cache is set in the `hit` phase, so only
+# files that exist get it and a missing asset's 404 is not cached.
 set -eu
 
 static_dir=${1:?usage: build-output.sh <static-dir> <output-dir> [core-url]}
@@ -38,10 +39,11 @@ cat > "$output_dir/config.json" <<EOF
     $api_route,
     { "src": "^/config\\\\.json\$", "headers": { "Cache-Control": "no-store" }, "continue": true },
     { "src": "^/(index\\\\.html)?\$", "headers": { "Cache-Control": "no-cache" }, "continue": true },
-    { "src": "^/.*\\\\.(?:js|css|woff2?|ico|svg|png)\$", "headers": { "Cache-Control": "public, max-age=31536000, immutable" }, "continue": true },
     { "handle": "filesystem" },
     { "src": "^/.*\\\\.(?:js|css|woff2?|ico|svg|png)\$", "status": 404 },
-    { "src": "^/.*\$", "dest": "/index.html", "headers": { "Cache-Control": "no-cache" } }
+    { "src": "^/.*\$", "dest": "/index.html", "headers": { "Cache-Control": "no-cache" } },
+    { "handle": "hit" },
+    { "src": "^/.*\\\\.(?:js|css|woff2?|ico|svg|png)\$", "headers": { "Cache-Control": "public, max-age=31536000, immutable" }, "continue": true }
   ]
 }
 EOF
