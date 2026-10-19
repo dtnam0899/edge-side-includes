@@ -2,9 +2,9 @@
 id: github-setup
 type: process
 status: Active
-updated: 2026-10-18
+updated: 2026-10-19
 projects: [esi]
-issues: [ESI-31]
+issues: [ESI-31, ESI-78]
 keywords: [github, registry, github packages, npm, ghcr, token, NODE_AUTH_TOKEN, secrets, variables, branch protection, labels, templates, P0-11]
 ---
 
@@ -40,7 +40,22 @@ Publishing from a laptop is not part of the workflow: releases and prereleases r
 
 ## Image registry (GHCR)
 
-`ghcr.io/dtnam0899/<project>`. CI pushes with `GITHUB_TOKEN` and `packages: write` when a deployment needs images; until then images are built and checked in CI but not pushed.
+`${ESI_IMAGE_REGISTRY}/<image>` = `ghcr.io/dtnam0899/<image>`. The `release-images` workflow pushes them when a release tag is pushed; project workflows only build and check images.
+
+| Release tag | Images | Dockerfile target |
+|-------------|--------|-------------------|
+| `core@vX.Y.Z` | `esi-core:X.Y.Z`, `esi-core-migrator:X.Y.Z` | `services/core-backend` `runtime`, `migrator` |
+| `agents@vX.Y.Z` | `esi-agents:X.Y.Z` | `services/ai-agents` `runtime` |
+
+- **Tags:** `<version>` and `sha-<short commit>`, linux/amd64 only. Never `latest`; deployments pin a version. A version that already exists in the registry is not overwritten (the run fails): release a new version instead.
+- **Checks before pushing:** the tag matches `ESI_RELEASE_TAG_FORMAT` with a stable `X.Y.Z`, equals the manifest version (`Directory.Build.props` `<Version>` / `pyproject.toml` `version`), and the tagged commit is on `main`; the project's `test` stage passes.
+- **Auth:** `GITHUB_TOKEN` with `packages: write`; no repository secret. The agents runtime image does not need `NODE_AUTH_TOKEN` (only its `published` target fetches packages).
+- **Visibility:** images must be public, because the Azure demo pulls them without credentials (`infra/azure/README.md`). Packages pushed from this repository with `GITHUB_TOKEN` are linked to it (`org.opencontainers.image.source`); the workflow's last step pulls each image anonymously and fails if one is not public. If that happens after the first push of an image, set it once under the package's settings (`https://github.com/users/dtnam0899/packages/container/package/<image>/settings` → Change visibility → Public); later versions keep it.
+- **Releasing:** after the `develop` → `main` release merge, with the manifest already at the new version, a maintainer tags the merge commit and pushes the tag:
+
+```bash
+git tag core@v0.1.0 origin/main && git push origin core@v0.1.0
+```
 
 ## Secrets
 
@@ -50,6 +65,7 @@ Publishing from a laptop is not part of the workflow: releases and prereleases r
 ## Release flow
 
 - Stable releases: after the `develop` → `main` release PR is merged, start the release workflow on `main`: `release-contracts` (version committed in `services/contracts`, tag `contracts@v<version>`) or `release-lib` (versions from tags and conventional commits or an explicit input, tags `lib-<package>@v<version>`). See each project's `CLAUDE.md`.
+- Service images: pushing the release tag `core@v<version>` or `agents@v<version>` on `main` starts `release-images` (see [Image registry](#image-registry-ghcr)).
 - Prereleases (decided 2026-10-18): a manually started workflow may publish from `develop`, and only versions with a prerelease identifier (for example `0.1.0-rc.0`). Stable versions are refused outside `main`.
 
 ## Labels and templates

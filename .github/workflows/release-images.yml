@@ -1,0 +1,136 @@
+name: release-images
+
+# Started by a release tag (ESI_RELEASE_TAG_FORMAT, `<project>@v<version>`) on a commit of main. Builds the
+# project's images for linux/amd64 and pushes them to ESI_IMAGE_REGISTRY as `<image>:<version>` and
+# `<image>:sha-<short sha>`, never `latest`. The tag version must equal the manifest version, and a version
+# that is already published is not overwritten. Images are public (they inherit the public repository's
+# visibility); the last step checks an anonymous pull. See docs/process/github-setup.md.
+#   core@vX.Y.Z   -> esi-core (target runtime), esi-core-migrator (target migrator)
+#   agents@vX.Y.Z -> esi-agents (target runtime)
+# Trigger filters cannot read variables, so the tag prefixes below are fixed; the full tag is checked against
+# ESI_RELEASE_TAG_FORMAT in the first step.
+on:
+  push:
+    tags:
+      - "core@v*"
+      - "agents@v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-images-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TAG_FORMAT: ${{ vars.ESI_RELEASE_TAG_FORMAT }}
+      REGISTRY: ${{ vars.ESI_IMAGE_REGISTRY }}
+      PLATFORM: linux/amd64
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Check tag, manifest version and branch
+        run: |
+          if [ -z "$TAG_FORMAT" ] || [ -z "$REGISTRY" ]; then
+            echo "::error::repository variables ESI_RELEASE_TAG_FORMAT and ESI_IMAGE_REGISTRY must be set"; exit 1
+          fi
+          project_re='[a-z0-9-]+'
+          version_re='[0-9]+\.[0-9]+\.[0-9]+'
+          re=${TAG_FORMAT//./'\.'}
+          re=${re/"<project>"/"($project_re)"}
+          re=${re/"<version>"/"($version_re)"}
+          case "$TAG_FORMAT" in *"<project>"*"<version>"*) ;; *)
+            echo "::error::ESI_RELEASE_TAG_FORMAT '$TAG_FORMAT' must contain <project> before <version>"; exit 1;; esac
+          [[ "$GITHUB_REF_NAME" =~ ^${re}$ ]] \
+            || { echo "::error::tag $GITHUB_REF_NAME does not match $TAG_FORMAT with a stable X.Y.Z version"; exit 1; }
+          project=${BASH_REMATCH[1]}
+          version=${BASH_REMATCH[2]}
+          case "$project" in
+            core)
+              dir=services/core-backend
+              images="esi-core:runtime esi-core-migrator:migrator"
+              manifest=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$dir/Directory.Build.props" | head -n 1)
+              ;;
+            agents)
+              dir=services/ai-agents
+              images="esi-agents:runtime"
+              manifest=$(python3 -c 'import sys, tomllib; print(tomllib.load(open(sys.argv[1], "rb"))["project"]["version"])' "$dir/pyproject.toml")
+              ;;
+            *) echo "::error::no images are published for project $project"; exit 1;;
+          esac
+          [ "$manifest" = "$version" ] \
+            || { echo "::error::tag version $version != manifest version '$manifest' in $dir; bump the manifest in a PR first"; exit 1; }
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
+            || { echo "::error::$GITHUB_REF_NAME is not on main; releases are tagged on main after the develop -> main merge"; exit 1; }
+          {
+            echo "PROJECT_DIR=$dir"
+            echo "VERSION=$version"
+            echo "IMAGES=$images"
+            echo "SHORT_SHA=${GITHUB_SHA::7}"
+          } >> "$GITHUB_ENV"
+          echo "Releasing $project $version: $images"
+      - name: Log in to the registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$TOKEN" | docker login "${REGISTRY%%/*}" -u "$GITHUB_ACTOR" --password-stdin
+      - name: Refuse to overwrite a published version
+        run: |
+          for spec in $IMAGES; do
+            ref="$REGISTRY/${spec%%:*}:$VERSION"
+            if docker manifest inspect "$ref" >/dev/null 2>&1; then
+              echo "::error::$ref already exists; release a new version instead"; exit 1
+            fi
+          done
+      # Format check, lint and unit tests (and agents evals) run in the `test` stage.
+      - name: Test
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: docker build --platform "$PLATFORM" --target test .
+      # The runtime/migrator targets do not reach the agents `fetch` stage, so no NODE_AUTH_TOKEN secret is needed.
+      - name: Build images
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          for spec in $IMAGES; do
+            name=${spec%%:*}
+            docker build --platform "$PLATFORM" --target "${spec#*:}" \
+              --build-arg VERSION="$VERSION" --build-arg REVISION="$GITHUB_SHA" \
+              --label org.opencontainers.image.title="$name" \
+              --label org.opencontainers.image.version="$VERSION" \
+              --label org.opencontainers.image.revision="$GITHUB_SHA" \
+              --label org.opencontainers.image.source="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+              -t "$REGISTRY/$name:$VERSION" -t "$REGISTRY/$name:sha-$SHORT_SHA" .
+          done
+      - name: Push images
+        run: |
+          for spec in $IMAGES; do
+            name=${spec%%:*}
+            docker push "$REGISTRY/$name:$VERSION"
+            docker push "$REGISTRY/$name:sha-$SHORT_SHA"
+            echo "- \`$REGISTRY/$name:$VERSION\` (\`sha-$SHORT_SHA\`)" >> "$GITHUB_STEP_SUMMARY"
+          done
+      # Azure Container Apps pulls without credentials, so every image must be public.
+      - name: Check anonymous pull
+        if: startsWith(vars.ESI_IMAGE_REGISTRY, 'ghcr.io/')
+        run: |
+          owner=${REGISTRY#ghcr.io/}
+          failed=0
+          for spec in $IMAGES; do
+            name=${spec%%:*}
+            # A private package already refuses the anonymous token (403).
+            token=$(curl -fsS "https://ghcr.io/token?scope=repository:$owner/$name:pull" | jq -r .token || true)
+            if [ -n "$token" ] && curl -fsS -o /dev/null -H "Authorization: Bearer $token" \
+                 -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json" \
+                 "https://ghcr.io/v2/$owner/$name/manifests/$VERSION"; then
+              echo "$name:$VERSION is public"
+            else
+              echo "::error::$name is not public: set it once under https://github.com/users/$owner/packages/container/package/$name/settings -> Change visibility -> Public"
+              failed=1
+            fi
+          done
+          exit "$failed"
