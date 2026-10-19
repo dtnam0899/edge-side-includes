@@ -16,7 +16,7 @@ This repository holds several independent projects. Each has its own `CLAUDE.md`
 | `web/esi-portal/` | Angular | Management web app; large features (e.g. the AI assistant) are independent modules inside it |
 | `lib/` | TypeScript workspace | DSL schema/core, Angular renderer, API client, UI tokens |
 
-How the projects relate: only through published, versioned artifacts and network APIs (see Architecture rules). `services/contracts` publishes the API contracts; `lib/dsl-schema` publishes the UI DSL schema; `lib/*` packages and the contracts package are published to GitHub Packages (npm) and consumed by version. The AI agents emit DSL, the portal renders it through `lib/dsl-renderer-angular`. Other top-level dirs: `docs/` (start at `docs/README.md`: requirements, build plan, ADRs, DSL spec, API docs), `infra/` (deployment wiring only), `scripts/`.
+How the projects relate: only through published, versioned artifacts and network APIs (see Architecture rules). `services/contracts` publishes the API contracts; `lib/dsl-schema` publishes the UI DSL schema; `lib/*` packages and the contracts package are published to GitHub Packages (npm) and consumed by version. The AI agents emit DSL, the portal renders it through `lib/dsl-renderer-angular`. Other top-level dirs: `docs/` (start at `docs/README.md`: requirements, build plan, ADRs, DSL spec, API docs), `infra/` (deployment wiring only; `infra/e2e/` wires the built images for the phase 5 end-to-end scenario, run with `infra/e2e/run.sh`), `scripts/`.
 
 Commit/PR `[PROJECT]` codes: `core`, `agents`, `contracts`, `portal`, `lib`, and `esi` for work that spans or is outside any single project (repo-wide docs, ADRs, CI, GitHub settings, cross-project tasks). Work on the assistant module uses `portal`.
 

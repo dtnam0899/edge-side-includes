@@ -51,4 +51,4 @@ Versions verified on 2026-10-18 against official sources (dotnet releases-index,
 ## Open questions
 - Resolved 2026-10-18 (product owner): the app's own database is SQL Server (same engine as the target DBs, one image and one ORM provider).
 - Deferred: model provider and agent framework for `services/ai-agents`. A separate ADR must be accepted before the agents feature work starts (P0-07 scaffolds the service without choosing one).
-- Deferred: hosting target (affects `infra/` only).
+- Deferred: hosting target (affects `infra/` only). Proposed in [ADR-0005](./ADR-0005-hosting-target.md).

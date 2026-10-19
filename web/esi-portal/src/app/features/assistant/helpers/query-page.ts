@@ -28,10 +28,34 @@ export interface ResultPage {
   readonly durationMs: number;
 }
 
-function cellText(value: unknown): string {
+const EXACT_NUMERIC = /^\s*(decimal|numeric)\s*(?:\(\s*\d+\s*(?:,\s*(\d+)\s*)?\))?\s*$/i;
+const MONEY = /^\s*(small)?money\s*$/i;
+
+/**
+ * Digits after the decimal point that SQL Server keeps for a column type, or `undefined` when the type has no
+ * fixed scale. `decimal(p,s)`/`numeric(p,s)` keep `s` (0 when omitted), `money`/`smallmoney` keep 4.
+ */
+export function sqlScale(sqlType: string): number | undefined {
+  if (MONEY.test(sqlType)) return 4;
+  const match = EXACT_NUMERIC.exec(sqlType);
+  if (!match) return undefined;
+  return match[2] === undefined ? 0 : Number(match[2]);
+}
+
+/**
+ * JSON numbers lose trailing zeros (`275.00` parses to `275`), so exact numeric cells are shown with the
+ * column's scale again. Values outside the plain `toFixed` range keep their default text.
+ */
+function cellText(value: unknown, scale: number | undefined): string {
   if (value === null || value === undefined) return 'NULL';
   if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'number') {
+    if (scale !== undefined && scale <= 100 && Number.isFinite(value) && Math.abs(value) < 1e21) {
+      return value.toFixed(scale);
+    }
+    return String(value);
+  }
+  if (typeof value === 'boolean') return String(value);
   return JSON.stringify(value);
 }
 
@@ -42,12 +66,13 @@ export function toResultPage(result: QueryResult): ResultPage {
   );
   const { number, size, remainingRows } = result.page;
   const offset = (number - 1) * size;
+  const scales = new Map(result.columns.map((column) => [column.name, sqlScale(column.sqlType)]));
   const rows = result.rows.map((row, index) => {
     const cells: Record<string, ResultCell> = {};
     for (const column of result.columns) {
       const value = row[column.name];
       cells[column.name] = {
-        text: cellText(value),
+        text: cellText(value, scales.get(column.name)),
         isNull: value === null || value === undefined,
         truncated: truncated.has(`${index}\u0000${column.name}`),
       };

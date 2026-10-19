@@ -21,7 +21,7 @@ Derived from [UR-1](../requirements/UR-1-bi-ai-assistant-web-application.md) and
 | 2 | Core backend | ESI-15 -> ESI-16 -> ESI-17 `[core]` | ESI-13 | API works alone against a test SQL Server; security tests pass |
 | 3 | AI agents | ESI-18 `[agents]` (parallel with phase 2) | ESI-13, ESI-14 | Evals pass for SQL safety and DSL output |
 | 4 | Portal assistant module | ESI-19 -> ESI-20 `[portal]` | ESI-13, ESI-14, phase 2 | Chat, execute, render, save, dashboard work in the UI |
-| 5 | Integration | end-to-end test of the full flow | phases 2-4 | One scripted scenario from connection to dashboard passes |
+| 5 | Integration | end-to-end test of the full flow: [infra/e2e](../../infra/e2e/README.md) (ESI-64, done 2026-10-18) | phases 2-4 | One scripted scenario from connection to dashboard passes (met: `infra/e2e/run.sh`, scripted model) |
 | 6 | Production readiness | no issues filed yet (real auth, consent text approval, key review, read-only login advice) | phase 5 | Release checklist in UR-1 "Open questions" closed |
 | 7 | Charts | ESI-10 `[lib]`, ESI-11 `[agents]`, ESI-12 `[portal]` | phase 5, chart ADR | Chart renders with "first 20 of N rows" and view-as-table |
 

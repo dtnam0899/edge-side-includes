@@ -1,6 +1,6 @@
 [project]
 name = "esi-agents"
-version = "0.0.0"
+version = "0.1.0"
 description = "ESI AI agents service: agents, tools, prompts and evals."
 readme = "README.md"
 requires-python = ">=3.13,<3.15"

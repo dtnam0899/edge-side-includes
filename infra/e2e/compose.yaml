@@ -1,0 +1,110 @@
+# End-to-end scenario for UR-1 (phase 5): wires the already-built images of core, agents and portal with
+# one SQL Server, a seeded target database and a gateway, then runs the Playwright scenario against it.
+# Never builds from project sources (root CLAUDE.md rule 3): build the images first, see README.md.
+#   ./run.sh                                  -> up, scenario, down (exit code = scenario result)
+#   docker compose up -d --wait gateway        -> stack only; portal on http://localhost:4300
+#   docker compose --profile test run --rm scenario
+# Local-only values below (sa password, master key, reader password) are dummies; never reuse them.
+name: esi-e2e
+
+x-sa-password: &sa-password ${ESI_E2E_SA_PASSWORD:-EsiE2eLocal_2026}
+
+services:
+  sqlserver:
+    # amd64 only: on Apple silicon Docker Desktop needs Rosetta emulation and 4 GB or more.
+    image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: *sa-password
+      MSSQL_MEMORY_LIMIT_MB: ${ESI_E2E_SQL_MEMORY_LIMIT_MB:-2048}
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
+
+  # The user's database: recreated from fixtures/target.sql with a read-only login on every run.
+  target-seed:
+    image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
+    platform: linux/amd64
+    entrypoint: ["/opt/mssql-tools18/bin/sqlcmd", "-C", "-S", "sqlserver", "-U", "sa", "-b", "-i", "/fixtures/target.sql"]
+    environment:
+      SQLCMDPASSWORD: *sa-password
+      READER_PASSWORD: ${ESI_E2E_READER_PASSWORD:-E2eReader_2026}
+    volumes:
+      - ./fixtures:/fixtures:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  migrate:
+    image: ${ESI_E2E_CORE_MIGRATOR_IMAGE:-esi-core-migrator:dev}
+    environment:
+      ESI_CORE_AppDb__ConnectionString: &appdb "Server=sqlserver;Database=esi_core;User Id=sa;Password=${ESI_E2E_SA_PASSWORD:-EsiE2eLocal_2026};TrustServerCertificate=True"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  agents:
+    image: ${ESI_E2E_AGENTS_IMAGE:-esi-agents:dev}
+    command: ["python", "/e2e/fixture_model.py"]
+    environment:
+      ESI_AGENTS_LOG_LEVEL: INFO
+      ESI_E2E_MODEL_FIXTURES: /e2e/model-fixtures.json
+    volumes:
+      - ./agents:/e2e:ro
+
+  api:
+    image: ${ESI_E2E_CORE_IMAGE:-esi-core:dev}
+    environment:
+      ESI_CORE_Auth__Mode: LocalAdmin
+      ESI_CORE_Encryption__ActiveKeyVersion: "1"
+      ESI_CORE_Encryption__MasterKeys__1: ZTJlLWxvY2FsLW9ubHkta2V5LW5vdC1hLXNlY3JldCE=
+      ESI_CORE_AppDb__ConnectionString: *appdb
+      ESI_CORE_Agents__BaseUrl: http://agents:8000/
+      ESI_CORE_Logging__LogLevel__Default: Information
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      target-seed:
+        condition: service_completed_successfully
+      agents:
+        condition: service_healthy
+
+  portal:
+    image: ${ESI_E2E_PORTAL_IMAGE:-esi-portal:dev}
+    environment:
+      ESI_PORTAL_API_BASE_URL: /api
+
+  gateway:
+    image: nginxinc/nginx-unprivileged:1.30.6-alpine3.24
+    ports:
+      - "${ESI_E2E_PORT:-4300}:8080"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/api/health/ready >/dev/null && wget -qO- http://127.0.0.1:8080/ >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    depends_on:
+      api:
+        condition: service_healthy
+      portal:
+        condition: service_healthy
+
+  scenario:
+    profiles: [test]
+    build:
+      context: ./scenario
+    environment:
+      E2E_BASE_URL: http://gateway:8080
+      E2E_TARGET_CONNECTION_STRING: "Server=sqlserver;Database=esi_target;User Id=e2e_reader;Password=${ESI_E2E_READER_PASSWORD:-E2eReader_2026};TrustServerCertificate=True"
+    volumes:
+      - ./results:/scenario/results
+    depends_on:
+      gateway:
+        condition: service_healthy
