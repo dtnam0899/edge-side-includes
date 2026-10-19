@@ -66,6 +66,7 @@ git tag core@v0.1.0 origin/main && git push origin core@v0.1.0
 
 - Stable releases: after the `develop` → `main` release PR is merged, start the release workflow on `main`: `release-contracts` (version committed in `services/contracts`, tag `contracts@v<version>`) or `release-lib` (versions from tags and conventional commits or an explicit input, tags `lib-<package>@v<version>`). See each project's `CLAUDE.md`.
 - Service images: pushing the release tag `core@v<version>` or `agents@v<version>` on `main` starts `release-images` (see [Image registry](#image-registry-ghcr)).
+- Step-by-step for any project (version choice, release PRs, tags, verification), also for AI agents: the `esi-release` skill (`.claude/skills/esi-release/SKILL.md`).
 - Prereleases (decided 2026-10-18): a manually started workflow may publish from `develop`, and only versions with a prerelease identifier (for example `0.1.0-rc.0`). Stable versions are refused outside `main`.
 
 ## Labels and templates

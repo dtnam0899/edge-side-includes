@@ -15,7 +15,7 @@ Mirrors `.claude/commands/commit.md` and `pr.md`; if they disagree, the commands
   Types: `feat fix docs refactor test chore perf ci`. Breaking change: `!` after scope and a `BREAKING CHANGE:` footer.
 - Scope and `[PROJECT]` tag: the project directory code listed in the root `CLAUDE.md` project table (e.g. ticket `ESI-123 [CORE] ...` gives scope `core`). Work that spans or sits outside any single project uses the code `esi` in titles (`ESI-<n> [esi] ...`); for commit scopes use `docs`, `infra`, `scripts` or `esi`.
 - PR title: `ESI-<n> [PROJECT] <summary>`. Base branch `develop`; one approval, CI green, squash-merge into `develop`.
-- Production release: only a release PR from `develop` into `main`, merged with a merge commit (no squash) after CI is green and one approval. Feature PRs never target `main`.
+- Production release: only a release PR from `develop` into `main`, merged with a merge commit (no squash) after CI is green and one approval. Feature PRs never target `main`. Versions, tags and publishing: follow the `esi-release` skill.
 - One commit and one PR touch one project where possible; if a change must span projects (e.g. a shared contract plus its consumers), say so in the PR description.
 - Before a PR, run the lint, typecheck and test commands from the project's own `CLAUDE.md`.
 - Never commit secrets or `.env`; never commit directly to or force-push `develop` or `main`; do not push unless asked.
