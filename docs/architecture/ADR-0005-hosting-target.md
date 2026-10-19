@@ -97,4 +97,4 @@ Rules others must follow
 - Product owner: the demo period end date (when the `esi-demo` resource group is deleted).
 - Resolved 2026-10-18 (product owner): ESI is a personal, non-commercial project; Vercel Hobby is allowed. The demo must stay within free allowances.
 - Azure region; IaC tool (Bicep or Terraform); who owns the Azure subscription (a payment method is required even for free services) and the Vercel account.
-- Model provider for the demo (separate ADR; a free, rate-limited provider tier may be enough for demos).
+- Model provider for the demo: proposed in [ADR-0007](./ADR-0007-model-provider.md) (Gemini API free tier).
