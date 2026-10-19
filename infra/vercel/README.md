@@ -1,0 +1,44 @@
+---
+id: vercel-portal-deploy
+type: process
+status: Active
+updated: 2026-10-18
+projects: [portal]
+issues: [ESI-72]
+keywords: [vercel, deploy, portal, demo, prebuilt, build output api, rewrites, github actions]
+---
+
+# Portal on Vercel (demo)
+
+Deploys `web/esi-portal` to Vercel Hobby for the demo environment ([ADR-0005](../../docs/architecture/ADR-0005-hosting-target.md), Proposed). Vercel never builds the portal: the `portal` workflow builds and tests it in Docker as usual, exports the static files of the `check` stage, and `build-output.sh` wraps them in a [Build Output API](https://vercel.com/docs/build-output-api) directory that `vercel deploy --prebuilt` uploads.
+
+| Event | Deployment |
+|-------|------------|
+| Push to `develop` | Vercel production (the demo URL) |
+| PR from this repository | Preview, behind Vercel Authentication |
+| PR from a fork, push to `main` | None |
+
+Routing (`build-output.sh`): `/api/*` is proxied to `ESI_DEMO_CORE_URL` with the prefix removed, like `proxy.conf.json` and `infra/e2e/gateway`, so the portal keeps `apiBaseUrl` `/api` and core needs no CORS. Without the variable, `/api/*` answers 503. Other paths are static files with the cache headers of `web/esi-portal/docker/nginx.conf`, and unknown non-asset paths fall back to `index.html`. Vercel waits at most 120 s for the first byte from core.
+
+## One-time setup
+
+The deploy job is skipped until `VERCEL_PROJECT_ID` is set, so CI passes before this is done.
+
+1. In Vercel (Hobby), create a project named `esi-portal` **without connecting the Git repository** (deployments come only from the workflow). Framework preset: Other. Leave Deployment Protection at Standard (previews need Vercel sign-in).
+2. Copy the IDs: run `npx vercel@62.2.0 link` in an empty folder and read `.vercel/project.json`, or take them from Project Settings → General (Project ID) and Team/Account Settings (ID).
+3. Create a token in Vercel Account Settings → Tokens, scoped to that account, with an expiry date.
+4. In GitHub → Settings → Secrets and variables → Actions:
+   - secret `VERCEL_TOKEN`
+   - variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+   - variable `ESI_DEMO_CORE_URL` (the `esi-core` Container Apps URL, `https://…`) once core is deployed; until then `/api/*` answers 503.
+5. Push to `develop` (or re-run the latest `portal` workflow on `develop`); the job summary prints the deployment URL.
+
+No npm token is stored in Vercel: packages are installed in the GitHub workflow with `GITHUB_TOKEN`.
+
+## Try it locally
+
+```bash
+infra/vercel/build-output.sh web/esi-portal/dist/esi-portal/browser /tmp/esi-vercel/.vercel/output https://core.example.test
+```
+
+Then inspect `/tmp/esi-vercel/.vercel/output/config.json`. Deploying by hand works the same way: in `/tmp/esi-vercel`, with `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` set, run `npx vercel@62.2.0 deploy --prebuilt`.
