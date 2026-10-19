@@ -2,7 +2,7 @@
 
 All notable changes are generated from Conventional Commits by the release flow. Do not edit released sections by hand.
 
-## Unreleased
+## 0.1.0
 
 - Artifacts and dashboards (ESI-17 part 2, core-api 0.1.0): saved artifacts with SQL and DSL validation and live `executeArtifact`, dashboards with items and persisted layout, consent hiding, `connection-unavailable` / `missing` / `migration-required` states instead of stale data.
 - Chat, scripts and visualizations (ESI-17 part 1, core-api 0.1.0): chat sessions with synchronous SQL generation through services/ai-agents (generated agents-api client), automatic script library for stored-procedure answers, visualizations validated by a .NET port of dsl-core against the shared dsl-schema fixtures with up to 2 retries, `agents-unavailable` (503). `scripts/sync-published.sh` replaces `generate-contracts.sh` and also vendors the A2UI catalog and DSL fixtures from `@dtnam0899/dsl-schema` 0.1.0.

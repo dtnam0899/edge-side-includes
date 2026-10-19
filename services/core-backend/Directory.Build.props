@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Project version (SemVer); release tags are core@v<Version>. -->
-    <Version>0.0.0</Version>
+    <Version>0.1.0</Version>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
