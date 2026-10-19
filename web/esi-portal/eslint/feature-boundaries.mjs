@@ -1,11 +1,13 @@
 // Local ESLint rule enforcing the module rules in CLAUDE.md:
 // - a feature (src/app/features/<name>/) must not import another feature;
 // - core/ and shared/ must not import any feature;
-// - the app root (src/app/*.ts) may import a feature only through its `<name>.routes` file.
+// - the app root (src/app/*.ts) may import a feature only through its `<name>.routes` file;
+// - a feature must not see auth: no `core/auth/` and no `@auth0/*` (ADR-0006; the interceptor adds tokens).
 import path from 'node:path';
 
 const FEATURES = `${path.sep}src${path.sep}app${path.sep}features${path.sep}`;
 const APP = `${path.sep}src${path.sep}app${path.sep}`;
+const CORE_AUTH = `${path.sep}src${path.sep}app${path.sep}core${path.sep}auth`;
 
 function featureOf(file) {
   const i = file.indexOf(FEATURES);
@@ -29,6 +31,7 @@ export default {
       crossFeature: "Feature '{{from}}' must not import feature '{{to}}'. Move shared code to core/ or shared/, or navigate by route.",
       layerToFeature: "'{{area}}/' must not import feature '{{to}}'.",
       privateFeature: "Import only '{{to}}.routes' from feature '{{to}}', not its internals.",
+      featureAuth: "Feature '{{from}}' must not import auth ('{{source}}'); requests are authenticated by core's interceptor.",
     },
     schema: [],
   },
@@ -38,7 +41,12 @@ export default {
     const area = areaOf(filename);
 
     function check(node, source) {
-      if (typeof source !== 'string' || !source.startsWith('.')) return;
+      if (typeof source !== 'string') return;
+      if (from && isAuth(source)) {
+        context.report({ node, messageId: 'featureAuth', data: { from: from.name, source } });
+        return;
+      }
+      if (!source.startsWith('.')) return;
       const target = featureOf(path.resolve(path.dirname(filename), source));
       if (!target) return;
       if (from) {
@@ -48,6 +56,13 @@ export default {
       } else if (area) {
         context.report({ node, messageId: 'layerToFeature', data: { area, to: target.name } });
       }
+    }
+
+    function isAuth(source) {
+      if (source === '@auth0' || source.startsWith('@auth0/')) return true;
+      if (!source.startsWith('.')) return false;
+      const target = path.resolve(path.dirname(filename), source);
+      return target.endsWith(CORE_AUTH) || target.includes(CORE_AUTH + path.sep);
     }
 
     return {
