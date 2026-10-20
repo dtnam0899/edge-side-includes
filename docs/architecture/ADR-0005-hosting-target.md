@@ -16,7 +16,7 @@ keywords: [hosting, auth0, budget, demo-up, demo-down, deployment, demo, free ti
 - ESI is a personal, non-commercial project (product owner, 2026-10-18), so the Vercel Hobby fair-use restriction is met.
 - `web/esi-portal` is a static Angular build. It reads `/config.json` at start (`apiBaseUrl`, default `/api`) and expects core on the same origin: core has no CORS by design (`infra/e2e/gateway/nginx.conf` proxies `/api/*` to core with the prefix removed). Installing `@dtnam0899/*` packages during the build needs `NODE_AUTH_TOKEN` (classic token with `read:packages`).
 - `services/core-backend` is .NET 10, configured only by `ESI_CORE_*` environment variables, with an EF Core migrations bundle (`migrator` Docker target) and `/health`, `/health/ready`. It connects out to users' SQL Server target databases (SR-1, ADR-0004).
-- The app's own database is SQL Server (ADR-0001). Master keys for connection secrets come from environment variables (ADR-0003, option 1).
+- The app's own database is SQL Server (ADR-0001); [ADR-0008](./ADR-0008-app-database-postgresql.md) proposes PostgreSQL instead. Master keys for connection secrets come from environment variables (ADR-0003, option 1).
 - `services/ai-agents` is Python 3.13 / FastAPI, called only by core (`ESI_CORE_Agents__BaseUrl`), with no authentication of its own. Model provider not chosen yet (ADR-0001).
 - Core calls agents with a 120 s default timeout (`ESI_CORE_Agents__TimeoutSeconds`) and retries visualization generation up to 2 times (`ESI_CORE_Visualization__MaxRetries`).
 - Authentication (SR-9) is Auth0 through standard OIDC ([ADR-0006](./ADR-0006-authentication-provider.md)); `LocalAdmin` stays local-only and must never be set in a deployment.
@@ -51,6 +51,7 @@ Core and agents on Azure Container Apps (consumption plan)
 - Logs: no Log Analytics workspace (`--logs-destination none`, no cost); live logs through `az containerapp logs show`. Add a workspace with a daily cap only if history is needed.
 
 Database: Azure SQL Database free offer
+- If [ADR-0008](./ADR-0008-app-database-postgresql.md) is accepted, only `esi_demo_target` stays here and `esi_core` moves to a free managed Postgres (proposed: Neon Free); see ADR-0008, Consequences.
 - One logical server with two free-offer databases: `esi_core` (the app database) and `esi_demo_target` (a sample target database for the demo, seeded from a script owned by `infra/azure/`, not read from core's test fixtures).
 - Free-limit behavior **auto-pause until next month** (never bill), minimum vCores 0.5, shortest allowed auto-pause delay.
 - Public endpoint with the firewall rule "Allow Azure services and resources" (no private endpoint, which is paid), SQL authentication with a contained user per database: core's app user owns only `esi_core`; the demo connection uses a read-only login on `esi_demo_target`, as the consent terms require.
