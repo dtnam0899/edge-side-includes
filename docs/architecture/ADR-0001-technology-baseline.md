@@ -10,6 +10,8 @@ keywords: [stack, versions, dotnet, angular, python, nx, sql server, orm, packag
 
 # ADR-0001 Technology baseline and versions
 
+> The "core data store" row and the 2026-10-18 app-database answer below are **superseded by [ADR-0008](./ADR-0008-app-database-postgresql.md)** (app database on PostgreSQL; target databases stay SQL Server). The rest of this ADR stands.
+
 ## Context
 - The root `CLAUDE.md` fixes the stack per project: `core-backend` .NET, `ai-agents` Python, `contracts` OpenAPI, `esi-portal` Angular, `lib` TypeScript with Nx. The versions, frameworks, ORM, package managers and test tools are placeholders (`<version>`) in the project `CLAUDE.md` files.
 - `@a2ui/angular` 0.13.0 has peer dependencies on Angular `^21.2.5` (see [UR-1](../requirements/UR-1-bi-ai-assistant-web-application.md), findings), so the portal and `lib/dsl-renderer-angular` need Angular 21 or newer.
@@ -49,6 +51,6 @@ Versions verified on 2026-10-18 against official sources (dotnet releases-index,
 - A dependency-check step flags unpinned base images (`latest`) and unlocked installs.
 
 ## Open questions
-- Resolved 2026-10-18 (product owner): the app's own database is SQL Server (same engine as the target DBs, one image and one ORM provider).
+- Resolved 2026-10-18 (product owner): the app's own database is SQL Server (same engine as the target DBs, one image and one ORM provider). Superseded by [ADR-0008](./ADR-0008-app-database-postgresql.md).
 - Deferred: model provider and agent framework for `services/ai-agents`. A separate ADR must be accepted before the agents feature work starts (P0-07 scaffolds the service without choosing one). Model provider proposed in [ADR-0007](./ADR-0007-model-provider.md) (Gemini API free tier for the demo, plain `httpx`, no agent framework).
 - Deferred: hosting target (affects `infra/` only). Proposed in [ADR-0005](./ADR-0005-hosting-target.md).

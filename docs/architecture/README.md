@@ -1,7 +1,7 @@
 ---
 id: adr-index
 type: index
-updated: 2026-10-19
+updated: 2026-10-20
 keywords: [adr, architecture decision record, decisions, template]
 ---
 
@@ -13,13 +13,14 @@ One decision per file: `ADR-NNNN-short-title.md`. Breaking changes to a contract
 
 | ADR | Title | Status | Projects | Needed by |
 |-----|-------|--------|----------|-----------|
-| [ADR-0001](./ADR-0001-technology-baseline.md) | Technology baseline and versions | Accepted | all | P0-06..P0-10 (scaffolds) |
+| [ADR-0001](./ADR-0001-technology-baseline.md) | Technology baseline and versions (app database row superseded by ADR-0008) | Accepted | all | P0-06..P0-10 (scaffolds) |
 | [ADR-0002](./ADR-0002-a2ui-dsl-adoption-and-storage.md) | A2UI adoption and DSL storage model | Accepted | lib, agents, core, portal | ESI-14, ESI-17, ESI-18, ESI-20 |
 | [ADR-0003](./ADR-0003-connection-secret-key-management.md) | Connection secret encryption and key management | Accepted | core | ESI-15 |
 | [ADR-0004](./ADR-0004-sql-validation-and-execution-policy.md) | SQL validation and execution policy | Accepted | core, agents | ESI-16, ESI-18 |
 | [ADR-0005](./ADR-0005-hosting-target.md) | Hosting target for the demo: Vercel Hobby, Azure Container Apps, Azure SQL free offer | Proposed | portal, core, agents | demo deployment |
 | [ADR-0006](./ADR-0006-authentication-provider.md) | Authentication provider: Auth0 through standard OIDC | Proposed | contracts, core, portal | demo deployment (ADR-0005) |
 | [ADR-0007](./ADR-0007-model-provider.md) | Model provider for the agents: Gemini API free tier (demo) | Proposed | agents | ESI-89, demo deployment (ADR-0005) |
+| [ADR-0008](./ADR-0008-app-database-postgresql.md) | App database on PostgreSQL (target databases stay SQL Server) | Proposed | core | ESI-94 |
 
 Planned, not written yet: chart component and library (phase 7, before ESI-10).
 
