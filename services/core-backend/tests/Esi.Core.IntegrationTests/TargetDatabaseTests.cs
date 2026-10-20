@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using Npgsql;
 
 namespace Esi.Core.IntegrationTests;
 
@@ -12,7 +13,7 @@ public class TargetDatabaseTests(TargetDatabase target)
     [Fact]
     public void Target_database_is_separate_from_the_app_database() =>
         Assert.NotEqual(
-            new SqlConnectionStringBuilder(TestDatabases.AppDb).InitialCatalog,
+            new NpgsqlConnectionStringBuilder(TestDatabases.AppDb).Database,
             new SqlConnectionStringBuilder(target.ConnectionString).InitialCatalog);
 
     [Fact]
