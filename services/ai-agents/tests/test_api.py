@@ -1,3 +1,4 @@
+import asyncio
 import json
 from pathlib import Path
 
@@ -128,3 +129,25 @@ def test_oversized_prompts_are_rejected() -> None:
     response = api.post("/sql-generations", json={"question": "How many orders?", "schema": SCHEMA})
     assert response.status_code == 400
     assert model.prompts == []
+
+
+class SlowModel:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def complete(self, prompt: str) -> str:
+        self.calls += 1
+        await asyncio.sleep(0.04)
+        return "not json"
+
+
+def test_request_deadline_covers_every_candidate() -> None:
+    model = SlowModel()
+    settings = Settings(
+        model_backoff_seconds=0, request_deadline_seconds=0.1, sql_max_retries=5, model_retries=0
+    )
+    api = TestClient(create_app(model, settings))
+    response = api.post("/sql-generations", json={"question": "Orders?", "schema": SCHEMA})
+    assert response.status_code == 503
+    assert response.json()["detail"] == "the model did not answer in time"
+    assert model.calls < 6

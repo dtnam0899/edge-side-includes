@@ -158,6 +158,22 @@
         "path": "/modelCalls",
         "value": 1
       }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      }
     ]
   },
   {
@@ -253,6 +269,22 @@
         "kind": "equals",
         "path": "/response/dsl/components/0/component",
         "value": "Card"
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
       }
     ]
   },
@@ -399,6 +431,18 @@
       {
         "kind": "absent",
         "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 0
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
       },
       {
         "kind": "equals",
@@ -3519,6 +3563,32 @@
         "kind": "contains",
         "path": "/prompts",
         "value": "Country: nvarchar(100)"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/prompts",
+        "value": "ROW-VALUE-SENTINEL"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/prompts",
+        "value": "Password="
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
       },
       {
         "kind": "not_contains",

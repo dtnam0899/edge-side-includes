@@ -1,6 +1,8 @@
 """FastAPI application: ``/health`` plus the agents-api operations (contract in ``vendor/``)."""
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -25,7 +27,7 @@ from esi_agents.llm import (
     ModelClient,
     ModelUnavailableError,
     PromptTooLargeError,
-    UnconfiguredModel,
+    build_model,
 )
 
 PROBLEM_JSON = "application/problem+json"
@@ -45,13 +47,26 @@ def problem(status: int, name: str, title: str, detail: str, **extra: object) ->
 
 
 def create_app(model: ModelClient | None = None, settings: Settings | None = None) -> FastAPI:
-    """Build the application. Without a model every generation answers ``model-unavailable``."""
+    """Build the application; the model comes from ``ESI_AGENTS_MODEL_PROVIDER`` unless given.
+
+    With provider ``none`` every generation answers ``model-unavailable``.
+    """
     settings = settings or get_settings()
     logging.basicConfig(level=settings.log_level)
-    model = model or UnconfiguredModel()
+    # httpx logs every request line at INFO; keep provider traffic out of the logs.
+    for name in ("httpx", "httpcore"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+    model = model or build_model(settings)
     sql_agent = SqlGenerationAgent(model, settings)
     dsl_agent = DslGenerationAgent(model, settings)
-    app = FastAPI(title="esi-agents", version=__version__)
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        yield
+        if (close := getattr(model, "aclose", None)) is not None:
+            await close()
+
+    app = FastAPI(title="esi-agents", version=__version__, lifespan=lifespan)
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(_: Request, error: RequestValidationError) -> JSONResponse:

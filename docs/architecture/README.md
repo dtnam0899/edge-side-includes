@@ -19,7 +19,7 @@ One decision per file: `ADR-NNNN-short-title.md`. Breaking changes to a contract
 | [ADR-0004](./ADR-0004-sql-validation-and-execution-policy.md) | SQL validation and execution policy | Accepted | core, agents | ESI-16, ESI-18 |
 | [ADR-0005](./ADR-0005-hosting-target.md) | Hosting target for the demo: Vercel Hobby, Azure Container Apps, Azure SQL free offer | Proposed | portal, core, agents | demo deployment |
 | [ADR-0006](./ADR-0006-authentication-provider.md) | Authentication provider: Auth0 through standard OIDC | Proposed | contracts, core, portal | demo deployment (ADR-0005) |
-| [ADR-0007](./ADR-0007-model-provider.md) | Model provider for the agents: Gemini API free tier (demo) | Proposed | agents | ESI-89, demo deployment (ADR-0005) |
+| [ADR-0007](./ADR-0007-model-provider.md) | Model provider for the agents: Gemini API free tier (demo) | Accepted | agents | ESI-89, demo deployment (ADR-0005) |
 | [ADR-0008](./ADR-0008-app-database-postgresql.md) | App database on PostgreSQL (target databases stay SQL Server) | Proposed | core | ESI-94 |
 
 Planned, not written yet: chart component and library (phase 7, before ESI-10).
