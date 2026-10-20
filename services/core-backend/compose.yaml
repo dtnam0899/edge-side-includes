@@ -1,13 +1,13 @@
-# Local dev for services/core-backend. The SQL Server sa password comes from ESI_CORE_SA_PASSWORD (shell or
-# the git-ignored .env next to this file, see .env.example); without it the local-only default below is used.
-# SQL Server's port is not published to the host, so the default is reachable only inside this compose network.
-#   docker compose up                                              -> sqlserver, migrations, api on :8080
-#   docker compose --profile integration run --rm integration-tests -> integration tests
+# Local dev for services/core-backend. Passwords come from ESI_CORE_PG_PASSWORD and ESI_CORE_SA_PASSWORD (shell or
+# the git-ignored .env next to this file, see .env.example); without them the local-only defaults below are used.
+# No database port is published to the host, so the defaults are reachable only inside this compose network.
+#   docker compose up                                              -> postgres, migrations, api on :8080
+#   docker compose --profile integration run --rm integration-tests -> integration tests (also starts sqlserver)
 #
-# One SQL Server instance (SQL Server needs ~2 GB, so a second instance does not fit a small Docker VM) holds
-# two separate databases: esi_core (the application's own database) and esi_target (stand-in for a user's
-# target database in integration tests). Never point the application at esi_target.
+# Two engines (ADR-0008): postgres holds esi_core, the application's own database; sqlserver holds only esi_target,
+# the stand-in for a user's SQL Server target database in integration tests. Never point the application at esi_target.
 x-sa-password: &sa-password ${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026}
+x-pg-password: &pg-password ${ESI_CORE_PG_PASSWORD:-EsiLocalDev_2026}
 # Local-only stand-ins (never use in a deployment): the assumed local admin user (no identity provider yet, SR-9)
 # and a dummy master key for connection-string encryption (ADR-0003; 32 bytes, base64). Override in .env.
 x-core-env: &core-env
@@ -16,8 +16,24 @@ x-core-env: &core-env
   ESI_CORE_Encryption__MasterKeys__1: ${ESI_CORE_MASTER_KEY_V1:-bG9jYWwtZGV2LW9ubHkta2V5LW5vdC1hLXNlY3JldCE=}
 
 services:
+  postgres:
+    image: postgres:17.10-alpine
+    environment:
+      POSTGRES_DB: esi_core
+      POSTGRES_USER: esi
+      POSTGRES_PASSWORD: *pg-password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esi -d esi_core"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
   sqlserver:
-    # SQL Server publishes amd64 images only; on Apple silicon Docker Desktop needs Rosetta emulation.
+    # Only for esi_target (integration tests). SQL Server publishes amd64 images only; on Apple silicon Docker
+    # Desktop needs Rosetta emulation.
     image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
     platform: linux/amd64
     environment:
@@ -40,9 +56,9 @@ services:
       target: migrator
     image: esi-core-migrator:dev
     environment:
-      ESI_CORE_AppDb__ConnectionString: &appdb-connection "Server=sqlserver;Database=esi_core;User Id=sa;Password=${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026};TrustServerCertificate=True"
+      ESI_CORE_AppDb__ConnectionString: &appdb-connection "Host=postgres;Database=esi_core;Username=esi;Password=${ESI_CORE_PG_PASSWORD:-EsiLocalDev_2026}"
     depends_on:
-      sqlserver:
+      postgres:
         condition: service_healthy
 
   api:
@@ -79,6 +95,9 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      sqlserver:
+        condition: service_healthy
 
 volumes:
+  postgres-data:
   sqlserver-data:

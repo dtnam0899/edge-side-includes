@@ -35,10 +35,18 @@ jobs:
         run: docker build --secret id=npm_token,env=NODE_AUTH_TOKEN --build-arg REVISION="$GITHUB_SHA" -t portal:ci .
       - name: Runtime config and health
         run: |
-          docker run -d --name portal -p 8080:8080 -e ESI_PORTAL_API_BASE_URL=https://api.example.test portal:ci
+          docker run -d --name portal -p 8080:8080 -e ESI_PORTAL_API_BASE_URL=https://api.example.test \
+            -e ESI_PORTAL_AUTH_DOMAIN=esi-ci.eu.auth0.com -e ESI_PORTAL_AUTH_CLIENT_ID=ci-client \
+            -e ESI_PORTAL_AUTH_AUDIENCE=https://api.esi.demo portal:ci
           for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
-          curl -fsS http://127.0.0.1:8080/config.json | grep -q '"apiBaseUrl": "https://api.example.test"'
+          curl -fsS http://127.0.0.1:8080/config.json | tee "$RUNNER_TEMP/config.json"
+          grep -q '"apiBaseUrl": "https://api.example.test"' "$RUNNER_TEMP/config.json"
+          grep -q '"auth": { "domain": "esi-ci.eu.auth0.com", "clientId": "ci-client", "audience": "https://api.esi.demo" }' "$RUNNER_TEMP/config.json"
           curl -fsS http://127.0.0.1:8080/assistant | grep -q '<app-shell>' || { docker logs portal; exit 1; }
+          # A partial Auth0 configuration must stop the container instead of starting without sign-in.
+          rc=0; timeout 30 docker run --name portal-partial -e ESI_PORTAL_AUTH_DOMAIN=esi-ci.eu.auth0.com portal:ci || rc=$?
+          docker rm -f portal-partial >/dev/null
+          [ "$rc" = 1 ] || { echo "partial ESI_PORTAL_AUTH_* was not refused (exit $rc)" >&2; exit 1; }
       # The Vercel deployment uses exactly the files the check stage built and tested (ADR-0005).
       - name: Export static files
         if: vars.VERCEL_PROJECT_ID != '' && ((github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
@@ -73,6 +81,10 @@ jobs:
       - name: Build output
         env:
           ESI_DEMO_CORE_URL: ${{ vars.ESI_DEMO_CORE_URL }}
+          # Auth0 SPA client settings (public, not secrets); unset means sign-in off (infra/auth0/README.md).
+          ESI_PORTAL_AUTH_DOMAIN: ${{ vars.ESI_DEMO_AUTH_DOMAIN }}
+          ESI_PORTAL_AUTH_CLIENT_ID: ${{ vars.ESI_DEMO_AUTH_CLIENT_ID }}
+          ESI_PORTAL_AUTH_AUDIENCE: ${{ vars.ESI_DEMO_AUTH_AUDIENCE }}
         run: infra/vercel/build-output.sh "$RUNNER_TEMP/portal-static" "$RUNNER_TEMP/deploy/.vercel/output" "$ESI_DEMO_CORE_URL"
       - name: Deploy
         working-directory: ${{ runner.temp }}/deploy

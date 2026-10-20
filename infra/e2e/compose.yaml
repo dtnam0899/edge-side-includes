@@ -1,15 +1,32 @@
 # End-to-end scenario for UR-1 (phase 5): wires the already-built images of core, agents and portal with
-# one SQL Server, a seeded target database and a gateway, then runs the Playwright scenario against it.
+# Postgres for core's app database (ADR-0008), one SQL Server with a seeded target database and a gateway, then runs the Playwright scenario against it.
 # Never builds from project sources (root CLAUDE.md rule 3): build the images first, see README.md.
 #   ./run.sh                                  -> up, scenario, down (exit code = scenario result)
 #   docker compose up -d --wait gateway        -> stack only; portal on http://localhost:4300
 #   docker compose --profile test run --rm scenario
-# Local-only values below (sa password, master key, reader password) are dummies; never reuse them.
+# Local-only values below (Postgres and sa passwords, master key, reader password) are dummies; never reuse them.
+# Needs core images that include ESI-94 (app database on Postgres); older core images expect SQL Server.
 name: esi-e2e
 
 x-sa-password: &sa-password ${ESI_E2E_SA_PASSWORD:-EsiE2eLocal_2026}
+x-pg-password: &pg-password ${ESI_E2E_PG_PASSWORD:-EsiE2eLocal_2026}
 
 services:
+  # Core's own app database (esi_core).
+  postgres:
+    image: postgres:17.10-alpine
+    environment:
+      POSTGRES_DB: esi_core
+      POSTGRES_USER: esi
+      POSTGRES_PASSWORD: *pg-password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esi -d esi_core"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  # Holds only the user's target database (esi_target).
   sqlserver:
     # amd64 only: on Apple silicon Docker Desktop needs Rosetta emulation and 4 GB or more.
     image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
@@ -43,9 +60,9 @@ services:
   migrate:
     image: ${ESI_E2E_CORE_MIGRATOR_IMAGE:-esi-core-migrator:dev}
     environment:
-      ESI_CORE_AppDb__ConnectionString: &appdb "Server=sqlserver;Database=esi_core;User Id=sa;Password=${ESI_E2E_SA_PASSWORD:-EsiE2eLocal_2026};TrustServerCertificate=True"
+      ESI_CORE_AppDb__ConnectionString: &appdb "Host=postgres;Database=esi_core;Username=esi;Password=${ESI_E2E_PG_PASSWORD:-EsiE2eLocal_2026}"
     depends_on:
-      sqlserver:
+      postgres:
         condition: service_healthy
 
   agents:

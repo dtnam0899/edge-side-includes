@@ -1,14 +1,14 @@
 openapi: 3.0.3
 info:
   title: ESI core API
-  version: 0.1.0
+  version: 0.2.0
   description: |
     HTTP API of services/core-backend, used by the assistant module of web/esi-portal (UR-1, SR-1..SR-9).
 
-    **Authentication.** No identity provider exists yet. Local testing assumes a single local user with the admin
-    role, so this version declares no security scheme. Every operation still acts only on the current user's own
-    resources; another user's resource answers 404. A real scheme is added with the authentication ADR before the
-    production release.
+    **Authentication.** Every operation needs an OIDC access token (JWT) sent as `Authorization: Bearer <token>`
+    (`bearerAuth`, ADR-0006); a missing, invalid or expired token answers 401 `unauthenticated`. The health
+    endpoints of core (`/health`, `/health/ready`) are not part of this contract and need no token. Every
+    operation acts only on the current user's own resources; another user's resource answers 404.
 
     **Secrets.** No response contains a connection string, password or key. Connection strings are write-only.
 
@@ -18,13 +18,17 @@ info:
     access; nothing is deleted.
 
     **Problems** (`application/problem+json`, type `urn:esi:problem:<name>`):
-    `consent-required` (403, terms not accepted or outdated), `consent-withdrawn` (403),
+    `unauthenticated` (401, missing, invalid or expired bearer token), `consent-required` (403, terms not
+    accepted or outdated), `consent-withdrawn` (403),
     `terms-version-outdated` (409), `connection-failed` (422, non-secret reason), `sql-rejected` (422, the
     statement is not a single read-only SELECT; `issues` explains why), `execution-failed` (422, SQL Server
     error), `execution-timeout` (504), `invalid-result-columns` (422, empty or duplicate column names),
     `dsl-validation-failed` (422, the generated DSL stayed invalid after the retries; `issues` lists the
     findings), `visualization-not-supported` (422, for example a chart or a form), `artifact-unavailable`
-    (409, its connection was deleted or its consent withdrawn), `not-found` (404).
+    (409, its connection was deleted or its consent withdrawn), `agents-unavailable` (503, the AI agents
+    service is unreachable, has no model or timed out; nothing is stored), `not-found` (404).
+security:
+  - bearerAuth: []
 tags:
   - name: Consent
     description: "Consent terms, the user's acceptance, and per-connection consent (grant and withdraw)."
@@ -56,6 +60,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConsentTerms'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         default:
           $ref: '#/components/responses/ProblemResponse'
   /consent/acceptance:
@@ -71,6 +77,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConsentAcceptance'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -93,6 +101,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConsentAcceptance'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '409':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -112,6 +122,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Connection'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         default:
           $ref: '#/components/responses/ProblemResponse'
     post:
@@ -134,6 +146,8 @@ paths:
                 $ref: '#/components/schemas/Connection'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -153,6 +167,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Connection'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -177,6 +193,8 @@ paths:
                 $ref: '#/components/schemas/Connection'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -191,6 +209,8 @@ paths:
       responses:
         '204':
           description: Deleted.
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -210,6 +230,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConnectionTestResult'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -237,6 +259,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Connection'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -251,6 +275,8 @@ paths:
       responses:
         '204':
           description: Consent withdrawn.
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -270,6 +296,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SchemaMetadata'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -295,6 +323,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ChatSessionSummary'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -319,6 +349,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatSession'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -340,6 +372,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatSession'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -371,10 +405,14 @@ paths:
                 $ref: '#/components/schemas/ChatTurn'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
+        '503':
+          $ref: '#/components/responses/AgentsUnavailableResponse'
         default:
           $ref: '#/components/responses/ProblemResponse'
   /chat-sessions/{sessionId}/visualizations:
@@ -401,6 +439,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Visualization'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -413,6 +453,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+        '503':
+          $ref: '#/components/responses/AgentsUnavailableResponse'
         default:
           $ref: '#/components/responses/ProblemResponse'
   /connections/{connectionId}/executions:
@@ -439,6 +481,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResult'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -474,6 +518,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Script'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -495,6 +541,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Script'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -509,6 +557,8 @@ paths:
       responses:
         '204':
           description: Deleted.
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -530,6 +580,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ArtifactSummary'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -558,6 +610,8 @@ paths:
                 $ref: '#/components/schemas/Artifact'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -585,6 +639,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Artifact'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -599,6 +655,8 @@ paths:
       responses:
         '204':
           description: Deleted.
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -624,6 +682,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResult'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -657,6 +717,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DashboardSummary'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -683,6 +745,8 @@ paths:
                 $ref: '#/components/schemas/Dashboard'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -706,6 +770,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -732,6 +798,8 @@ paths:
                 $ref: '#/components/schemas/Dashboard'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -746,6 +814,8 @@ paths:
       responses:
         '204':
           description: Deleted.
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -773,6 +843,8 @@ paths:
                 $ref: '#/components/schemas/DashboardItem'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -791,6 +863,8 @@ paths:
       responses:
         '204':
           description: Removed.
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '404':
           $ref: '#/components/responses/ProblemResponse'
         default:
@@ -818,6 +892,8 @@ paths:
                 $ref: '#/components/schemas/Dashboard'
         '400':
           $ref: '#/components/responses/ProblemResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
         '403':
           $ref: '#/components/responses/ProblemResponse'
         '404':
@@ -825,6 +901,14 @@ paths:
         default:
           $ref: '#/components/responses/ProblemResponse'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >-
+        OIDC access token issued by the identity provider for the core API audience (ADR-0006). Core validates
+        issuer, audience, lifetime and signature.
   parameters:
     ConnectionId:
       name: connectionId
@@ -1337,3 +1421,25 @@ components:
   responses:
     ProblemResponse:
       $ref: '../common/components.yaml#/components/responses/ProblemResponse'
+    UnauthenticatedResponse:
+      description: '`unauthenticated`: the bearer token is missing, invalid or expired.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:esi:problem:unauthenticated
+            title: Unauthenticated
+            status: 401
+            detail: A valid bearer token is required.
+    AgentsUnavailableResponse:
+      description: '`agents-unavailable`: the AI agents service is unreachable, has no model or timed out.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: urn:esi:problem:agents-unavailable
+            title: AI agents unavailable
+            status: 503
+            detail: The AI agents service could not be reached.

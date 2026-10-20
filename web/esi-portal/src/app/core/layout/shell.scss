@@ -39,6 +39,21 @@
   font-weight: 700;
 }
 
+.shell-account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.shell-user {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--p-text-muted-color);
+}
+
 .shell-main {
   flex: 1;
   padding: 1.5rem;

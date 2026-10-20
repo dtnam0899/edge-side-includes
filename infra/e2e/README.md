@@ -20,8 +20,9 @@ flowchart LR
   G -- "/api/* (prefix removed)" --> C["api<br/>esi-core:dev"]
   G -- "everything else" --> P["portal<br/>esi-portal:dev"]
   C -- agents-api --> A["agents<br/>esi-agents:dev + fixture model"]
-  C --> S[("sqlserver<br/>esi_core + esi_target")]
-  M["migrate"] --> S
+  C --> D[("postgres<br/>esi_core")]
+  C --> S[("sqlserver<br/>esi_target")]
+  M["migrate"] --> D
   T["target-seed<br/>fixtures/target.sql"] --> S
 ```
 

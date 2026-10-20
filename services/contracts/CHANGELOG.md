@@ -2,6 +2,11 @@
 
 All notable changes are generated from Conventional Commits by the release flow. Do not edit released sections by hand.
 
+## 0.2.0
+
+- core-api: global `bearerAuth` security scheme (HTTP bearer, JWT; ADR-0006, status Proposed). Every operation documents 401 `unauthenticated` (shared `UnauthenticatedResponse`, RFC 9457 `Problem`). Health endpoints are not in the contract, so no operation opts out of security.
+- core-api: `sendChatMessage` and `createVisualization` document 503 `agents-unavailable` (shared `AgentsUnavailableResponse`), which core already returns; the problem type is listed in `info.description`.
+
 ## 0.1.0
 
 - core-api: consent terms and acceptance, per-connection consent (grant, withdraw), connections (create, list, get, update, delete, test; connection strings write-only), schema metadata, chat sessions with synchronous SQL generation, visualizations (validated DSL from column definitions), paged SELECT execution (20 rows, remaining count, truncated cells), stored-procedure scripts, saved artifacts (with execution), dashboards with items and layout. No security scheme yet (local admin assumed).

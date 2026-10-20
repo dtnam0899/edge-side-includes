@@ -37,7 +37,7 @@ public static class DependencyInjection
             throw new InvalidOperationException($"{ConnectionStringVariable} is not set.");
         }
 
-        services.AddDbContext<AppDbContext>(options => ConfigureSqlServer(options, connectionString));
+        services.AddDbContext<AppDbContext>(options => ConfigureNpgsql(options, connectionString));
         services.AddHealthChecks().AddDbContextCheck<AppDbContext>("appdb", tags: [ReadyTag]);
 
         // Fails at startup when the master keys are missing or invalid (ADR-0003).
@@ -70,6 +70,7 @@ public static class DependencyInjection
         return services;
     }
 
-    internal static void ConfigureSqlServer(DbContextOptionsBuilder options, string connectionString) =>
-        options.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
+    // The app database is PostgreSQL (ADR-0008); users' target databases are SQL Server through SqlClient.
+    internal static void ConfigureNpgsql(DbContextOptionsBuilder options, string connectionString) =>
+        options.UseNpgsql(connectionString, sql => sql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
 }
