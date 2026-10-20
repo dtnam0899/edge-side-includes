@@ -15,7 +15,7 @@ from esi_agents.config import Settings
 from esi_agents.contracts.agents_api import DslGenerationRequest, DslGenerationResult
 from esi_agents.dsl.candidate import PROTOCOL_VERSION, validate_candidate
 from esi_agents.dsl.validator import DslIssue, pinned_schema
-from esi_agents.llm import ModelClient, guarded_complete
+from esi_agents.llm import Deadline, ModelClient, guarded_complete
 from esi_agents.prompts import DSL_GENERATION, render
 
 CHART_REASON = (
@@ -98,6 +98,7 @@ class DslGenerationAgent:
             f" ({request.intent.description})" if request.intent.description else ""
         )
         issues = [DslIssue(i.code, i.message, i.path or "") for i in request.previous_issues or []]
+        deadline = Deadline(self._settings.request_deadline_seconds)
         for _ in range(self._settings.dsl_max_retries + 1):
             prompt = render(
                 DSL_GENERATION,
@@ -106,7 +107,7 @@ class DslGenerationAgent:
                 intent=intent_text,
                 issues=_issues_text(issues),
             )
-            output = await guarded_complete(self._model, prompt, self._settings)
+            output = await guarded_complete(self._model, prompt, self._settings, deadline)
             result, issues = self._check(output, columns, intent)
             if result is not None:
                 return result
