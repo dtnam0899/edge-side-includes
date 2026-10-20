@@ -10,9 +10,9 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     {
         // Adding a migration needs no connection; commands that connect take --connection or the variable.
         var connectionString = Environment.GetEnvironmentVariable(DependencyInjection.ConnectionStringVariable)
-            ?? "Server=localhost;Database=esi_core";
+            ?? "Host=localhost;Database=esi_core";
         var options = new DbContextOptionsBuilder<AppDbContext>();
-        DependencyInjection.ConfigureSqlServer(options, connectionString);
+        DependencyInjection.ConfigureNpgsql(options, connectionString);
         return new AppDbContext(options.Options);
     }
 }

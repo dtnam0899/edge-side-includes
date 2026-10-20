@@ -87,7 +87,8 @@ public sealed class ChatService(
             ChatRole.Assistant,
             generation.Explanation,
             new GeneratedSql(generation.Kind, generation.Kind == SqlKind.None ? string.Empty : generation.Sql, generation.ReferencedTables, scriptId),
-            now.AddTicks(1));
+            // The answer sorts after the question; PostgreSQL stores microseconds, so a smaller gap would tie.
+            now.AddMicroseconds(1));
         chats.Add(asked);
         chats.Add(answered);
         session.TitleFromFirstQuestion(question);

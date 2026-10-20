@@ -25,9 +25,11 @@ jobs:
       # Format check, Release build and unit tests run in the `test` stage.
       - name: Test
         run: docker build --target test -t core:test .
-      - name: Generate throwaway SQL Server password
-        run: echo "ESI_CORE_SA_PASSWORD=Ci-$(openssl rand -hex 12)A1!" >> "$GITHUB_ENV"
-      # SQL Server + migrations, then the integration test project.
+      - name: Generate throwaway database passwords
+        run: |
+          echo "ESI_CORE_SA_PASSWORD=Ci-$(openssl rand -hex 12)A1!" >> "$GITHUB_ENV"
+          echo "ESI_CORE_PG_PASSWORD=Ci-$(openssl rand -hex 12)" >> "$GITHUB_ENV"
+      # Postgres (app database) + migrations and SQL Server (esi_target), then the integration test project.
       - name: Integration tests
         run: docker compose --profile integration run --rm --build integration-tests
       - name: Compose up and health check

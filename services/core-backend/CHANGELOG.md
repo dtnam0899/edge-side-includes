@@ -2,6 +2,10 @@
 
 All notable changes are generated from Conventional Commits by the release flow. Do not edit released sections by hand.
 
+## Unreleased
+
+- App database on PostgreSQL (ADR-0008, ESI-94): EF Core uses the Npgsql provider and `ESI_CORE_AppDb__ConnectionString` takes an Npgsql connection string; migrations reset to one `InitialCreate`; compose adds a `postgres` service for `esi_core`, and `sqlserver` holds only the `esi_target` test database. Users' target databases stay SQL Server. A chat answer is stored 1 µs after its question (was 1 tick) so the order survives Postgres' microsecond precision. BREAKING CHANGE for deployments: an existing SQL Server app database is not migrated.
+
 ## 0.1.0
 
 - Artifacts and dashboards (ESI-17 part 2, core-api 0.1.0): saved artifacts with SQL and DSL validation and live `executeArtifact`, dashboards with items and persisted layout, consent hiding, `connection-unavailable` / `missing` / `migration-required` states instead of stale data.
