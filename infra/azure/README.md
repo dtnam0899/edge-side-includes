@@ -27,7 +27,7 @@ flowchart LR
 |------|--------|
 | Parts 1–5 (account, resource group, budget, databases, Container Apps environment) | Can be done now |
 | Part 6 (run the apps) | **Blocked** until: (a) CI publishes the `esi-core`, `esi-core-migrator` and `esi-agents` images to GHCR (no images are published yet), (b) core supports `ESI_CORE_Auth__Mode=Oidc` ([ADR-0006](../../docs/architecture/ADR-0006-authentication-provider.md)), and (c) the core release you run has the app database on PostgreSQL (ESI-94); older core versions expect SQL Server for `esi_core`. Core must not run here with `LocalAdmin`. |
-| Model provider for agents | Not chosen; without it agents answer `model-unavailable` (503), the rest works |
+| Model provider for agents | Gemini API free tier ([ADR-0007](../../docs/architecture/ADR-0007-model-provider.md)), from agents 0.2.0; needs a Gemini API key (part 6, step 1). Without it agents answer `model-unavailable` (503), the rest works |
 
 Doing parts 1–5 now costs nothing while the apps do not exist.
 
@@ -185,14 +185,32 @@ CORE_VERSION=<x.y.z>
 AGENTS_VERSION=<x.y.z>
 ```
 
-1. **Agents** (internal only; Container Apps maps port 80 to the target port, so core reaches it at `http://esi-agents`):
+1. **Agents** (internal only; Container Apps maps port 80 to the target port, so core reaches it at `http://esi-agents`). Agents 0.2.0 or later calls the Gemini API free tier ([ADR-0007](../../docs/architecture/ADR-0007-model-provider.md)). First get a key:
+   1. Open [Google AI Studio](https://aistudio.google.com/apikey), sign in with a Google account, and **Create API key** in a **new project** used only for the ESI demo. Do **not** enable billing on that project: the free tier then applies and nothing can be charged.
+   2. Keep the key in the password manager (`GEMINI_API_KEY`). Never commit it or paste it into a chat.
+   3. In AI Studio, open the project's **rate limits** and note the active free limits for `gemini-3.8-flash` here: RPM `<…>`, RPD `<…>`. Limits are per project (a second key adds nothing) and reset daily at midnight Pacific time.
+
+   Free-tier rules (ADR-0007): only the sample database `esi_demo_target` may be used, never real data; Google may use and humans may read the prompts (schema and questions). Invite only adults outside the EEA, Switzerland and the UK, and tell them that questions go to Google's free Gemini API and must not contain personal or confidential data.
+
    ```bash
+   read -rs GEMINI_API_KEY   # paste the key; it is not echoed or kept in the shell history
    az containerapp create --name esi-agents --resource-group "$RG" --environment "$ACA_ENV" \
      --image "ghcr.io/dtnam0899/esi-agents:$AGENTS_VERSION" \
      --ingress internal --target-port 8000 \
-     --cpu 0.25 --memory 0.5Gi --min-replicas 0 --max-replicas 1
+     --cpu 0.25 --memory 0.5Gi --min-replicas 0 --max-replicas 1 \
+     --secrets "gemini-api-key=$GEMINI_API_KEY" \
+     --env-vars \
+       "ESI_AGENTS_MODEL_PROVIDER=gemini" \
+       "ESI_AGENTS_GEMINI_API_KEY=secretref:gemini-api-key" \
+       "ESI_AGENTS_GEMINI_MODEL=gemini-3.8-flash" \
+       "ESI_AGENTS_REQUEST_DEADLINE_SECONDS=50" \
+       "ESI_AGENTS_MODEL_TIMEOUT_SECONDS=25" \
+       "ESI_AGENTS_MODEL_RETRIES=1" \
+       "ESI_AGENTS_SQL_MAX_RETRIES=1" \
+       "ESI_AGENTS_DSL_MAX_RETRIES=1"
+   unset GEMINI_API_KEY
    ```
-   The model API key is added with the model-provider ADR (`--secrets` plus an `ESI_AGENTS_*` variable).
+   These limits keep one chat question under 50 s (core waits 90 s) and a visualization (up to 2 agents calls) under Vercel's 120 s. If the free quota of `gemini-3.8-flash` is too small or too slow, switch to `gemini-3.5-flash-lite` with `az containerapp update --name esi-agents --resource-group "$RG" --set-env-vars ESI_AGENTS_GEMINI_MODEL=gemini-3.5-flash-lite` (record the real-model eval result in the PR that changes the default). To replace the key: `az containerapp secret set --name esi-agents --resource-group "$RG" --secrets "gemini-api-key=$GEMINI_API_KEY"`, then restart the active revision.
 2. **Migration job** (creates or updates core's tables in `esi_core` on Neon; run it before every core update). The `appdb` secret is the Neon connection string from part 3, step 6:
    ```bash
    az containerapp job create --name esi-core-migrate --resource-group "$RG" --environment "$ACA_ENV" \
@@ -270,7 +288,7 @@ This removes the apps, the environment, the SQL server and `esi_demo_target` wit
 |---------|--------------|-----|
 | First request times out, the next one works | core starting from zero, or Azure SQL resuming | normal; run the demo-up `curl` before showing the demo |
 | Core does not start, logs say the app database connection string is missing or the master key is invalid | secret or variable name typo | `az containerapp show -n esi-core -g "$RG" --query properties.template.containers[0].env` and compare with part 6 |
-| Chat answers 503 `agents-unavailable` | agents not reachable or no model provider yet | check `esi-agents` exists with internal ingress; model provider is still open |
+| Chat answers 503 `agents-unavailable` | agents not reachable, or agents answered `model-unavailable` | check `esi-agents` exists with internal ingress; `az containerapp logs show -n esi-agents -g "$RG"`: `gemini rejected the call: 400`/`403` means a wrong key or model (fix the secret or `ESI_AGENTS_GEMINI_MODEL`), `gemini rate limited` means the free quota is used up (wait a minute, or until midnight Pacific for the daily limit), `the model did not answer in time` means the 50 s deadline passed |
 | Database never pauses, free seconds or CU-hours drop fast | an open connection (Query editor or Neon SQL Editor tab, SSMS, Azure Data Studio, psql) | close it; core's connections close when core scales to zero |
 | Login to the database fails from the Query editor | your IP is not in the firewall | add `SetupMyIp` again (part 4, step 2), remove it afterwards |
 | Migration job or `/health/ready` fails with a Postgres connection error | wrong Neon host or password, a `-pooler` host, or `SSL Mode=Require` missing | compare the `appdb` secret with part 3, step 6; fix it with `az containerapp secret set` (and `az containerapp job secret set` for the job), then restart |
