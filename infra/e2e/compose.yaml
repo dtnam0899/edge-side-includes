@@ -77,6 +77,8 @@ services:
   api:
     image: ${ESI_E2E_CORE_IMAGE:-esi-core:dev}
     environment:
+      # Local scenario only: LocalAdmin starts only in Development (ADR-0006).
+      ASPNETCORE_ENVIRONMENT: Development
       ESI_CORE_Auth__Mode: LocalAdmin
       ESI_CORE_Encryption__ActiveKeyVersion: "1"
       ESI_CORE_Encryption__MasterKeys__1: ZTJlLWxvY2FsLW9ubHkta2V5LW5vdC1hLXNlY3JldCE=

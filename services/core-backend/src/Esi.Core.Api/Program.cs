@@ -40,7 +40,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole(options => options.FormatterName = RedactingJsonConsoleFormatter.Name);
 builder.Logging.AddConsoleFormatter<RedactingJsonConsoleFormatter, JsonConsoleFormatterOptions>();
 
-builder.Services.AddCurrentUser(builder.Configuration);
+builder.Services.AddCurrentUser(builder.Configuration, builder.Environment);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddProblemDetails();
@@ -49,10 +49,13 @@ builder.Services.AddExceptionHandler<EsiProblemHandler>();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseCurrentUser();
 
 // Liveness: the process serves HTTP. Readiness: dependencies (app database) are reachable.
-app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
-app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(Esi.Core.Infrastructure.DependencyInjection.ReadyTag) });
+// Both are anonymous; every other endpoint requires an authenticated user in Oidc mode (fallback policy).
+app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false }).AllowAnonymous();
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains(Esi.Core.Infrastructure.DependencyInjection.ReadyTag) })
+    .AllowAnonymous();
 
 // core-api contract operations (@dtnam0899/esi-contracts, see Contracts/CONTRACT_VERSION).
 app.MapConsentEndpoints();

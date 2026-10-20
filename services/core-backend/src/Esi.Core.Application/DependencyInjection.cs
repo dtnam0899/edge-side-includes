@@ -6,6 +6,7 @@ using Esi.Core.Application.Dashboards;
 using Esi.Core.Application.Queries;
 using Esi.Core.Application.Schema;
 using Esi.Core.Application.Scripts;
+using Esi.Core.Application.Users;
 using Esi.Core.Application.Visualizations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<VisualizationService>();
         services.AddScoped<ArtifactService>();
         services.AddScoped<DashboardService>();
+        services.AddScoped<UserService>();
         return services;
     }
 }

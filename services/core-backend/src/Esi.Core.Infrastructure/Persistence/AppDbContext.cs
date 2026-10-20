@@ -4,6 +4,7 @@ using Esi.Core.Domain.Connections;
 using Esi.Core.Domain.Consent;
 using Esi.Core.Domain.Dashboards;
 using Esi.Core.Domain.Scripts;
+using Esi.Core.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Esi.Core.Infrastructure.Persistence;
@@ -24,6 +25,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Artifact> Artifacts => Set<Artifact>();
 
     public DbSet<Dashboard> Dashboards => Set<Dashboard>();
+
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

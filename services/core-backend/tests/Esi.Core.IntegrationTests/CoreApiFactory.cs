@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Esi.Core.IntegrationTests;
@@ -20,13 +21,7 @@ public class CoreApiFactory : WebApplicationFactory<Program>
     public const string UserHeader = "X-Test-User";
     public const string MasterKey = "dGVzdC1vbmx5LW1hc3Rlci1rZXktMzItYnl0ZXMhISE="; // "test-only-master-key-32-bytes!!!"
 
-    public CoreApiFactory()
-    {
-        Environment.SetEnvironmentVariable("ESI_CORE_AppDb__ConnectionString", TestDatabases.AppDb);
-        Environment.SetEnvironmentVariable("ESI_CORE_Auth__Mode", "LocalAdmin");
-        Environment.SetEnvironmentVariable("ESI_CORE_Encryption__ActiveKeyVersion", "1");
-        Environment.SetEnvironmentVariable("ESI_CORE_Encryption__MasterKeys__1", MasterKey);
-    }
+    private static readonly Lock HostGate = new();
 
     public ConcurrentQueue<string> Logs { get; } = new();
 
@@ -40,6 +35,35 @@ public class CoreApiFactory : WebApplicationFactory<Program>
         client.DefaultRequestHeaders.Add(UserHeader, userId.ToString());
         return client;
     }
+
+    /// <summary>
+    /// <c>ESI_CORE_&lt;key&gt;</c> settings for the API (null removes a variable). The API reads them while the host
+    /// builds, and test classes build hosts in parallel, so <see cref="CreateHost"/> sets them under a process-wide lock.
+    /// </summary>
+    public static Dictionary<string, string?> LocalAdminSettings() => new()
+    {
+        ["AppDb__ConnectionString"] = TestDatabases.AppDb,
+        ["Auth__Mode"] = "LocalAdmin",
+        ["Auth__Authority"] = null,
+        ["Auth__Audience"] = null,
+        ["Encryption__ActiveKeyVersion"] = "1",
+        ["Encryption__MasterKeys__1"] = MasterKey,
+    };
+
+    public static IHost CreateHostWith(IReadOnlyDictionary<string, string?> settings, Func<IHost> build)
+    {
+        lock (HostGate)
+        {
+            foreach (var (key, value) in settings)
+            {
+                Environment.SetEnvironmentVariable("ESI_CORE_" + key, value);
+            }
+
+            return build();
+        }
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder) => CreateHostWith(LocalAdminSettings(), () => base.CreateHost(builder));
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder.ConfigureTestServices(services =>

@@ -5,6 +5,7 @@ using Esi.Core.Application.Connections;
 using Esi.Core.Application.Consent;
 using Esi.Core.Application.Queries;
 using Esi.Core.Application.Security;
+using Esi.Core.Application.Users;
 using Esi.Core.Application.Visualizations;
 using Esi.Core.Infrastructure.Agents.Contracts;
 using Esi.Core.Infrastructure.Agents;
@@ -67,6 +68,7 @@ public static class DependencyInjection
         });
         services.AddScoped<IAgentsClient, HttpAgentsClient>();
         services.AddScoped<IConsentAcceptanceRepository, ConsentAcceptanceRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         return services;
     }
 
