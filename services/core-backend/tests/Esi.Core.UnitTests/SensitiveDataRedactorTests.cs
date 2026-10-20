@@ -11,6 +11,10 @@ public class SensitiveDataRedactorTests
     [InlineData("GET /x?api_key=abc123&page=2", "GET /x?api_key=***&page=2")]
     [InlineData("{\"user\":\"a\",\"password\":\"p\\\"w\"}", "{\"user\":\"a\",\"password\":\"***\"}")]
     [InlineData("{\"accessToken\": \"eyJ\"}", "{\"accessToken\": \"***\"}")]
+    [InlineData("Authorization: Bearer eyJhbGciOi.eyJzdWIi.c2ln", "Authorization: ***")]
+    [InlineData("headers authorization=Basic dXNlcjpwYXNz; next", "headers authorization=***; next")]
+    [InlineData("{\"Authorization\": \"Bearer eyJhbGciOi.eyJzdWIi.c2ln\"}", "{\"Authorization\": \"***\"}")]
+    [InlineData("Authorization=eyJhbGciOi.eyJzdWIi.c2ln", "Authorization=***")]
     public void Masks_secret_values(string input, string expected) =>
         Assert.Equal(expected, SensitiveDataRedactor.Redact(input));
 

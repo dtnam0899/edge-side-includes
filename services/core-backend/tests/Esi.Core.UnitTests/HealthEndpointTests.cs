@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Hosting;
 
 namespace Esi.Core.UnitTests;
 
@@ -21,6 +22,8 @@ public class HealthEndpointTests : IClassFixture<HealthEndpointTests.Factory>
 
     public sealed class Factory : WebApplicationFactory<Program>
     {
-        public Factory() => TestEnvironment.Apply("Server=unused;Database=esi_core"); // never opened by the liveness check
+        // The app database is never opened by the liveness check.
+        protected override IHost CreateHost(IHostBuilder builder) =>
+            TestEnvironment.CreateHost(TestEnvironment.LocalAdmin("Host=unused;Database=esi_core"), () => base.CreateHost(builder));
     }
 }

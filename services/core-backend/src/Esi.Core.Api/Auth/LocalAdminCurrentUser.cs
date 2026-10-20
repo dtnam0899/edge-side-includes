@@ -3,8 +3,8 @@ using Esi.Core.Application.Abstractions;
 namespace Esi.Core.Api.Auth;
 
 /// <summary>
-/// Stand-in until an identity provider exists (SR-9): every request acts as one local admin user. It is enabled
-/// only by <c>ESI_CORE_Auth__Mode=LocalAdmin</c>, so a deployment without that explicit setting does not start.
+/// Local development and integration tests only: every request acts as one local admin user. Enabled only by
+/// <c>ESI_CORE_Auth__Mode=LocalAdmin</c> together with <c>ASPNETCORE_ENVIRONMENT=Development</c> (ADR-0006).
 /// </summary>
 public sealed class LocalAdminCurrentUser(Guid userId) : ICurrentUser
 {
