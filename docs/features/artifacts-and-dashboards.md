@@ -102,7 +102,7 @@ sequenceDiagram
   C-->>P: 200 Dashboard
 ```
 
-## API (core-api 0.1.0)
+## API (core-api 0.2.0)
 
 | Operation | Method and path | Notes |
 |-----------|-----------------|-------|

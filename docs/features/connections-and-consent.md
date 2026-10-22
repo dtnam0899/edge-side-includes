@@ -2,7 +2,7 @@
 id: feature-connections-and-consent
 type: feature
 status: Implemented (core, portal)
-updated: 2026-10-18
+updated: 2026-10-23
 projects: [core, portal, contracts]
 issues: [ESI-15, ESI-19]
 keywords: [connections, consent, terms, withdraw, grant, connection string, encryption, test connection, SR-1, SR-9, ADR-0003]
@@ -117,7 +117,7 @@ sequenceDiagram
   C-->>P: 200 (hidden data is available again)
 ```
 
-## API (core-api 0.1.0)
+## API (core-api 0.2.0)
 
 | Operation | Method and path | Notes |
 |-----------|-----------------|-------|
@@ -149,7 +149,7 @@ Responses contain `id`, `name`, `server`, `database` (taken from the connection 
 |----------|---------|
 | `ESI_CORE_Encryption__MasterKeys__<version>` | Base64 of 32 random bytes per key version |
 | `ESI_CORE_Encryption__ActiveKeyVersion` | Version used for new secrets; the API does not start without a valid active key |
-| `ESI_CORE_Auth__Mode=LocalAdmin` | Required until real authentication exists (see [security-and-privacy](./security-and-privacy.md)) |
+| `ESI_CORE_Auth__Mode` | `Oidc` (with `ESI_CORE_Auth__Authority` and `ESI_CORE_Auth__Audience`) or `LocalAdmin` (Development only); see [security-and-privacy](./security-and-privacy.md) |
 
 Losing the master key makes stored connections unrecoverable; users would have to re-enter them.
 

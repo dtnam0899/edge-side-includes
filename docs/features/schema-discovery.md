@@ -25,7 +25,7 @@ The assistant reads the structure of a connected database so that generated SQL 
 
 Objects shipped by Microsoft are excluded. No row values are read.
 
-## API (core-api 0.1.0)
+## API (core-api 0.2.0)
 
 `GET /connections/{connectionId}/schema` (`getConnectionSchema`) returns `SchemaMetadata`. It needs an owned connection with granted consent and the current terms accepted (404, 403 otherwise).
 

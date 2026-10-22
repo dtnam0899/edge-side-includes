@@ -1,10 +1,10 @@
 ---
 id: feature-chat-and-sql-generation
 type: feature
-status: Implemented (core, agents, portal); no model provider configured yet
-updated: 2026-10-18
+status: Implemented (core, agents, portal); model Gemini API free tier (ADR-0007)
+updated: 2026-10-23
 projects: [core, agents, portal, contracts]
-issues: [ESI-17, ESI-18, ESI-19]
+issues: [ESI-17, ESI-18, ESI-19, ESI-89, ESI-105]
 keywords: [chat, session, question, sql generation, stored procedure, script library, history, agents, model provider, SR-2, SR-3]
 ---
 
@@ -93,7 +93,7 @@ sequenceDiagram
   end
 ```
 
-## API (core-api 0.1.0)
+## API (core-api 0.2.0)
 
 | Operation | Method and path | Notes |
 |-----------|-----------------|-------|
@@ -131,7 +131,8 @@ A `stored-procedure` answer is saved automatically with the procedure name, the 
 | core | `ESI_CORE_Agents__BaseUrl` | compose: `http://host.docker.internal:8000/` | Agents service URL |
 | core | `ESI_CORE_Agents__TimeoutSeconds` | 120 | Per-call timeout |
 | agents | `ESI_AGENTS_SQL_MAX_RETRIES` | see `services/ai-agents/CLAUDE.md` | Retries when a candidate breaks the SQL policy |
-| agents | `ESI_AGENTS_MODEL_TIMEOUT_SECONDS`, `ESI_AGENTS_MODEL_RETRIES` | 60, 1 | Model call limits |
+| agents | `ESI_AGENTS_MODEL_TIMEOUT_SECONDS`, `ESI_AGENTS_MODEL_RETRIES`, `ESI_AGENTS_REQUEST_DEADLINE_SECONDS` | 60, 1, 80 | Model call limits and one deadline per request |
+| agents | `ESI_AGENTS_MODEL_PROVIDER`, `ESI_AGENTS_GEMINI_API_KEY`, `ESI_AGENTS_GEMINI_MODEL` | `none`, -, `gemini-3.8-flash` | Model provider; `none` answers 503 `model-unavailable` (all settings: `services/ai-agents/CLAUDE.md`) |
 
 ## Verification
 
@@ -141,5 +142,6 @@ A `stored-procedure` answer is saved automatically with the procedure name, the 
 
 ## Status and open items
 
-- **No model provider is configured** (the provider and agent framework are an open ADR-0001 decision). Until then the agents service answers 503 and the portal shows the assistant as unavailable; all checks around the model are tested with a scripted model.
-- Streaming answers are not part of contract 0.1.0 (synchronous by decision; can be added later).
+- **Model provider:** Gemini API free tier, demo data only ([ADR-0007](../architecture/ADR-0007-model-provider.md), ESI-89). Free-tier rate limits answer 503 (`agents-unavailable`) until the quota recovers; real-model evals run by hand, never in CI. With `MODEL_PROVIDER=none` (default) the agents service answers 503 and the portal shows the assistant as unavailable.
+- **Views are context only** (ESI-105): generated queries read only tables, matching core's execution policy; a candidate that reads a view is retried with the finding `view-not-allowed`.
+- **Streaming answers:** needed, but planned for the next version (product owner, 2026-10-23). Answers stay synchronous in this version.
