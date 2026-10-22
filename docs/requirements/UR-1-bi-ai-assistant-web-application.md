@@ -1,9 +1,9 @@
 # UR-1 BI AI Assistant web application
-Ticket: [#1](https://github.com/dtnam0899/edge-side-includes/issues/1) | Status: open | Last reviewed: 2026-10-18
+Ticket: [#1](https://github.com/dtnam0899/edge-side-includes/issues/1) | Status: open | Last reviewed: 2026-10-23
 
 > **Structure change (2026-10-18):** the AI assistant is no longer a separate React project (`web/esi-assistant`). It is an independent Angular feature module inside `web/esi-portal` (project code `portal`). Rules for such modules are in `web/esi-portal/CLAUDE.md`. Statements below that still say "assistant" mean this module.
 
-> Status (verified against GitHub on 2026-10-18, `main` at `ee34931`): the phase 1 SRs are filed as one-project issues ESI-13..ESI-20, sub-issues of #1 (all open). Phase 2 (chart) issues for the Angular portal are not filed yet. ESI-2..ESI-9 were an earlier set filed before the structure change and are closed as superseded; see "Filed issues" below. Phase 0 foundation tasks are ESI-21..ESI-34 ([plan](../plan/phase-0-foundation.md)). The SR sections and decisions are the product owner's analysis and are not yet approved as final.
+> Status (verified against GitHub on 2026-10-23, `develop` at `c746f99`): phase 1 issues ESI-13..ESI-20 are done and closed; phase 5 (end-to-end, ESI-64) is done. Phase 6 work for the free demo is merged into `develop`: Auth0 sign-in (ESI-85..ESI-87), Gemini model (ESI-89), Postgres app database (ESI-94). Chart issues ESI-10..ESI-12 are open and wait for [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) (proposed). ESI-2..ESI-9 were an earlier set filed before the structure change and are closed as superseded; see "Filed issues" below. Phase 0 foundation tasks are ESI-21..ESI-34 ([plan](../plan/phase-0-foundation.md)). The SR sections and decisions are the product owner's analysis and are not yet approved as final.
 
 ## System requirements
 
@@ -27,18 +27,18 @@ All are sub-issues of #1 with the label `System Requirement`. Order of release: 
 
 | Issue | Project | Title | Draft | Status |
 |-------|---------|-------|-------|--------|
-| ESI-13 | contracts | Define core-api and agents-api for the BI assistant | D1 | Open |
-| ESI-14 | lib | Pin A2UI v0.9.1, add DSL validator and Angular renderer wrapper | D2 | Open |
-| ESI-15 | core | Connections, consent and encrypted storage | D3 | Open |
-| ESI-16 | core | Schema discovery and read-only SQL execution | D4 | Open |
-| ESI-17 | core | Chat sessions, saved artifacts and dashboards | D5 | Open |
-| ESI-18 | agents | SQL and DSL generation with safety rules and evals | D6 | Open |
-| ESI-19 | portal | Chat, connection and consent UI, SQL review and paged results | D7 | Open |
-| ESI-20 | portal | Render DSL, save artifacts and drag-and-drop dashboards | D8 | Open |
+| ESI-13 | contracts | Define core-api and agents-api for the BI assistant | D1 | Done (closed) |
+| ESI-14 | lib | Pin A2UI v0.9.1, add DSL validator and Angular renderer wrapper | D2 | Done (closed) |
+| ESI-15 | core | Connections, consent and encrypted storage | D3 | Done (closed) |
+| ESI-16 | core | Schema discovery and read-only SQL execution | D4 | Done (closed) |
+| ESI-17 | core | Chat sessions, saved artifacts and dashboards | D5 | Done (closed) |
+| ESI-18 | agents | SQL and DSL generation with safety rules and evals | D6 | Done (closed) |
+| ESI-19 | portal | Chat, connection and consent UI, SQL review and paged results | D7 | Done (closed) |
+| ESI-20 | portal | Render DSL, save artifacts and drag-and-drop dashboards | D8 | Done (closed) |
 | ESI-2..ESI-9 | contracts, lib, core, agents, assistant | Earlier duplicates of D1..D8 (`[assistant]`, and ESI-3 said "React renderer") | - | Closed (not planned) on 2026-10-18, superseded by ESI-13..ESI-20 |
-| ESI-10 | lib | Custom A2UI catalog with Chart.js chart component | D9 | Open; `[lib]` scope still valid (phase 2) |
-| ESI-11 | agents | Generate chart DSL with EsiChart | D10 | Open; still valid (phase 2) |
-| ESI-12 | portal | Render charts and view-as-table | D10 | Open; retitled from `[assistant]` on 2026-10-18 (phase 2) |
+| ESI-10 | lib | Custom A2UI catalog with Chart.js chart component | D9 | Open; `[lib]` scope still valid (phase 7, needs ADR-0009) |
+| ESI-11 | agents | Generate chart DSL with EsiChart | D10 | Open; still valid (phase 7, needs ADR-0009) |
+| ESI-12 | portal | Render charts and view-as-table | D10 | Open; retitled from `[assistant]` on 2026-10-18 (phase 7, needs ADR-0009) |
 
 ## Interpretation
 
@@ -170,7 +170,7 @@ All services shall enforce authorization for data sources, SQL execution, saved 
 
 **Acceptance criteria**
 - API operations verify that the authenticated user is authorized for the referenced connection and saved assets.
-- No identity provider exists yet. For local testing the system assumes a single local user with the admin role; this stand-in must not reach production, and a real authentication/authorization mechanism is a production-release prerequisite.
+- No identity provider exists yet. For local testing the system assumes a single local user with the admin role; this stand-in must not reach production, and a real authentication/authorization mechanism is a production-release prerequisite. *(Update 2026-10-23: real authentication exists, Auth0 through OIDC per ADR-0006 (ESI-85..ESI-87); the local admin stand-in is accepted only in Development.)*
 - Connection strings are encrypted at rest with envelope encryption: a per-secret data key (AES-256-GCM) is wrapped by a master key, and the master key is supplied to `core-backend` from a GitHub secret as an environment variable at deploy time. The master key is never stored in the database or repository, and key versions allow rotation without re-entering connection strings. Proposal pending an ADR: the GitHub secret holds only the master key, never users' connection strings. For production, reconsider a managed key store, because GitHub secrets give no per-use audit or managed rotation.
 - Connection strings are decrypted only inside `core-backend` at the moment of use, and are never sent to the browser, the AI agent, or logs.
 - Connections are not shared between users in this version.
@@ -376,7 +376,7 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 28. **First phase scope.** Basic catalog components only: table and KPI. Charts are a follow-up with a custom component.
 29. **Renderer packaging.** The assistant module consumes `lib/dsl-renderer-angular`, which wraps the A2UI Angular renderer (a pinned dependency; copied from upstream only when necessary) so upstream version changes are absorbed in one place.
 30. **Artifact storage and retry policy.** As described in SR-5 and SR-7 (store components + SELECT, rebuild the A2UI messages at render time; at most 2 validation retries).
-31. **Chart library.** Charts use Chart.js, wrapped as an ESI custom component in a custom A2UI catalog (follow-up phase, needs an ADR). Chart types (bar, line, pie) are still to be confirmed.
+31. **Chart library.** Charts use Chart.js, wrapped as an ESI custom component in a custom A2UI catalog. Proposed in [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md): `EsiChart` with `bar`, `line` and `pie`, in an ESI catalog used only by chart documents.
 32. **Vendoring.** `lib/dsl-renderer-angular` depends on `@a2ui/angular` at a pinned version; code is copied only when a patch is unavoidable.
 33. **KPI totals** come from the SQL aggregate, not from the visible 20-row page.
 
@@ -387,10 +387,10 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 
 ## Open questions
 
-1. Release checklist before production: admin approval of the consent text, the read-only login recommendation shown in the UI, a key-management review, and replacing the assumed local admin with real authentication.
-2. Confirm the chart proposal below (types, binding, accessibility). It is a proposal for the chart ADR, not a decision.
-3. Portal prerequisites: A2UI's Angular renderer needs Angular 21+, and the portal's Angular version and its folder layout for modules are not decided yet. Does the module's chat need streaming through the portal's HTTP stack?
-4. Which parts of the assistant (for example the connection list) may other portal modules reach, and through which `core` API?
+1. Release checklist before production: admin approval of the consent text, the read-only login recommendation shown in the UI, a key-management review, and replacing the assumed local admin with real authentication (done for the demo: Auth0, ADR-0006; the ADR still needs acceptance).
+2. Confirm the chart proposal below (types, binding, accessibility). It is now written up as [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) (`Proposed`); its own open questions (series and pie limits, stacked bars, pattern fills, caption locale) remain.
+3. Portal prerequisites: resolved. The portal and lib use Angular 21 and the assistant is a feature module of `web/esi-portal` (`web/esi-portal/CLAUDE.md`). Streaming chat answers are needed but planned for the next version (product owner, 2026-10-23); this version stays synchronous.
+4. Which parts of the assistant (for example the connection list) may other portal modules reach, and through which `core` API? Still open (product owner, 2026-10-23: no answer yet).
 5. Issue hygiene is done (ESI-2..ESI-9 closed, ESI-12 retitled, task ESI-21 closed). The file `scripts/create-ur1-issues.sh` was already applied for phase 1; do not re-run it with `--apply`, which would create duplicates.
 
 ## Chart proposal (follow-up phase, pending ADR)

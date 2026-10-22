@@ -1,7 +1,7 @@
 ---
 id: adr-index
 type: index
-updated: 2026-10-20
+updated: 2026-10-23
 keywords: [adr, architecture decision record, decisions, template]
 ---
 
@@ -21,8 +21,9 @@ One decision per file: `ADR-NNNN-short-title.md`. Breaking changes to a contract
 | [ADR-0006](./ADR-0006-authentication-provider.md) | Authentication provider: Auth0 through standard OIDC | Proposed | contracts, core, portal | demo deployment (ADR-0005) |
 | [ADR-0007](./ADR-0007-model-provider.md) | Model provider for the agents: Gemini API free tier (demo) | Accepted | agents | ESI-89, demo deployment (ADR-0005) |
 | [ADR-0008](./ADR-0008-app-database-postgresql.md) | App database on PostgreSQL (target databases stay SQL Server) | Proposed | core | ESI-94 |
+| [ADR-0009](./ADR-0009-chart-component-and-library.md) | Chart component and library: `EsiChart` on Chart.js in a custom A2UI catalog | Proposed | lib, contracts, core, agents, portal | ESI-10, ESI-11, ESI-12 |
 
-Planned, not written yet: chart component and library (phase 7, before ESI-10).
+ADR-0005, ADR-0006 and ADR-0008 are still `Proposed` although ESI-72, ESI-85..ESI-87 and ESI-94 implement them (each PR says so); a human accepts them by changing the status in a PR.
 
 ## Rules
 
