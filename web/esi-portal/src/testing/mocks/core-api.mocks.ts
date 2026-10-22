@@ -27,6 +27,7 @@ import type {
   GeneratedSql,
   Problem,
   QueryResult,
+  SchemaMetadata,
   Script,
 } from '../../app/core/api';
 
@@ -269,6 +270,65 @@ export function mockDashboard(overrides: Partial<Dashboard> = {}): Dashboard {
     name: 'Sales overview',
     items: [],
     updatedAt: AT,
+    ...overrides,
+  };
+}
+
+/**
+ * Schema metadata (`SchemaMetadata`): the `dbo`, `Orders`, `FK_Orders_Customers` and `usp_GetCustomerOrders`
+ * examples; the other tables, columns and the view have no contract example.
+ */
+export function mockSchemaMetadata(overrides: Partial<SchemaMetadata> = {}): SchemaMetadata {
+  return {
+    schemas: [
+      {
+        name: 'dbo',
+        tables: [
+          {
+            name: 'Customers',
+            kind: 'table',
+            columns: [
+              { name: 'CustomerId', sqlType: 'int', nullable: false },
+              { name: 'Name', sqlType: 'nvarchar(200)', nullable: false },
+            ],
+            primaryKey: ['CustomerId'],
+          },
+          {
+            name: 'Orders',
+            kind: 'table',
+            columns: [
+              { name: 'OrderId', sqlType: 'int', nullable: false },
+              { name: 'CustomerId', sqlType: 'int', nullable: false },
+              { name: 'Total', sqlType: 'decimal(18,2)', nullable: true },
+            ],
+            primaryKey: ['OrderId'],
+            foreignKeys: [
+              {
+                name: 'FK_Orders_Customers',
+                columns: ['CustomerId'],
+                referencedSchema: 'dbo',
+                referencedTable: 'Customers',
+                referencedColumns: ['CustomerId'],
+              },
+            ],
+          },
+          {
+            name: 'vw_CustomerRevenue',
+            kind: 'view',
+            columns: [
+              { name: 'Name', sqlType: 'nvarchar(200)', nullable: false },
+              { name: 'Revenue', sqlType: 'decimal(18,2)', nullable: true },
+            ],
+          },
+        ],
+        procedures: [
+          {
+            name: 'usp_GetCustomerOrders',
+            definition: 'CREATE PROCEDURE dbo.usp_GetCustomerOrders AS SELECT 1;',
+          },
+        ],
+      },
+    ],
     ...overrides,
   };
 }
