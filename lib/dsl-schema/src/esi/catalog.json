@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:esi:dsl-schema:catalog:esi:1",
+  "title": "ESI catalog",
+  "description": "The A2UI v0.9.1 basic catalog, unchanged and referenced by $ref, plus the ESI component EsiChart (ADR-0009). Used only by artifacts that contain a chart; tables and KPIs keep the basic catalog id.",
+  "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1",
+  "components": {
+    "Text": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Text"
+    },
+    "Image": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Image"
+    },
+    "Icon": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Icon"
+    },
+    "Video": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Video"
+    },
+    "AudioPlayer": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/AudioPlayer"
+    },
+    "Row": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Row"
+    },
+    "Column": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Column"
+    },
+    "List": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/List"
+    },
+    "Card": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Card"
+    },
+    "Tabs": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Tabs"
+    },
+    "Modal": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Modal"
+    },
+    "Divider": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Divider"
+    },
+    "Button": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Button"
+    },
+    "TextField": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/TextField"
+    },
+    "CheckBox": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/CheckBox"
+    },
+    "ChoicePicker": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/ChoicePicker"
+    },
+    "Slider": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/Slider"
+    },
+    "DateTimeInput": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/components/DateTimeInput"
+    },
+    "EsiChart": {
+      "type": "object",
+      "description": "ESI chart (ADR-0009): a bar, line or pie chart of the rows at /rows, drawn by the renderer with Chart.js. The DSL names columns only; colors, sizes and Chart.js options are not part of it. Limits that need the column types (numeric series, at most 4 series, one series for pie, stacked only for bar) are ESI rules, not schema rules.",
+      "allOf": [
+        {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentCommon"
+        },
+        {
+          "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/$defs/CatalogComponentCommon"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "component": {
+              "const": "EsiChart"
+            },
+            "chartType": {
+              "type": "string",
+              "enum": [
+                "bar",
+                "line",
+                "pie"
+              ],
+              "description": "bar, line, or pie (one series)."
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Literal title shown above the chart and used in its text alternative."
+            },
+            "categoryKey": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Column for the x axis (bar, line) or the slice labels (pie)."
+            },
+            "series": {
+              "type": "array",
+              "description": "Value columns, each drawn as one series.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "valueKey": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "A numeric column."
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Literal series label; defaults to the column name."
+                  }
+                },
+                "required": [
+                  "valueKey"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "data": {
+              "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/DataBinding",
+              "description": "Always {\"path\": \"/rows\"}: the rows of the current page."
+            },
+            "stacked": {
+              "type": "boolean",
+              "description": "Stack the series (bar only)."
+            }
+          },
+          "required": [
+            "component",
+            "chartType",
+            "title",
+            "categoryKey",
+            "series",
+            "data"
+          ]
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  },
+  "functions": {
+    "required": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/required"
+    },
+    "regex": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/regex"
+    },
+    "length": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/length"
+    },
+    "numeric": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/numeric"
+    },
+    "email": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/email"
+    },
+    "formatString": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/formatString"
+    },
+    "formatNumber": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/formatNumber"
+    },
+    "formatCurrency": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/formatCurrency"
+    },
+    "formatDate": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/formatDate"
+    },
+    "pluralize": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/pluralize"
+    },
+    "openUrl": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/openUrl"
+    },
+    "and": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/and"
+    },
+    "or": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/or"
+    },
+    "not": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/functions/not"
+    }
+  },
+  "$defs": {
+    "CatalogComponentCommon": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/$defs/CatalogComponentCommon"
+    },
+    "theme": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/$defs/theme"
+    },
+    "anyComponent": {
+      "oneOf": [
+        {
+          "$ref": "#/components/Text"
+        },
+        {
+          "$ref": "#/components/Image"
+        },
+        {
+          "$ref": "#/components/Icon"
+        },
+        {
+          "$ref": "#/components/Video"
+        },
+        {
+          "$ref": "#/components/AudioPlayer"
+        },
+        {
+          "$ref": "#/components/Row"
+        },
+        {
+          "$ref": "#/components/Column"
+        },
+        {
+          "$ref": "#/components/List"
+        },
+        {
+          "$ref": "#/components/Card"
+        },
+        {
+          "$ref": "#/components/Tabs"
+        },
+        {
+          "$ref": "#/components/Modal"
+        },
+        {
+          "$ref": "#/components/Divider"
+        },
+        {
+          "$ref": "#/components/Button"
+        },
+        {
+          "$ref": "#/components/TextField"
+        },
+        {
+          "$ref": "#/components/CheckBox"
+        },
+        {
+          "$ref": "#/components/ChoicePicker"
+        },
+        {
+          "$ref": "#/components/Slider"
+        },
+        {
+          "$ref": "#/components/DateTimeInput"
+        },
+        {
+          "$ref": "#/components/EsiChart"
+        }
+      ]
+    },
+    "anyFunction": {
+      "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/$defs/anyFunction"
+    }
+  }
+}

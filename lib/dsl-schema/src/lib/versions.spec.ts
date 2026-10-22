@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { A2UI_PINS, BASIC_CATALOG_ID, DSL_SCHEMA_VERSION, DSL_SCHEMA_VERSIONS } from './versions';
-import { BASIC_CATALOG_COMPONENTS, BASIC_CATALOG_FUNCTIONS, SCHEMAS } from './schemas';
+import { A2UI_PINS, BASIC_CATALOG_ID, CATALOG_IDS, DSL_SCHEMA_VERSION, DSL_SCHEMA_VERSIONS, ESI_CATALOG_ID } from './versions';
+import { BASIC_CATALOG_COMPONENTS, BASIC_CATALOG_FUNCTIONS, ESI_CATALOG_COMPONENTS, ESI_CATALOG_FUNCTIONS, SCHEMAS } from './schemas';
 
 const webCoreRoot = join(import.meta.dirname, '../../../node_modules/@a2ui/web_core');
 const vendored = (file: string) => JSON.parse(readFileSync(join(import.meta.dirname, '../a2ui/v0_9_1', file), 'utf8'));
@@ -11,7 +11,7 @@ describe('pinned A2UI versions', () => {
   it('uses the exact catalogId string from the pinned catalog file', () => {
     expect(BASIC_CATALOG_ID).toBe('https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json');
     expect(BASIC_CATALOG_ID).toBe(vendored('catalog.json').catalogId);
-    expect(SCHEMAS.artifact.properties.catalogId.const).toBe(BASIC_CATALOG_ID);
+    expect(SCHEMAS.artifact.properties.catalogId.enum).toEqual([BASIC_CATALOG_ID, ESI_CATALOG_ID]);
   });
 
   it('records the protocol/renderer pair for the current artifact version', () => {
@@ -19,7 +19,7 @@ describe('pinned A2UI versions', () => {
       specRelease: 'v0.9.1',
       protocolVersion: 'v0.9',
       renderer: '@a2ui/angular@0.13.0',
-      catalogId: BASIC_CATALOG_ID,
+      catalogIds: CATALOG_IDS,
     });
     expect(SCHEMAS.artifact.properties.dslSchemaVersion.const).toBe(DSL_SCHEMA_VERSION);
     expect(SCHEMAS.artifact.properties.protocolVersion.const).toBe(A2UI_PINS.protocolVersion);
@@ -52,5 +52,18 @@ describe('pinned A2UI versions', () => {
     expect(BASIC_CATALOG_COMPONENTS).toEqual(expect.arrayContaining(['Text', 'Row', 'Column', 'List', 'Card']));
     expect(BASIC_CATALOG_COMPONENTS).not.toContain('Table');
     expect(BASIC_CATALOG_FUNCTIONS).toEqual(expect.arrayContaining(['formatNumber', 'formatCurrency']));
+  });
+
+  it('builds the ESI catalog from the unchanged basic catalog plus EsiChart (ADR-0009)', () => {
+    expect(ESI_CATALOG_ID).toBe('dtnam0899.github.io:esi-catalog-v0_9-1');
+    expect(CATALOG_IDS).toEqual([BASIC_CATALOG_ID, ESI_CATALOG_ID]);
+    expect(ESI_CATALOG_COMPONENTS).toEqual([...BASIC_CATALOG_COMPONENTS, 'EsiChart']);
+    expect(ESI_CATALOG_FUNCTIONS).toEqual(BASIC_CATALOG_FUNCTIONS);
+    const components = SCHEMAS.esiCatalog.components as Record<string, { $ref?: string }>;
+    const functions = SCHEMAS.esiCatalog.functions as Record<string, { $ref?: string }>;
+    for (const name of BASIC_CATALOG_COMPONENTS) expect(components[name]).toEqual({ $ref: `${BASIC_CATALOG_ID}#/components/${name}` });
+    for (const name of BASIC_CATALOG_FUNCTIONS) expect(functions[name]).toEqual({ $ref: `${BASIC_CATALOG_ID}#/functions/${name}` });
+    const anyComponent = SCHEMAS.esiCatalog.$defs.anyComponent.oneOf.map((entry) => entry.$ref);
+    expect(anyComponent).toEqual(ESI_CATALOG_COMPONENTS.map((name) => `#/components/${name}`));
   });
 });

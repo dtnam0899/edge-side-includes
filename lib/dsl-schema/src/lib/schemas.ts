@@ -2,6 +2,7 @@ import catalog from '../a2ui/v0_9_1/catalog.json';
 import commonTypes from '../a2ui/v0_9_1/common_types.json';
 import serverToClient from '../a2ui/v0_9_1/server_to_client.json';
 import artifactSchema from '../esi/artifact.schema.json';
+import esiCatalog from '../esi/catalog.json';
 
 /**
  * JSON Schemas (draft 2020-12) for the pinned A2UI version and the ESI artifact envelope.
@@ -14,7 +15,9 @@ export const SCHEMAS = {
   commonTypes,
   /** A2UI v0.9.1 server-to-client messages. */
   serverToClient,
-  /** ESI artifact envelope; its `components` items are basic catalog components. */
+  /** ESI catalog (ADR-0009): the basic catalog by `$ref` plus `EsiChart`. */
+  esiCatalog,
+  /** ESI artifact envelope; its `components` items are components of the artifact's catalog. */
   artifact: artifactSchema,
 } as const;
 
@@ -30,3 +33,9 @@ export const BASIC_CATALOG_COMPONENTS: readonly string[] = Object.keys(catalog.c
 
 /** Names of the functions in the pinned basic catalog. */
 export const BASIC_CATALOG_FUNCTIONS: readonly string[] = Object.keys(catalog.functions);
+
+/** Names of the components in the ESI catalog: the basic ones plus `EsiChart`. */
+export const ESI_CATALOG_COMPONENTS: readonly string[] = Object.keys(esiCatalog.components);
+
+/** Names of the functions in the ESI catalog (the basic ones). */
+export const ESI_CATALOG_FUNCTIONS: readonly string[] = Object.keys(esiCatalog.functions);

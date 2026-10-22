@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, signal, untracked } from '@angular/core';
 import { A2UI_RENDERER_CONFIG, A2uiRendererService, BasicCatalog, MarkdownRenderer, SurfaceComponent } from '@a2ui/angular/v0_9';
 import { deleteSurfaceMessage, planSurface, type SurfaceData } from '@dtnam0899/dsl-core';
+import { EsiCatalog } from '../esi-chart/esi-catalog';
 import { PlainTextMarkdownRenderer } from './plain-text-markdown-renderer';
 
 let nextSurfaceId = 0;
@@ -18,8 +19,8 @@ type ViewState =
  *
  * The artifact is untrusted: it is validated with `dsl-core` first, and an invalid artifact or a
  * bound column missing from the result shows an error state instead of the surface. Each instance
- * has its own A2UI renderer service, configured with the pinned basic catalog, and shows all text
- * as plain text.
+ * has its own A2UI renderer service, configured with the pinned basic catalog and the ESI catalog
+ * (charts, ADR-0009), and shows all text as plain text.
  */
 @Component({
   selector: 'esi-dsl-surface',
@@ -29,7 +30,7 @@ type ViewState =
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     A2uiRendererService,
-    { provide: A2UI_RENDERER_CONFIG, useFactory: () => ({ catalogs: [inject(BasicCatalog)] }) },
+    { provide: A2UI_RENDERER_CONFIG, useFactory: () => ({ catalogs: [inject(BasicCatalog), inject(EsiCatalog)] }) },
     { provide: MarkdownRenderer, useClass: PlainTextMarkdownRenderer },
   ],
 })

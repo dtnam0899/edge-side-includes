@@ -1,0 +1,76 @@
+{
+  "description": "A valid pie chart with a negative value; the renderer shows the table instead.",
+  "artifact": {
+    "dslSchemaVersion": 1,
+    "protocolVersion": "v0.9",
+    "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1",
+    "columns": [
+      {
+        "name": "segment",
+        "type": "string"
+      },
+      {
+        "name": "customers",
+        "type": "number"
+      }
+    ],
+    "query": {
+      "sql": "SELECT Segment AS segment, COUNT(*) AS customers FROM dbo.Customers GROUP BY Segment ORDER BY customers DESC"
+    },
+    "components": [
+      {
+        "id": "root",
+        "component": "EsiChart",
+        "chartType": "pie",
+        "title": "Customers by segment",
+        "categoryKey": "segment",
+        "series": [
+          {
+            "valueKey": "customers",
+            "label": "Customers"
+          }
+        ],
+        "data": {
+          "path": "/rows"
+        }
+      }
+    ]
+  },
+  "result": {
+    "columns": [
+      {
+        "name": "segment",
+        "type": "string"
+      },
+      {
+        "name": "customers",
+        "type": "number"
+      }
+    ],
+    "rows": [
+      {
+        "segment": "Retail",
+        "customers": 31
+      },
+      {
+        "segment": "Wholesale",
+        "customers": 17
+      },
+      {
+        "segment": "Online",
+        "customers": 9
+      },
+      {
+        "segment": "Returns",
+        "customers": -4
+      }
+    ],
+    "page": {
+      "page": 1,
+      "pageSize": 20,
+      "totalRows": 4,
+      "remaining": 0
+    }
+  },
+  "expectedChartFallback": "negative-values"
+}

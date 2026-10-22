@@ -1,4 +1,4 @@
-import { DATA_MODEL_PATHS, PAGE_FIELDS } from '@dtnam0899/dsl-schema';
+import { DATA_MODEL_PATHS, ESI_CHART_COMPONENT, PAGE_FIELDS } from '@dtnam0899/dsl-schema';
 import { type DslValidationError, pointer } from './errors';
 import { isObject, type JsonObject, walk } from './json';
 
@@ -57,8 +57,9 @@ const PLAIN_PATH = /^[^\s(){}$,'"]+$/;
 function bindingsOf(component: JsonObject, errors: DslValidationError[], componentIndex: number): Binding[] {
   const bindings: Binding[] = [];
   walk(component, (node, segments) => {
-    // `children.path` is a template path, checked with the template.
+    // `children.path` is a template path, checked with the template; chart `data` is checked by the chart rules.
     if (segments[0] === 'children') return;
+    if (segments[0] === 'data' && component['component'] === ESI_CHART_COMPONENT) return;
     if (isObject(node) && typeof node['path'] === 'string' && Object.keys(node).length === 1) {
       bindings.push({ path: node['path'], segments: [...segments, 'path'] });
     }

@@ -1,4 +1,4 @@
-import { A2UI_PINS, BASIC_CATALOG_ID } from '@dtnam0899/dsl-schema';
+import { A2UI_PINS, BASIC_CATALOG_ID, ESI_CATALOG_ID } from '@dtnam0899/dsl-schema';
 import { INVALID_FIXTURES, RENDER_FIXTURES, VALID_FIXTURES } from '@dtnam0899/dsl-schema/fixtures';
 import { validateServerMessage } from './schema-validator';
 import { deleteSurfaceMessage, planSurface } from './surface';
@@ -27,8 +27,21 @@ describe('planSurface', () => {
     const plan = planSurface(artifact, result, `surface-${name}`);
     if (plan.status !== 'ready') throw new Error(`expected ready, got ${plan.status}`);
     for (const message of [...plan.messages, deleteSurfaceMessage(`surface-${name}`)]) {
-      expect(validateServerMessage(message)).toEqual([]);
+      expect(validateServerMessage(message, plan.artifact.catalogId)).toEqual([]);
     }
+  });
+
+  it('creates a chart surface with the ESI catalog id', () => {
+    const plan = planSurface(VALID_FIXTURES['chart-bar'].artifact, VALID_FIXTURES['chart-bar'].result, 'chart');
+    if (plan.status !== 'ready') throw new Error('expected ready');
+    expect(plan.messages[0]).toEqual({ version: A2UI_PINS.protocolVersion, createSurface: { surfaceId: 'chart', catalogId: ESI_CATALOG_ID } });
+    expect(validateServerMessage(plan.messages[1])).not.toEqual([]);
+  });
+
+  it('reports a chart column that is missing from the live result', () => {
+    const { artifact, result } = VALID_FIXTURES['chart-bar'];
+    const columns = result.columns.filter((column) => column.name !== 'cost');
+    expect(planSurface(artifact, { ...result, columns }, 's')).toEqual({ status: 'missing-columns', missingColumns: ['cost'] });
   });
 
   it('does not share component objects with the stored artifact', () => {

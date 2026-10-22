@@ -10,7 +10,11 @@
   "dependencies": {
     "@a2ui/angular": "0.13.0",
     "@a2ui/web_core": "0.14.0",
-    "@dtnam0899/dsl-core": "0.0.0"
+    "@dtnam0899/dsl-core": "0.0.0",
+    "@dtnam0899/dsl-schema": "0.0.0",
+    "@dtnam0899/ui-tokens": "0.0.0",
+    "chart.js": "4.5.1",
+    "zod": "3.25.76"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
