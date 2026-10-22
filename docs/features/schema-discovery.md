@@ -1,11 +1,11 @@
 ---
 id: feature-schema-discovery
 type: feature
-status: Implemented (core)
-updated: 2026-10-18
-projects: [core, agents, contracts]
+status: Implemented (core, portal)
+updated: 2026-10-22
+projects: [core, agents, contracts, portal]
 issues: [ESI-16, ESI-17, ESI-18]
-keywords: [schema, metadata, tables, views, columns, primary key, foreign key, stored procedure definitions, SR-1]
+keywords: [schema, metadata, erd, diagram, tables, views, columns, primary key, foreign key, stored procedure definitions, SR-1]
 ---
 
 # Schema discovery
@@ -53,7 +53,11 @@ sequenceDiagram
 ## How it is used
 
 - **Chat:** for every question, core reads the schema and sends its structure, with procedure definitions, to the agent (`generateSql`). The agent grounds identifiers in it and masks string literals of procedure definitions in its prompt.
-- **Users:** the portal does not show the schema as a separate screen in this version; it is context for generation.
+- **Users:** the connection workspace has a **Schema** tab (the last tab, `?tab=schema`) that shows the database as an entity-relationship diagram. It is a feature of its own, separate from chat: the schema is read only when the tab opens (and on "Refresh"), never pushed through chat answers.
+  - Summary line: number of tables, views, relationships, schemas and stored procedures.
+  - Diagram (`components/erd-diagram`): tables and views (views dashed) with columns, types and PK/FK marks; one arrow per foreign key from the referencing column to the referenced one. Layered layout in `helpers/erd-layout.ts` (a referenced table stands left of the tables that reference it; unrelated tables follow in a grid; cycles and self-references are drawn as loops). Pan by dragging or scrolling, zoom with the buttons or Ctrl/⌘ + wheel, "Fit" to the window.
+  - Table list with search: the same content as text (accessible alternative to the SVG). Selecting a table, in the list or the diagram, shows its columns, "References" and "Referenced by", highlights its relations and can limit the diagram to it and its neighbours.
+  - No new dependency: the layout is computed in the portal. No row values are read.
 
 ## Rules and guarantees
 
