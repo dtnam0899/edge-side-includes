@@ -1,13 +1,17 @@
 # Local dev for services/core-backend. Passwords come from ESI_CORE_PG_PASSWORD and ESI_CORE_SA_PASSWORD (shell or
 # the git-ignored .env next to this file, see .env.example); without them the local-only defaults below are used.
-# No database port is published to the host, so the defaults are reachable only inside this compose network.
-#   docker compose up                                              -> postgres, migrations, api on :8080
-#   docker compose --profile integration run --rm integration-tests -> integration tests (also starts sqlserver)
+# Database ports are published on 127.0.0.1 only (ESI_CORE_PG_PORT, ESI_CORE_SQL_PORT) for local tools and `dotnet run`.
+#   docker compose up                                              -> postgres, sqlserver + esi_customer, migrations, api on :8080
+#   docker compose up -d postgres customer-db-seed                 -> only the two databases (no api)
+#   docker compose --profile integration run --rm integration-tests -> integration tests
 #
-# Two engines (ADR-0008): postgres holds esi_core, the application's own database; sqlserver holds only esi_target,
-# the stand-in for a user's SQL Server target database in integration tests. Never point the application at esi_target.
+# Two engines (ADR-0008): postgres holds esi_core, the application's own database; sqlserver holds the users' side:
+# esi_customer (a sample customer database for manual testing, created once by customer-db-seed with a read-only
+# login, kept across restarts) and esi_target (recreated by every integration test run). Never point the application
+# database at either of them.
 x-sa-password: &sa-password ${ESI_CORE_SA_PASSWORD:-EsiLocalDev_2026}
 x-pg-password: &pg-password ${ESI_CORE_PG_PASSWORD:-EsiLocalDev_2026}
+x-sql-image: &sql-image mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
 # Local-only stand-ins (never use in a deployment): the assumed local admin user (ADR-0006: LocalAdmin starts only
 # with ASPNETCORE_ENVIRONMENT=Development; deployments use ESI_CORE_Auth__Mode=Oidc) and a dummy master key for
 # connection-string encryption (ADR-0003; 32 bytes, base64). Override in .env.
@@ -24,6 +28,8 @@ services:
       POSTGRES_DB: esi_core
       POSTGRES_USER: esi
       POSTGRES_PASSWORD: *pg-password
+    ports:
+      - "127.0.0.1:${ESI_CORE_PG_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -34,15 +40,17 @@ services:
       start_period: 5s
 
   sqlserver:
-    # Only for esi_target (integration tests). SQL Server publishes amd64 images only; on Apple silicon Docker
+    # Users' side only (esi_customer, esi_target). SQL Server publishes amd64 images only; on Apple silicon Docker
     # Desktop needs Rosetta emulation.
-    image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
+    image: *sql-image
     platform: linux/amd64
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
       MSSQL_SA_PASSWORD: *sa-password
       MSSQL_MEMORY_LIMIT_MB: ${ESI_CORE_SQL_MEMORY_LIMIT_MB:-2048}
+    ports:
+      - "127.0.0.1:${ESI_CORE_SQL_PORT:-1433}:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
     healthcheck:
@@ -51,6 +59,25 @@ services:
       timeout: 5s
       retries: 40
       start_period: 30s
+
+  customer-db-seed:
+    # One-shot: creates esi_customer from the integration-test sample schema plus the read-only login a user enters in
+    # the portal. Skips when the database exists; `docker compose down -v` resets it.
+    image: *sql-image
+    platform: linux/amd64
+    entrypoint: ["bash", "/seed/seed-customer-db.sh"]
+    environment:
+      SA_PASSWORD: *sa-password
+      CUSTOMER_DB: esi_customer
+      READER_LOGIN: esi_customer_reader
+      READER_PASSWORD: ${ESI_CORE_CUSTOMER_READER_PASSWORD:-EsiReader_2026}
+      SCHEMA_FILE: /seed/target-sample-schema.sql
+    volumes:
+      - ./scripts/seed-customer-db.sh:/seed/seed-customer-db.sh:ro
+      - ./tests/Esi.Core.IntegrationTests/Fixtures/target-sample-schema.sql:/seed/target-sample-schema.sql:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
 
   migrate:
     build:
