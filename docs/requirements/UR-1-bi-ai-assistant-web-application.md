@@ -3,7 +3,7 @@ Ticket: [#1](https://github.com/dtnam0899/edge-side-includes/issues/1) | Status:
 
 > **Structure change (2026-10-18):** the AI assistant is no longer a separate React project (`web/esi-assistant`). It is an independent Angular feature module inside `web/esi-portal` (project code `portal`). Rules for such modules are in `web/esi-portal/CLAUDE.md`. Statements below that still say "assistant" mean this module.
 
-> Status (verified against GitHub on 2026-10-23, `develop` at `c746f99`): phase 1 issues ESI-13..ESI-20 are done and closed; phase 5 (end-to-end, ESI-64) is done. Phase 6 work for the free demo is merged into `develop`: Auth0 sign-in (ESI-85..ESI-87), Gemini model (ESI-89), Postgres app database (ESI-94). Chart issues ESI-10..ESI-12 are open and wait for [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) (proposed). ESI-2..ESI-9 were an earlier set filed before the structure change and are closed as superseded; see "Filed issues" below. Phase 0 foundation tasks are ESI-21..ESI-34 ([plan](../plan/phase-0-foundation.md)). The SR sections and decisions are the product owner's analysis and are not yet approved as final.
+> Status (verified against GitHub on 2026-10-23, `develop` at `c746f99`): phase 1 issues ESI-13..ESI-20 are done and closed; phase 5 (end-to-end, ESI-64) is done. Phase 6 work for the free demo is merged into `develop`: Auth0 sign-in (ESI-85..ESI-87), Gemini model (ESI-89), Postgres app database (ESI-94). Chart issues ESI-10..ESI-12 are open; [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) is accepted. ESI-2..ESI-9 were an earlier set filed before the structure change and are closed as superseded; see "Filed issues" below. Phase 0 foundation tasks are ESI-21..ESI-34 ([plan](../plan/phase-0-foundation.md)). The SR sections and decisions are the product owner's analysis and are not yet approved as final.
 
 ## System requirements
 
@@ -376,7 +376,7 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 28. **First phase scope.** Basic catalog components only: table and KPI. Charts are a follow-up with a custom component.
 29. **Renderer packaging.** The assistant module consumes `lib/dsl-renderer-angular`, which wraps the A2UI Angular renderer (a pinned dependency; copied from upstream only when necessary) so upstream version changes are absorbed in one place.
 30. **Artifact storage and retry policy.** As described in SR-5 and SR-7 (store components + SELECT, rebuild the A2UI messages at render time; at most 2 validation retries).
-31. **Chart library.** Charts use Chart.js, wrapped as an ESI custom component in a custom A2UI catalog. Proposed in [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md): `EsiChart` with `bar`, `line` and `pie`, in an ESI catalog used only by chart documents.
+31. **Chart library.** Charts use Chart.js, wrapped as an ESI custom component in a custom A2UI catalog. Decided in [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md): `EsiChart` with `bar`, `line` and `pie`, in an ESI catalog used only by chart documents.
 32. **Vendoring.** `lib/dsl-renderer-angular` depends on `@a2ui/angular` at a pinned version; code is copied only when a patch is unavoidable.
 33. **KPI totals** come from the SQL aggregate, not from the visible 20-row page.
 
@@ -388,12 +388,12 @@ Confirmed by the product owner on 2026-10-17 (not yet ADRs):
 ## Open questions
 
 1. Release checklist before production: admin approval of the consent text, the read-only login recommendation shown in the UI, a key-management review, and replacing the assumed local admin with real authentication (done for the demo: Auth0, ADR-0006; the ADR still needs acceptance).
-2. Confirm the chart proposal below (types, binding, accessibility). It is now written up as [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) (`Proposed`); its own open questions (series and pie limits, stacked bars, pattern fills, caption locale) remain.
+2. Confirm the chart proposal below (types, binding, accessibility). Resolved: [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) accepted on 2026-10-23 (4 series, 8 pie slices, stacked bars, no pattern fills yet, renderer default locale).
 3. Portal prerequisites: resolved. The portal and lib use Angular 21 and the assistant is a feature module of `web/esi-portal` (`web/esi-portal/CLAUDE.md`). Streaming chat answers are needed but planned for the next version (product owner, 2026-10-23); this version stays synchronous.
 4. Which parts of the assistant (for example the connection list) may other portal modules reach, and through which `core` API? Still open (product owner, 2026-10-23: no answer yet).
 5. Issue hygiene is done (ESI-2..ESI-9 closed, ESI-12 retitled, task ESI-21 closed). The file `scripts/create-ur1-issues.sh` was already applied for phase 1; do not re-run it with `--apply`, which would create duplicates.
 
-## Chart proposal (follow-up phase, pending ADR)
+## Chart proposal (decided in ADR-0009)
 
 - **Types:** `bar`, `line`, `pie`. Pie is limited to a single series and a small number of categories (suggested 8); otherwise the agent proposes a bar chart.
 - **Component:** one custom catalog component (working name `EsiChart`) in a custom A2UI catalog that extends the basic catalog with its own `catalogId`. It wraps Chart.js inside `lib/dsl-renderer-angular`, as an Angular standalone component.

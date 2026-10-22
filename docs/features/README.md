@@ -25,7 +25,7 @@ Official description of what the ESI BI assistant does today, feature by feature
 | 7 | Saved artifacts and dashboards | Save visualizations and arrange them on personal dashboards with live data | Done (ESI-17) | - | Done (ESI-20) | [artifacts-and-dashboards](./artifacts-and-dashboards.md) |
 | - | Security and privacy (cross-cutting) | Encryption, owner isolation, consent enforcement, logging, Auth0 sign-in (Oidc) | Done (ESI-86) | Done | Done (ESI-87) | [security-and-privacy](./security-and-privacy.md) |
 
-End-to-end integration (phase 5): one scripted scenario from connection to dashboard passes with `infra/e2e/run.sh` (real portal, core, agents, Postgres app database and SQL Server; the model is scripted), see [infra/e2e](../../infra/e2e/README.md). Not started: the rest of the production release checklist (phase 6) and charts (ESI-10, ESI-11, ESI-12, phase 7, [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) proposed).
+End-to-end integration (phase 5): one scripted scenario from connection to dashboard passes with `infra/e2e/run.sh` (real portal, core, agents, Postgres app database and SQL Server; the model is scripted), see [infra/e2e](../../infra/e2e/README.md). Not started: the rest of the production release checklist (phase 6) and charts (ESI-10, ESI-11, ESI-12, phase 7, [ADR-0009](../architecture/ADR-0009-chart-component-and-library.md) accepted).
 
 ## Components and how they talk
 

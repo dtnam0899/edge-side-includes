@@ -1,10 +1,10 @@
 ---
 id: ADR-0009
 type: adr
-status: Proposed
+status: Accepted
 date: 2026-10-23
 projects: [lib, contracts, core, agents, portal]
-issues: [ESI-111, ESI-10, ESI-11, ESI-12]
+issues: [ESI-111, ESI-10, ESI-11, ESI-12, ESI-113, ESI-114]
 keywords: [chart, charts, esichart, chart.js, custom catalog, catalogId, bar, line, pie, view as table, first 20 of n rows, accessibility, ui-tokens, lazy load, bundle budget, phase 7]
 ---
 
@@ -76,7 +76,7 @@ Contracts, core, agents, portal
 - The three validators gain two error codes and the fixture corpus grows; parity is enforced by the shared fixtures as today.
 - Charts on 20 rows can mislead; the fixed caption and the table view make the limit visible, and the agent pushes aggregation into SQL. Charts over the whole result need a later ADR (server-side aggregation or a larger chart page).
 - `lib/ui-tokens` stops being a stub: it gets its first real tokens (chart palette), which other UI can reuse.
-- Follow-up issues: ESI-10 `[lib]` (catalog, schema, fixtures, `EsiChart`, tokens, dsl-core rules), ESI-11 `[agents]` (prompt, mirror rules, evals), ESI-12 `[portal]` (intent, rendering in chat and dashboards). Not filed yet: `[contracts]` (`kind: chart`, catalog ids) and `[core]` (`DslValidator` and visualization flow).
+- Follow-up issues: ESI-10 `[lib]` (catalog, schema, fixtures, `EsiChart`, tokens, dsl-core rules), ESI-11 `[agents]` (prompt, mirror rules, evals), ESI-12 `[portal]` (intent, rendering in chat and dashboards). ESI-113 `[contracts]` (`kind: chart`, catalog ids) and ESI-114 `[core]` (`DslValidator` and visualization flow).
 
 ## Verification
 - lib: fixture tests for the three valid charts and every invalid fixture with the exact codes; a test that the ESI catalog contains every basic component and function unchanged and that its id matches the envelope; renderer tests for the caption (`First 20 of N` / `All N`), the text alternative, the table toggle, null and non-finite values, the pie fallbacks, untrusted text, and that Chart.js is loaded only when a chart renders; a check that `chart.js/auto` is never imported.
@@ -85,6 +85,8 @@ Contracts, core, agents, portal
 - portal: unit tests for the `chart` intent and rendering in chat and on a dashboard; a browser check against the local stack; `infra/e2e` gets one chart step.
 
 ## Open questions
-- Product owner: confirm the 4-series limit and the 8-slice pie limit, and whether a "stacked" bar is needed in the first version.
-- Whether pattern fills for multi-series bars are needed for "not by color alone" beyond the legend order and the table view (Chart.js has no built-in patterns; it would mean a small own plugin).
-- Locale of the caption and number formatting in the chart (renderer default vs a portal setting).
+Resolved by the product owner on 2026-10-23 (ADR accepted with these answers):
+- Limits: at most 4 series per chart and 8 slices per pie, as decided above.
+- `stacked` bars are part of the first version.
+- No pattern fills in the first version; legend order, point styles, dash patterns and the table view cover "not by color alone". Revisit if an accessibility review asks for it.
+- The caption and number formatting use the renderer's default locale; a portal locale setting is a later change.

@@ -19,7 +19,7 @@ After a query ran, the user asks for a table or a KPI. The assistant produces a 
 | Table | `Column` with a header `Row` and a `List` whose template `Row` iterates `/rows` with relative column paths |
 | KPI | `Card` with `Text` bound to a value via `formatNumber` or `formatCurrency`, plus a label `Text` |
 
-Charts and forms are not supported in this version; the assistant says so (`visualization-not-supported`) instead of producing something else. Charts are planned with a custom catalog component `EsiChart` on Chart.js ([ADR-0009](../architecture/ADR-0009-chart-component-and-library.md), proposed; ESI-10, ESI-11, ESI-12).
+Charts and forms are not supported in this version; the assistant says so (`visualization-not-supported`) instead of producing something else. Charts are planned with a custom catalog component `EsiChart` on Chart.js ([ADR-0009](../architecture/ADR-0009-chart-component-and-library.md), accepted; ESI-10, ESI-11, ESI-12).
 
 ## Flow
 

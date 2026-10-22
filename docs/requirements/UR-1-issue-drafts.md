@@ -83,7 +83,7 @@ ADRs needed before or alongside: A2UI adoption and storage model, key management
 
 ### D9 `[lib]` Custom A2UI catalog with Chart.js chart (follow-up)
 - Custom catalog extending the basic catalog with its own `catalogId`; `EsiChart` as in the chart proposal in the UR file (bar, line, pie; `categoryKey`, `series`; accessibility fallback table).
-- Needs the chart ADR first ([ADR-0009](../architecture/ADR-0009-chart-component-and-library.md), proposed).
+- Needs the chart ADR first ([ADR-0009](../architecture/ADR-0009-chart-component-and-library.md), accepted).
 
 ### D10 `[agents]` and `[portal]` chart support (follow-up)
 - Agent: allow `EsiChart` with validation of numeric `valueKey` columns; portal: render and "view as table".
