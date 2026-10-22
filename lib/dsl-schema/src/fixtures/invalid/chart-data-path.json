@@ -1,0 +1,51 @@
+{
+  "description": "The chart data is bound to /page instead of /rows.",
+  "artifact": {
+    "dslSchemaVersion": 1,
+    "protocolVersion": "v0.9",
+    "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1",
+    "columns": [
+      {
+        "name": "region",
+        "type": "string"
+      },
+      {
+        "name": "revenue",
+        "type": "number"
+      },
+      {
+        "name": "cost",
+        "type": "number"
+      }
+    ],
+    "query": {
+      "sql": "SELECT region, SUM(amount) AS revenue, SUM(cost) AS cost FROM sales GROUP BY region ORDER BY region"
+    },
+    "components": [
+      {
+        "id": "root",
+        "component": "EsiChart",
+        "chartType": "bar",
+        "title": "Revenue and cost by region",
+        "categoryKey": "region",
+        "series": [
+          {
+            "valueKey": "revenue",
+            "label": "Revenue"
+          },
+          {
+            "valueKey": "cost",
+            "label": "Cost"
+          }
+        ],
+        "stacked": true,
+        "data": {
+          "path": "/page"
+        }
+      }
+    ]
+  },
+  "expectedErrors": [
+    "unknown-path"
+  ]
+}

@@ -1,0 +1,43 @@
+@let chart = model();
+<figure class="esi-chart">
+  <figcaption class="esi-chart-title">{{ chart.title }}</figcaption>
+  @if (fallback(); as message) {
+    <p class="esi-chart-note" role="status">{{ message }}</p>
+  } @else if (loadFailed()) {
+    <p class="esi-chart-note" role="status">The chart could not be drawn. Showing the table instead.</p>
+  }
+  @if (showTable()) {
+    <div class="esi-chart-table-wrapper">
+      <table class="esi-chart-table">
+        <thead>
+          <tr>
+            @for (header of chart.table.headers; track $index) {
+              <th scope="col">{{ header }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of chart.table.rows; track $index) {
+            <tr>
+              @for (cell of row; track $index) {
+                @if ($first) {
+                  <th scope="row">{{ cell }}</th>
+                } @else {
+                  <td>{{ cell }}</td>
+                }
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="esi-chart-canvas">
+      <canvas #canvas role="img" [attr.aria-label]="chart.summary"></canvas>
+    </div>
+  }
+  <p class="esi-chart-caption">{{ chart.caption }}</p>
+  @if (!fallback() && !loadFailed()) {
+    <button type="button" class="esi-chart-toggle" [attr.aria-pressed]="tableView()" (click)="toggleTable()">View as table</button>
+  }
+</figure>

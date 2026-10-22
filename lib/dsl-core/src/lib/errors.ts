@@ -6,7 +6,7 @@ export type DslErrorCode =
   | 'duplicate-id'
   /** No component has the id `root`. */
   | 'missing-root'
-  /** A component that is not in the pinned catalog. */
+  /** A component that is not in the artifact's catalog (basic, or ESI for charts). */
   | 'unknown-component'
   /** A function call that is not in the pinned catalog. */
   | 'unknown-function'
@@ -21,7 +21,11 @@ export type DslErrorCode =
   /** A literal string that contains HTML or a script URL. */
   | 'unsafe-content'
   /** The artifact carries row values. */
-  | 'row-data';
+  | 'row-data'
+  /** An `EsiChart` series column that is not numeric, or a boolean category column (ADR-0009). */
+  | 'chart-column-type'
+  /** `EsiChart` series: none, more than 4, a duplicate, more than one for pie, or `stacked` on a chart other than bar (ADR-0009). */
+  | 'chart-series';
 
 export interface DslValidationError {
   code: DslErrorCode;

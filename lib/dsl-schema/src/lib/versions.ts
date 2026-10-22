@@ -1,4 +1,5 @@
 import catalog from '../a2ui/v0_9_1/catalog.json';
+import esiCatalog from '../esi/catalog.json';
 
 /**
  * The pinned A2UI protocol/renderer pair (ADR-0002). This is the only place in `lib` that
@@ -18,6 +19,15 @@ export const A2UI_PINS = {
 /** `catalogId` of the pinned basic catalog, taken verbatim from the vendored catalog file. */
 export const BASIC_CATALOG_ID: string = catalog.catalogId;
 
+/**
+ * `catalogId` of the ESI catalog (ADR-0009): the basic catalog unchanged plus `EsiChart`. Only
+ * artifacts with a chart use it. Changing the catalog means a new id (`-2`) and a migration.
+ */
+export const ESI_CATALOG_ID: string = esiCatalog.catalogId;
+
+/** Every catalog an artifact may name, basic first. */
+export const CATALOG_IDS: readonly string[] = [BASIC_CATALOG_ID, ESI_CATALOG_ID];
+
 /** Current version of the stored ESI artifact format. */
 export const DSL_SCHEMA_VERSION = 1;
 
@@ -27,7 +37,7 @@ export const DSL_SCHEMA_VERSIONS = {
     specRelease: A2UI_PINS.specRelease,
     protocolVersion: A2UI_PINS.protocolVersion,
     renderer: `${A2UI_PINS.renderer.package}@${A2UI_PINS.renderer.version}`,
-    catalogId: BASIC_CATALOG_ID,
+    catalogIds: CATALOG_IDS,
   },
 } as const;
 

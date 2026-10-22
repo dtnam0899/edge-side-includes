@@ -11,7 +11,7 @@ on:
       projects:
         description: "Comma-separated lib projects, released in dependency order"
         required: true
-        default: dsl-schema,dsl-core,dsl-renderer-angular
+        default: dsl-schema,ui-tokens,dsl-core,dsl-renderer-angular
         type: string
       version:
         description: "Stable version for all of them (e.g. 0.1.0); empty = derive from conventional commits"

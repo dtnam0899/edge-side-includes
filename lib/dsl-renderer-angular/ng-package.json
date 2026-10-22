@@ -7,6 +7,10 @@
   "allowedNonPeerDependencies": [
     "@a2ui/angular",
     "@a2ui/web_core",
-    "@dtnam0899/dsl-core"
+    "@dtnam0899/dsl-core",
+    "@dtnam0899/dsl-schema",
+    "@dtnam0899/ui-tokens",
+    "chart.js",
+    "zod"
   ]
 }

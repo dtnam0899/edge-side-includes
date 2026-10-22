@@ -1,0 +1,82 @@
+{
+  "description": "Category values with HTML and Markdown are plain text in the chart, its text alternative and the table.",
+  "artifact": {
+    "dslSchemaVersion": 1,
+    "protocolVersion": "v0.9",
+    "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1",
+    "columns": [
+      {
+        "name": "region",
+        "type": "string"
+      },
+      {
+        "name": "revenue",
+        "type": "number"
+      },
+      {
+        "name": "cost",
+        "type": "number"
+      }
+    ],
+    "query": {
+      "sql": "SELECT region, SUM(amount) AS revenue, SUM(cost) AS cost FROM sales GROUP BY region ORDER BY region"
+    },
+    "components": [
+      {
+        "id": "root",
+        "component": "EsiChart",
+        "chartType": "bar",
+        "title": "Revenue and cost by region",
+        "categoryKey": "region",
+        "series": [
+          {
+            "valueKey": "revenue",
+            "label": "Revenue"
+          },
+          {
+            "valueKey": "cost",
+            "label": "Cost"
+          }
+        ],
+        "stacked": true,
+        "data": {
+          "path": "/rows"
+        }
+      }
+    ]
+  },
+  "result": {
+    "columns": [
+      {
+        "name": "region",
+        "type": "string"
+      },
+      {
+        "name": "revenue",
+        "type": "number"
+      },
+      {
+        "name": "cost",
+        "type": "number"
+      }
+    ],
+    "rows": [
+      {
+        "region": "<img src=x onerror=alert(1)>",
+        "revenue": 10,
+        "cost": 5
+      },
+      {
+        "region": "**bold** [link](javascript:alert(1))",
+        "revenue": 20,
+        "cost": 8
+      }
+    ],
+    "page": {
+      "page": 1,
+      "pageSize": 20,
+      "totalRows": 2,
+      "remaining": 0
+    }
+  }
+}

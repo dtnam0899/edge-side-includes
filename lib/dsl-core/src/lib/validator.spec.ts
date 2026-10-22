@@ -1,3 +1,4 @@
+import { BASIC_CATALOG_ID } from '@dtnam0899/dsl-schema';
 import { INVALID_FIXTURES, VALID_FIXTURES } from '@dtnam0899/dsl-schema/fixtures';
 import { validateArtifact } from './validator';
 
@@ -56,4 +57,40 @@ describe('validateArtifact', () => {
     const codes = validateArtifact(artifact).errors.map((error) => error.code);
     expect(codes.sort()).toEqual(['unknown-column', 'unsupported-expression']);
   });
+
+  describe('charts (ADR-0009)', () => {
+    type Chart = { catalogId: string; components: Record<string, unknown>[] };
+    const bar = () => structuredClone(VALID_FIXTURES['chart-bar'].artifact) as Chart;
+
+    it('reports the category and series columns as bound columns', () => {
+      const result = validateArtifact(VALID_FIXTURES['chart-bar'].artifact);
+      expect(result.valid && [...result.boundColumns].sort()).toEqual(['cost', 'region', 'revenue']);
+    });
+
+    it('points a chart error at the series and the chart component', () => {
+      const result = validateArtifact(INVALID_FIXTURES['chart-series-not-numeric'].artifact);
+      expect(result.errors).toEqual([
+        expect.objectContaining({ code: 'chart-column-type', path: '/components/0/series/0/valueKey', componentId: 'root' }),
+      ]);
+    });
+
+    it('reports every chart rule that fails, at once', () => {
+      const artifact = bar();
+      Object.assign(artifact.components[0], {
+        chartType: 'pie',
+        data: { path: '/page' },
+        series: [{ valueKey: 'region' }, { valueKey: 'profit' }],
+      });
+      const codes = validateArtifact(artifact).errors.map((error) => error.code).sort();
+      expect(codes).toEqual(['chart-column-type', 'chart-series', 'chart-series', 'unknown-column', 'unknown-path']);
+    });
+
+    it('applies the chart rules only to artifacts on the ESI catalog', () => {
+      const artifact = bar();
+      artifact.catalogId = BASIC_CATALOG_ID;
+      artifact.components[0]['series'] = [];
+      expect(validateArtifact(artifact).errors.map((error) => error.code)).toEqual(['unknown-component']);
+    });
+  });
 });
+
