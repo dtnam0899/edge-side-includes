@@ -25,7 +25,12 @@ def schema_index(metadata: SchemaMetadata) -> SchemaIndex:
     index = SchemaIndex()
     for schema in metadata.schemas:
         for table in schema.tables:
-            index.add_table(schema.name, table.name, (c.name for c in table.columns))
+            index.add_table(
+                schema.name,
+                table.name,
+                (c.name for c in table.columns),
+                is_view=enum_value(table.kind) == "view",
+            )
         for procedure in schema.procedures:
             index.add_procedure(schema.name, procedure.name)
     return index
@@ -55,7 +60,9 @@ def describe_schema(metadata: SchemaMetadata) -> str:
             columns = ", ".join(
                 f"{c.name} {c.sql_type}{'' if c.nullable else ' NOT NULL'}" for c in table.columns
             )
-            lines.append(f"{enum_value(table.kind)} {schema.name}.{table.name} ({columns})")
+            kind = enum_value(table.kind)
+            note = " -- context only, never query a view" if kind == "view" else ""
+            lines.append(f"{kind} {schema.name}.{table.name} ({columns}){note}")
             if table.primary_key:
                 lines.append(f"  primary key ({', '.join(table.primary_key)})")
             for fk in table.foreign_keys or []:

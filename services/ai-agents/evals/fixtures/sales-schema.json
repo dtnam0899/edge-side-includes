@@ -1,5 +1,5 @@
 {
-  "description": "Sample target database (customers, products, orders) as SchemaMetadata. No row values, no connection details.",
+  "description": "Sample target database (customers, products, orders, a revenue view) as SchemaMetadata. No row values, no connection details.",
   "contract": {
     "package": "@dtnam0899/esi-contracts",
     "version": "0.1.0",
@@ -79,6 +79,14 @@
                 "referencedTable": "Products",
                 "referencedColumns": ["ProductId"]
               }
+            ]
+          },
+          {
+            "name": "vw_CustomerRevenue",
+            "kind": "view",
+            "columns": [
+              {"name": "Name", "sqlType": "nvarchar(200)", "nullable": false},
+              {"name": "Revenue", "sqlType": "decimal(38,2)", "nullable": true}
             ]
           }
         ],

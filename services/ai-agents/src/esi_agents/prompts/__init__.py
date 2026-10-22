@@ -3,7 +3,7 @@
 from importlib.resources import files
 from string import Template
 
-SQL_GENERATION = "sql_generation.v1"
+SQL_GENERATION = "sql_generation.v2"
 DSL_GENERATION = "dsl_generation.v1"
 
 
