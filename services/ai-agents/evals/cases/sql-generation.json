@@ -1084,6 +1084,151 @@
     ]
   },
   {
+    "id": "sql-view-output-refused",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Revenue per customer"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT cr.Name, cr.Revenue FROM dbo.vw_CustomerRevenue AS cr;",
+        "explanation": "Reads the revenue view."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT c.Country, cr.Revenue FROM dbo.Customers AS c JOIN dbo.vw_CustomerRevenue AS cr ON cr.Name = c.Name",
+        "explanation": "Joins the revenue view."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT cr.Name, cr.Revenue FROM dbo.vw_CustomerRevenue AS cr;",
+        "explanation": "Reads the revenue view."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "none"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": ""
+      },
+      {
+        "kind": "contains",
+        "path": "/response/explanation",
+        "value": "view-not-allowed"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": []
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "view dbo.vw_CustomerRevenue (Name nvarchar(200) NOT NULL, Revenue decimal(38,2)) -- context only, never query a view"
+      }
+    ]
+  },
+  {
+    "id": "sql-view-retry-uses-tables",
+    "agent": "sql",
+    "schema_fixture": "../fixtures/sales-schema.json",
+    "request": {
+      "question": "Doanh thu theo từng khách hàng là bao nhiêu?"
+    },
+    "stub_outputs": [
+      {
+        "kind": "query",
+        "sql": "SELECT cr.Name, cr.Revenue FROM dbo.vw_CustomerRevenue AS cr;",
+        "explanation": "Reads the revenue view."
+      },
+      {
+        "kind": "query",
+        "sql": "SELECT c.Name AS Customer, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.Customers AS c JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId JOIN dbo.OrderLines AS ol ON ol.OrderId = o.OrderId GROUP BY c.Name ORDER BY Revenue DESC",
+        "explanation": "Joins customers, orders and order lines."
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "query"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/sql",
+        "value": "SELECT c.Name AS Customer, SUM(ol.Quantity * ol.UnitPrice) AS Revenue FROM dbo.Customers AS c JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId JOIN dbo.OrderLines AS ol ON ol.OrderId = o.OrderId GROUP BY c.Name ORDER BY Revenue DESC"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/referencedTables",
+        "value": [
+          "dbo.Customers",
+          "dbo.OrderLines",
+          "dbo.Orders"
+        ]
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 2
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "view-not-allowed"
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/kind",
+        "value": "query"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/response/sql",
+        "value": "vw_CustomerRevenue"
+      },
+      {
+        "kind": "not_contains",
+        "path": "/response/referencedTables",
+        "value": "dbo.vw_CustomerRevenue"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/referencedTables",
+        "value": "dbo.Customers"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/referencedTables",
+        "value": "dbo.Orders"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/referencedTables",
+        "value": "dbo.OrderLines"
+      }
+    ]
+  },
+  {
     "id": "sql-grounding-unknown-table-refused",
     "agent": "sql",
     "schema_fixture": "../fixtures/sales-schema.json",

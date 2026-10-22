@@ -67,6 +67,27 @@ def test_generate_sql_never_returns_a_write() -> None:
     assert len(model.prompts) == 3
 
 
+def test_generate_sql_retries_a_view_with_the_finding() -> None:
+    view = {
+        "kind": "query",
+        "sql": "SELECT cr.Name, cr.Revenue FROM dbo.vw_CustomerRevenue AS cr;",
+        "explanation": "Reads the revenue view.",
+    }
+    sql = (
+        "SELECT c.Name AS Customer, SUM(ol.Quantity * ol.UnitPrice) AS Revenue "
+        "FROM dbo.Customers AS c JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId "
+        "JOIN dbo.OrderLines AS ol ON ol.OrderId = o.OrderId GROUP BY c.Name"
+    )
+    table = {"kind": "query", "sql": sql, "explanation": "Joins the tables."}
+    api, model = client(view, table)
+    body = api.post("/sql-generations", json={"question": "Revenue per customer", "schema": SCHEMA})
+    assert body.json()["sql"] == sql
+    assert body.json()["referencedTables"] == ["dbo.Customers", "dbo.OrderLines", "dbo.Orders"]
+    assert "view dbo.vw_CustomerRevenue (" in model.prompts[0]
+    assert "context only, never query a view" in model.prompts[0]
+    assert "view-not-allowed" in model.prompts[1]
+
+
 def test_generate_dsl_returns_a_valid_document() -> None:
     api, _ = client(KPI)
     response = api.post("/dsl-generations", json=dsl_request(description="total as a KPI"))
