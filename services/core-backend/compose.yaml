@@ -62,7 +62,8 @@ services:
 
   customer-db-seed:
     # One-shot: creates esi_customer from the integration-test sample schema plus the read-only login a user enters in
-    # the portal. Skips when the database exists; `docker compose down -v` resets it.
+    # the portal, then loads the extra demo data (scripts/customer-db-extra-data.sql) once, also into an existing
+    # esi_customer. Never changes data already there; `docker compose down -v` resets it.
     image: *sql-image
     platform: linux/amd64
     entrypoint: ["bash", "/seed/seed-customer-db.sh"]
@@ -72,9 +73,11 @@ services:
       READER_LOGIN: esi_customer_reader
       READER_PASSWORD: ${ESI_CORE_CUSTOMER_READER_PASSWORD:-EsiReader_2026}
       SCHEMA_FILE: /seed/target-sample-schema.sql
+      EXTRA_DATA_FILE: /seed/customer-db-extra-data.sql
     volumes:
       - ./scripts/seed-customer-db.sh:/seed/seed-customer-db.sh:ro
       - ./tests/Esi.Core.IntegrationTests/Fixtures/target-sample-schema.sql:/seed/target-sample-schema.sql:ro
+      - ./scripts/customer-db-extra-data.sql:/seed/customer-db-extra-data.sql:ro
     depends_on:
       sqlserver:
         condition: service_healthy
