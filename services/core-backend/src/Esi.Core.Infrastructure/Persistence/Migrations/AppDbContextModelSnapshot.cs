@@ -252,6 +252,32 @@ namespace Esi.Core.Infrastructure.Persistence.Migrations
                     b.ToTable("Scripts", (string)null);
                 });
 
+            modelBuilder.Entity("Esi.Core.Domain.Users.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Issuer")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Issuer", "Subject")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
+                });
+
             modelBuilder.Entity("Esi.Core.Domain.Chat.ChatMessage", b =>
                 {
                     b.HasOne("Esi.Core.Domain.Chat.ChatSession", null)

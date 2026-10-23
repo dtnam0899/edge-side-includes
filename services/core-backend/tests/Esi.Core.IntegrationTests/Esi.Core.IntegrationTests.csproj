@@ -11,6 +11,10 @@
     <None Include="Fixtures/**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Locally signed tokens for Oidc mode, shared with the unit tests. -->
+    <Compile Include="..\Esi.Core.UnitTests\TestTokens.cs" Link="TestTokens.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from esi_agents.evals import load_cases, run_cases
+from esi_agents.config import Settings
+from esi_agents.evals import load_cases, run_cases, run_real_cases
 from esi_agents.evals.__main__ import main
 from esi_agents.llm import StubModel
 
@@ -79,3 +80,28 @@ def test_agent_case_fails_when_unsafe_sql_would_be_returned(tmp_path: Path) -> N
     [result] = asyncio.run(run_cases(cases, StubModel()))
     assert not result.passed
     assert [c.path for c in result.failed_checks] == ["/response/kind"]
+
+
+def test_real_mode_runs_only_cases_with_real_checks() -> None:
+    root = Path(__file__).resolve().parents[1]
+    cases = load_cases(root / "evals" / "cases")
+    selected = [c.id for c in cases if c.real_checks]
+    assert selected
+    assert all(cases[[c.id for c in cases].index(i)].agent for i in selected)
+    unsafe = '{"kind": "query", "sql": "DELETE FROM dbo.Orders", "explanation": "x"}'
+    model = StubModel(default=unsafe)
+    settings = Settings(model_backoff_seconds=0, sql_max_retries=0, dsl_max_retries=0)
+    results = asyncio.run(run_real_cases(cases, model, settings))
+    assert [r.id for r in results] == selected
+    by_id = {r.id: r for r in results}
+    # The deterministic checks hold even against a model that only writes DELETE statements.
+    assert by_id["sql-write-refused-by-model"].passed
+    assert not by_id["sql-query-grounded-select"].passed
+    assert by_id["sql-query-grounded-select"].model_calls == 1
+    assert by_id["dsl-chart-refused"].model_calls == 0
+
+
+def test_real_mode_needs_a_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("ESI_AGENTS_GEMINI_API_KEY", raising=False)
+    with pytest.raises(ValueError, match="GEMINI_API_KEY"):
+        main(["evals/cases", "--model", "gemini"])

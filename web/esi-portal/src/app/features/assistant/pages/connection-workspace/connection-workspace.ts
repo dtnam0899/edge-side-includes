@@ -25,13 +25,14 @@ import {
 import { ArtifactsPanel } from '../../containers/artifacts-panel/artifacts-panel';
 import { ChatPanel } from '../../containers/chat-panel/chat-panel';
 import { DashboardsPanel } from '../../containers/dashboards-panel/dashboards-panel';
+import { SchemaPanel } from '../../containers/schema-panel/schema-panel';
 import { ScriptsPanel } from '../../containers/scripts-panel/scripts-panel';
 import { needsTermsAcceptance } from '../../helpers/problem-message';
 import { ConnectionEditorService } from '../../services/connection-editor.service';
 import { ConnectionsService } from '../../services/connections.service';
 import { ConsentService } from '../../services/consent.service';
 
-const WORKSPACE_TABS = ['chat', 'dashboards', 'artifacts', 'scripts'] as const;
+const WORKSPACE_TABS = ['chat', 'dashboards', 'artifacts', 'scripts', 'schema'] as const;
 type WorkspaceTab = (typeof WORKSPACE_TABS)[number];
 
 function toTab(value: unknown): WorkspaceTab {
@@ -39,7 +40,7 @@ function toTab(value: unknown): WorkspaceTab {
 }
 
 /**
- * A selected connection. With consent granted it shows chats and saved scripts; with consent withdrawn nothing of
+ * A selected connection. With consent granted it shows chats, saved work and the database schema diagram; with consent withdrawn nothing of
  * the connection's data is loaded or shown until consent is granted again.
  */
 @Component({
@@ -58,6 +59,7 @@ function toTab(value: unknown): WorkspaceTab {
     ChatPanel,
     DashboardsPanel,
     ScriptsPanel,
+    SchemaPanel,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './connection-workspace.html',

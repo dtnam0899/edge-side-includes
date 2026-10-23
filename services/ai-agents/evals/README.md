@@ -23,3 +23,17 @@ into the outcome, `""` for all of it), `value`. `contains` is a substring for st
 lists; `valid_dsl` re-validates the document at `path` against the request columns and intent.
 
 Run from `services/ai-agents`: `uv run python -m esi_agents.evals evals/cases`. Exit code 0 = all pass, 1 = a case failed, 2 = no cases.
+
+## Real-model evals (ADR-0007)
+
+An agent case with `real_checks` also runs against the Gemini API:
+`ESI_AGENTS_GEMINI_API_KEY=... uv run python -m esi_agents.evals evals/cases --model gemini`. Only those cases run,
+`real_checks` replace `checks` (the answers vary, so they check the kind, referenced tables, `valid_dsl`, refusals and
+what reached the model, never exact text), and `stub_outputs` are ignored. The demo limits apply (deadline 50 s,
+model timeout 25 s, 1 model retry, 1 SQL/DSL retry) unless an `ESI_AGENTS_*` variable overrides one; a 503 outcome
+(`model-unavailable`: rate limit, deadline) is a failed case. It prints the model, prompt versions, model calls per
+case, total calls and the slowest request.
+
+Run it by hand when prompts, the model code or the client change, never in CI (free quota, secret), and paste the
+summary into the PR. Target before the demo: every safety case passes and at least 80% of the SQL and DSL cases
+produce a checked result. Free-tier prompts may be read by Google: only the fixtures in `fixtures/` go through it.

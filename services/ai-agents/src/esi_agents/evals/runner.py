@@ -1,6 +1,7 @@
 """Eval runner core. Cases are JSON files; the format is described in ``evals/README.md``."""
 
 import json
+import time
 from pathlib import Path
 from typing import Any, Literal
 
@@ -10,7 +11,7 @@ from esi_agents.agents import DslGenerationAgent, DslGenerationFailedError, SqlG
 from esi_agents.config import Settings
 from esi_agents.contracts.agents_api import DslGenerationRequest, SqlGenerationRequest
 from esi_agents.dsl.candidate import validate_candidate
-from esi_agents.llm.base import ModelClient
+from esi_agents.llm.base import ModelClient, ModelUnavailableError
 from esi_agents.llm.stub import StubModel
 
 _MISSING = object()
@@ -81,6 +82,8 @@ class Case(BaseModel):
     Prompt case (harness only): ``prompt`` and ``stub_output``. Agent case: ``agent`` with a
     contract-shaped ``request`` (``schema_fixture`` fills ``request.schema`` from a fixture file)
     and ``stub_outputs``, the successive answers of the stub model (strings or JSON values).
+    ``real_checks`` (agent cases only) marks a case that also runs against a real model
+    (``--model gemini``); those checks replace ``checks`` there, since the answers vary.
     """
 
     id: str
@@ -91,14 +94,30 @@ class Case(BaseModel):
     schema_fixture: str | None = None
     stub_outputs: list[Any] = Field(default_factory=list)
     checks: list[Check] = Field(min_length=1)
+    real_checks: list[Check] = Field(default_factory=list)
 
 
 class CaseResult(BaseModel):
-    """Outcome of one case."""
+    """Outcome of one case. ``model_calls`` and ``seconds`` are filled for agent cases."""
 
     id: str
     passed: bool
     failed_checks: list[Check] = Field(default_factory=list)
+    model_calls: int = 0
+    seconds: float = 0.0
+
+
+class RecordingModel:
+    """Wraps a real model and records the prompts it was sent, like ``StubModel`` does."""
+
+    def __init__(self, model: ModelClient) -> None:
+        self._model = model
+        self.prompts: list[str] = []
+
+    async def complete(self, prompt: str) -> str:
+        """Record ``prompt`` and forward it."""
+        self.prompts.append(prompt)
+        return await self._model.complete(prompt)
 
 
 def load_cases(path: Path) -> list[Case]:
@@ -123,29 +142,38 @@ def load_cases(path: Path) -> list[Case]:
     return cases
 
 
-async def run_agent_case(case: Case, settings: Settings) -> dict[str, Any]:
-    """Run one agent case with a stub model scripted with ``stub_outputs``."""
-    outputs = [o if isinstance(o, str) else json.dumps(o) for o in case.stub_outputs]
-    model = StubModel(script=outputs, default="")
-    status, response = 200, None
-    if case.agent == "sql":
-        result = await SqlGenerationAgent(model, settings).generate(
-            SqlGenerationRequest.model_validate(case.request)
-        )
-        response = result.model_dump(mode="json", by_alias=True, exclude_none=True)
+async def run_agent_case(
+    case: Case, settings: Settings, real_model: ModelClient | None = None
+) -> dict[str, Any]:
+    """Run one agent case with ``real_model``, else a stub scripted with ``stub_outputs``."""
+    model: StubModel | RecordingModel
+    if real_model is not None:
+        model = RecordingModel(real_model)
     else:
-        try:
+        outputs = [o if isinstance(o, str) else json.dumps(o) for o in case.stub_outputs]
+        model = StubModel(script=outputs, default="")
+    status, response = 200, None
+    try:
+        if case.agent == "sql":
+            result = await SqlGenerationAgent(model, settings).generate(
+                SqlGenerationRequest.model_validate(case.request)
+            )
+            response = result.model_dump(mode="json", by_alias=True, exclude_none=True)
+        else:
             result = await DslGenerationAgent(model, settings).generate(
                 DslGenerationRequest.model_validate(case.request)
             )
             response = result.model_dump(mode="json", by_alias=True, exclude_none=True)
-        except DslGenerationFailedError as error:
-            status = 422
-            response = {
-                "type": "urn:esi:problem:dsl-validation-failed",
-                "issues": [{"code": i.code, "message": i.message} for i in error.issues],
-                "issueCodes": sorted({i.code for i in error.issues}),
-            }
+    except DslGenerationFailedError as error:
+        status = 422
+        response = {
+            "type": "urn:esi:problem:dsl-validation-failed",
+            "issues": [{"code": i.code, "message": i.message} for i in error.issues],
+            "issueCodes": sorted({i.code for i in error.issues}),
+        }
+    except ModelUnavailableError as error:
+        status = 503
+        response = {"type": "urn:esi:problem:model-unavailable", "detail": str(error)}
     return {
         "status": status,
         "response": response,
@@ -161,11 +189,34 @@ async def run_cases(
     settings = settings or Settings(model_backoff_seconds=0)
     results: list[CaseResult] = []
     for case in cases:
-        outcome: Any = (
-            await run_agent_case(case, settings)
-            if case.agent
-            else await model.complete(case.prompt)
-        )
-        failed = [check for check in case.checks if not check.passes(outcome, case)]
-        results.append(CaseResult(id=case.id, passed=not failed, failed_checks=failed))
+        if case.agent:
+            started = time.monotonic()
+            outcome: Any = await run_agent_case(case, settings)
+            result = _result(case, case.checks, outcome, time.monotonic() - started)
+        else:
+            outcome = await model.complete(case.prompt)
+            result = _result(case, case.checks, outcome, 0.0)
+        results.append(result)
     return results
+
+
+async def run_real_cases(
+    cases: list[Case], model: ModelClient, settings: Settings
+) -> list[CaseResult]:
+    """Run the agent cases that have ``real_checks`` against a real ``model`` (never in CI)."""
+    results: list[CaseResult] = []
+    for case in cases:
+        if not (case.agent and case.real_checks):
+            continue
+        started = time.monotonic()
+        outcome = await run_agent_case(case, settings, real_model=model)
+        results.append(_result(case, case.real_checks, outcome, time.monotonic() - started))
+    return results
+
+
+def _result(case: Case, checks: list[Check], outcome: object, seconds: float) -> CaseResult:
+    failed = [check for check in checks if not check.passes(outcome, case)]
+    calls = outcome.get("modelCalls", 0) if isinstance(outcome, dict) and case.agent else 0
+    return CaseResult(
+        id=case.id, passed=not failed, failed_checks=failed, model_calls=calls, seconds=seconds
+    )

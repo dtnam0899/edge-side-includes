@@ -7,7 +7,8 @@ agent from returning SQL that core would reject or that is not grounded in the g
   external data access, variables, hints or batches.
 - ``stored-procedure``: one ``CREATE [OR ALTER] PROCEDURE`` script whose body only reads; never a
   procedure that already exists, never a call to any procedure.
-- Grounding: every table, qualified column and bare identifier must exist in the schema metadata.
+- Grounding: every table, qualified column and bare identifier must exist in the schema metadata,
+  and FROM/JOIN may read only tables: views are schema context, core executes only user tables.
 """
 
 from collections.abc import Iterable, Sequence
@@ -31,6 +32,7 @@ class TableInfo:
     schema: str
     name: str
     columns: frozenset[str]  # lower-case names
+    is_view: bool = False
 
     @property
     def qualified(self) -> str:
@@ -45,9 +47,11 @@ class SchemaIndex:
     tables: dict[tuple[str, str], TableInfo] = field(default_factory=dict)
     procedures: set[str] = field(default_factory=set)  # lower-case names, with and without schema
 
-    def add_table(self, schema: str, name: str, columns: Iterable[str]) -> None:
+    def add_table(
+        self, schema: str, name: str, columns: Iterable[str], *, is_view: bool = False
+    ) -> None:
         """Register a table or view."""
-        info = TableInfo(schema, name, frozenset(c.lower() for c in columns))
+        info = TableInfo(schema, name, frozenset(c.lower() for c in columns), is_view)
         self.tables[(schema.lower(), name.lower())] = info
 
     def add_procedure(self, schema: str, name: str) -> None:
@@ -358,6 +362,14 @@ def _ground(tokens: list[Token], schema: SchemaIndex, analysis: SqlAnalysis) -> 
                         )
                     )
                 else:
+                    if table.is_view:
+                        analysis.issues.append(
+                            SqlIssue(
+                                "view-not-allowed",
+                                f"{table.qualified} is a view; views are context only, "
+                                "read the tables it is built on",
+                            )
+                        )
                     referenced[table.qualified] = table
                     aliases[table.name.lower()] = table
                 i = _alias(tokens, end, table, aliases, table_positions)

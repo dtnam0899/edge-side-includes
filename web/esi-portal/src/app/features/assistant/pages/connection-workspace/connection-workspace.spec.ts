@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 
-import { provideCoreApiTesting } from '../../../../../testing/core-api-testing';
+import { httpTesting, provideCoreApiTesting } from '../../../../../testing/core-api-testing';
 import { MOCK_ID, mockConnection } from '../../../../../testing/mocks/core-api.mocks';
 import { ConnectionEditorService } from '../../services/connection-editor.service';
 import { ConnectionsService } from '../../services/connections.service';
@@ -47,6 +47,19 @@ describe('ConnectionWorkspace', () => {
     const { el } = await render('granted');
     expect(el.querySelector('app-chat-panel')).not.toBeNull();
     expect(el.textContent).not.toContain('password');
+  });
+
+  it('has the schema tab last and reads the schema only when it opens', async () => {
+    const { fixture, el } = await render('granted');
+    const tabs = [...el.querySelectorAll('p-tab')].map((t) => t.textContent?.trim());
+    expect(tabs.at(-1)).toBe('Schema');
+    expect(el.querySelector('app-schema-panel')).toBeNull();
+    httpTesting().expectNone(`/api/connections/${MOCK_ID}/schema`);
+
+    fixture.componentRef.setInput('tab', 'schema');
+    await fixture.whenStable();
+    expect(el.querySelector('app-schema-panel')).not.toBeNull();
+    httpTesting().expectOne(`/api/connections/${MOCK_ID}/schema`);
   });
 
   it('removes chat history and features at once when consent is withdrawn', async () => {

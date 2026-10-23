@@ -2,7 +2,7 @@
 id: feature-visualizations
 type: feature
 status: Implemented (agents, core, lib, portal)
-updated: 2026-10-18
+updated: 2026-10-23
 projects: [agents, core, lib, portal, contracts]
 issues: [ESI-14, ESI-17, ESI-18, ESI-20]
 keywords: [visualization, dsl, a2ui, table, kpi, validation, retry, dsl-core, dsl-renderer-angular, esi-dsl-surface, column definitions, SR-5, SR-6, ADR-0002]
@@ -19,7 +19,7 @@ After a query ran, the user asks for a table or a KPI. The assistant produces a 
 | Table | `Column` with a header `Row` and a `List` whose template `Row` iterates `/rows` with relative column paths |
 | KPI | `Card` with `Text` bound to a value via `formatNumber` or `formatCurrency`, plus a label `Text` |
 
-Charts and forms are not supported in this version; the assistant says so (`visualization-not-supported`) instead of producing something else. Charts are planned with a custom catalog component (ESI-10, ESI-11, ESI-12).
+Charts and forms are not supported in this version; the assistant says so (`visualization-not-supported`) instead of producing something else. Charts are planned with a custom catalog component `EsiChart` on Chart.js ([ADR-0009](../architecture/ADR-0009-chart-component-and-library.md), proposed; ESI-10, ESI-11, ESI-12).
 
 ## Flow
 
@@ -123,9 +123,11 @@ All three must produce the same error codes on the shared fixtures published in 
 - lib: behavior tests for the table and KPI fixtures, the exact catalog id, the missing-column error state and untrusted row values.
 - agents: evals for valid table and KPI output, invalid DSL retries, chart and form refusals, and prompts containing column definitions only.
 - core: `DslValidatorTests` (all shared fixtures, same codes as dsl-core); integration tests for a retry that succeeds, failure after the retries, and an unsupported request.
-- portal: unit tests for the DSL adapter, preview, refusal and failure messages; browser checks against the live core with artifacts saved through the API (the agents service has no model yet, so live generation answers 503).
+- portal: unit tests for the DSL adapter, preview, refusal and failure messages; browser checks against the live core with artifacts saved through the API (live generation needs the Gemini key, ADR-0007).
 
 ## Status and open items
+
+- Charts (ADR-0009): `lib` validates and renders `EsiChart` since ESI-10 (not released yet); agents (ESI-11), contracts (ESI-113), core (ESI-114) and the portal (ESI-12) still refuse charts with `visualization-not-supported` until they pin the new versions.
 
 - A `dslSchemaVersion` the portal does not know is shown as "migration required" and never rendered.
 - Upgrades of the pinned A2UI versions need a dedicated issue with fixture tests (ADR-0002).

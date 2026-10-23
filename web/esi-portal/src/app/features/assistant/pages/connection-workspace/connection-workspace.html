@@ -19,6 +19,7 @@
           <p-tab value="dashboards">Dashboards</p-tab>
           <p-tab value="artifacts">Saved visualizations</p-tab>
           <p-tab value="scripts">Saved scripts</p-tab>
+          <p-tab value="schema">Schema</p-tab>
         </p-tablist>
         <p-tabpanels>
           <p-tabpanel value="chat">
@@ -39,6 +40,11 @@
           <p-tabpanel value="scripts">
             @if (activeTab() === 'scripts') {
               <app-scripts-panel [connectionId]="c.id" />
+            }
+          </p-tabpanel>
+          <p-tabpanel value="schema">
+            @if (activeTab() === 'schema') {
+              <app-schema-panel [connectionId]="c.id" />
             }
           </p-tabpanel>
         </p-tabpanels>

@@ -14,7 +14,7 @@ from esi_agents.contracts.agents_api import (
     SqlGenerationRequest,
     SqlGenerationResult,
 )
-from esi_agents.llm import ModelClient, guarded_complete
+from esi_agents.llm import Deadline, ModelClient, guarded_complete
 from esi_agents.prompts import SQL_GENERATION, render
 from esi_agents.sql import SchemaIndex, SqlIssue, check_procedure_script, check_query
 from esi_agents.sql.tokens import TokenizeError, TokenKind, tokenize
@@ -25,7 +25,12 @@ def schema_index(metadata: SchemaMetadata) -> SchemaIndex:
     index = SchemaIndex()
     for schema in metadata.schemas:
         for table in schema.tables:
-            index.add_table(schema.name, table.name, (c.name for c in table.columns))
+            index.add_table(
+                schema.name,
+                table.name,
+                (c.name for c in table.columns),
+                is_view=enum_value(table.kind) == "view",
+            )
         for procedure in schema.procedures:
             index.add_procedure(schema.name, procedure.name)
     return index
@@ -55,7 +60,9 @@ def describe_schema(metadata: SchemaMetadata) -> str:
             columns = ", ".join(
                 f"{c.name} {c.sql_type}{'' if c.nullable else ' NOT NULL'}" for c in table.columns
             )
-            lines.append(f"{enum_value(table.kind)} {schema.name}.{table.name} ({columns})")
+            kind = enum_value(table.kind)
+            note = " -- context only, never query a view" if kind == "view" else ""
+            lines.append(f"{kind} {schema.name}.{table.name} ({columns}){note}")
             if table.primary_key:
                 lines.append(f"  primary key ({', '.join(table.primary_key)})")
             for fk in table.foreign_keys or []:
@@ -90,6 +97,7 @@ class SqlGenerationAgent:
         schema_text = describe_schema(request.schema_)
         history = "\n".join(f"{enum_value(m.role)}: {m.text}" for m in request.history or [])
         issues: list[SqlIssue] = []
+        deadline = Deadline(self._settings.request_deadline_seconds)
         for _ in range(self._settings.sql_max_retries + 1):
             prompt = render(
                 SQL_GENERATION,
@@ -98,7 +106,7 @@ class SqlGenerationAgent:
                 question=request.question,
                 issues=_issues_text(issues),
             )
-            output = await guarded_complete(self._model, prompt, self._settings)
+            output = await guarded_complete(self._model, prompt, self._settings, deadline)
             result, issues = self._check(output, index)
             if result is not None:
                 return result

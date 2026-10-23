@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+/* Colors come from the host theme (--esi-chart-* tokens from lib/ui-tokens); the canvas reads them too. */
+.esi-chart {
+  margin: 0;
+  color: var(--esi-chart-text, inherit);
+}
+
+.esi-chart-title {
+  font-weight: 600;
+  margin-bottom: var(--esi-space-2, 0.5rem);
+}
+
+.esi-chart-canvas {
+  position: relative;
+  height: var(--esi-chart-height, 18rem);
+}
+
+.esi-chart-note,
+.esi-chart-caption {
+  margin: var(--esi-space-2, 0.5rem) 0;
+  font-size: 0.875em;
+}
+
+.esi-chart-table-wrapper {
+  max-height: var(--esi-chart-height, 18rem);
+  overflow: auto;
+}
+
+.esi-chart-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.esi-chart-table th,
+.esi-chart-table td {
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--esi-chart-grid, currentColor);
+  text-align: left;
+}
+
+.esi-chart-table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.esi-chart-toggle {
+  font: inherit;
+}

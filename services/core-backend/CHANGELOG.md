@@ -4,6 +4,8 @@ All notable changes are generated from Conventional Commits by the release flow.
 
 ## Unreleased
 
+- Pinned contract `@dtnam0899/esi-contracts` 0.2.0 (bearer security scheme, 401 `unauthenticated`, 503 `agents-unavailable`); the generated DTOs and agents-api client are unchanged apart from their source header.
+- Oidc authentication (ADR-0006, ESI-86, core-api 0.2.0): `ESI_CORE_Auth__Mode=Oidc` validates JWT bearer tokens (RS256) from `ESI_CORE_Auth__Authority` for `ESI_CORE_Auth__Audience`; every endpoint except `/health` and `/health/ready` requires an authenticated user; missing or invalid tokens answer 401 `unauthenticated` (problem+json). New `Users` table (migration `AddUsers`) maps (issuer, subject) to the internal user id, created on the first request. `Authorization` values are masked in logs. BREAKING CHANGE: `LocalAdmin` starts only with `ASPNETCORE_ENVIRONMENT=Development`.
 - App database on PostgreSQL (ADR-0008, ESI-94): EF Core uses the Npgsql provider and `ESI_CORE_AppDb__ConnectionString` takes an Npgsql connection string; migrations reset to one `InitialCreate`; compose adds a `postgres` service for `esi_core`, and `sqlserver` holds only the `esi_target` test database. Users' target databases stay SQL Server. A chat answer is stored 1 µs after its question (was 1 tick) so the order survives Postgres' microsecond precision. BREAKING CHANGE for deployments: an existing SQL Server app database is not migrated.
 
 ## 0.1.0

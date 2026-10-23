@@ -86,7 +86,7 @@ sequenceDiagram
   P-->>U: Rows, remaining count, or the failure reason
 ```
 
-## API (core-api 0.1.0)
+## API (core-api 0.2.0)
 
 `POST /connections/{connectionId}/executions` (`executeQuery`) with `{ "sql": "...", "page": 1 }` returns `QueryResult`:
 

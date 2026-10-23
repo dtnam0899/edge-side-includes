@@ -18,9 +18,16 @@ public static partial class SensitiveDataRedactor
 
     // JSON style pairs: "password": "secret".
     [GeneratedRegex(
-        @"(?<key>""(?:password|pwd|accountKey|sharedAccessKey|clientSecret|client_secret|apiKey|api_key|accessToken|access_token|secret|token)""\s*:\s*)""(?:[^""\\]|\\.)*""",
+        @"(?<key>""(?:password|pwd|accountKey|sharedAccessKey|clientSecret|client_secret|apiKey|api_key|accessToken|access_token|secret|token|authorization)""\s*:\s*)""(?:[^""\\]|\\.)*""",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex JsonPattern();
+
+    // HTTP Authorization header in any form ("Authorization: Bearer eyJ...", "authorization=Basic abc"): the scheme
+    // and the credentials are both masked.
+    [GeneratedRegex(
+        """(?<key>\bauthorization["']?\s*[:=]\s*["']?)(?<value>(?:bearer|basic|negotiate|digest)\s+[^\s"',;&]+|[^\s"',;&]+)""",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex AuthorizationPattern();
 
     public static string Redact(string? text)
     {
@@ -29,7 +36,8 @@ public static partial class SensitiveDataRedactor
             return text ?? string.Empty;
         }
 
-        var result = KeyValuePattern().Replace(text, m => m.Groups["key"].Value + Mask);
+        var result = AuthorizationPattern().Replace(text, m => m.Groups["key"].Value + Mask);
+        result = KeyValuePattern().Replace(result, m => m.Groups["key"].Value + Mask);
         return JsonPattern().Replace(result, m => m.Groups["key"].Value + "\"" + Mask + "\"");
     }
 }

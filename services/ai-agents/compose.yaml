@@ -1,4 +1,5 @@
-# Local dev for services/ai-agents. No external dependencies yet; the model provider is added by its ADR.
+# Local dev for services/ai-agents. Model: Gemini API free tier (ADR-0007) when the key is set in the shell or a
+# git-ignored .env; otherwise every generation answers model-unavailable.
 services:
   agents:
     build:
@@ -9,3 +10,6 @@ services:
       - "8000:8000"
     environment:
       ESI_AGENTS_LOG_LEVEL: ${ESI_AGENTS_LOG_LEVEL:-INFO}
+      ESI_AGENTS_MODEL_PROVIDER: ${ESI_AGENTS_MODEL_PROVIDER:-none}
+      ESI_AGENTS_GEMINI_API_KEY: ${ESI_AGENTS_GEMINI_API_KEY:-}
+      ESI_AGENTS_GEMINI_MODEL: ${ESI_AGENTS_GEMINI_MODEL:-gemini-3.8-flash}

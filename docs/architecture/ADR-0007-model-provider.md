@@ -1,7 +1,7 @@
 ---
 id: ADR-0007
 type: adr
-status: Proposed
+status: Accepted
 date: 2026-10-19
 projects: [agents]
 issues: [ESI-88, ESI-89]

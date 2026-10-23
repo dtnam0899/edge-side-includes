@@ -71,3 +71,32 @@ export const DATA_MODEL_PATHS = {
 
 /** Id of the component every surface renders first. */
 export const ROOT_COMPONENT_ID = 'root';
+
+/** Name of the ESI chart component (ADR-0009). */
+export const ESI_CHART_COMPONENT = 'EsiChart';
+
+/** Chart types of `EsiChart`. */
+export const CHART_TYPES = ['bar', 'line', 'pie'] as const;
+export type ChartType = (typeof CHART_TYPES)[number];
+
+/** At most this many series in one chart (ADR-0009). */
+export const MAX_CHART_SERIES = 4;
+
+/** At most this many slices in a pie; with more rows the renderer shows the table instead. */
+export const MAX_PIE_SLICES = 8;
+
+/** One series of an `EsiChart`: a numeric column and its label. */
+export interface ChartSeries {
+  valueKey: string;
+  label?: string;
+}
+
+/** Properties of an `EsiChart` component as stored in the DSL. No data values, colors or options. */
+export interface EsiChartProperties {
+  chartType: ChartType;
+  title: string;
+  categoryKey: string;
+  series: ChartSeries[];
+  data: DataBinding;
+  stacked?: boolean;
+}

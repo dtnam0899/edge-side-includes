@@ -143,6 +143,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "jsonschema" },
     { name = "pydantic-settings" },
     { name = "uvicorn" },
@@ -151,7 +152,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "datamodel-code-generator", extra = ["black", "isort"] },
-    { name = "httpx" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -159,6 +159,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.143.3" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "jsonschema", specifier = ">=4.26.0" },
     { name = "pydantic-settings", specifier = ">=2.6" },
     { name = "uvicorn", specifier = ">=0.32" },
@@ -167,7 +168,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "datamodel-code-generator", extras = ["black", "isort"], specifier = ">=0.85.0" },
-    { name = "httpx", specifier = ">=0.28" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "ruff", specifier = ">=0.17.1" },
 ]

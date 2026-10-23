@@ -1,1 +1,1 @@
-export * from './lib/ui-tokens';
+export * from './lib/chart-tokens';

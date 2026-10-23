@@ -11,6 +11,7 @@ def schema() -> SchemaIndex:
     index.add_table("dbo", "Orders", ["OrderId", "CustomerId", "OrderDate", "Status"])
     index.add_table("dbo", "OrderLines", ["OrderLineId", "OrderId", "Quantity", "UnitPrice"])
     index.add_table("sales", "Targets", ["Year", "Amount"])
+    index.add_table("dbo", "vw_CustomerRevenue", ["Name", "Revenue"], is_view=True)
     index.add_procedure("dbo", "usp_GetCustomerOrders")
     return index
 
@@ -122,6 +123,23 @@ def test_bypass_attempts_are_rejected(sql: str, code: str, schema: SchemaIndex) 
 )
 def test_ungrounded_identifiers_are_rejected(sql: str, code: str, schema: SchemaIndex) -> None:
     assert code in codes(check_query(sql, schema))
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "SELECT cr.Name, cr.Revenue FROM dbo.vw_CustomerRevenue AS cr;",
+        "SELECT Name, Revenue FROM vw_CustomerRevenue",
+        "SELECT c.Country, cr.Revenue FROM dbo.Customers AS c "
+        "JOIN dbo.vw_CustomerRevenue AS cr ON cr.Name = c.Name",
+        "WITH r AS (SELECT cr.Revenue FROM dbo.vw_CustomerRevenue AS cr) "
+        "SELECT SUM(r.Revenue) AS T FROM r",
+    ],
+)
+def test_views_are_context_only(sql: str, schema: SchemaIndex) -> None:
+    assert "view-not-allowed" in codes(check_query(sql, schema))
+    script = f"CREATE PROCEDURE dbo.usp_New AS {sql}"
+    assert "view-not-allowed" in codes(check_procedure_script(script, schema))
 
 
 def test_referenced_tables_are_schema_qualified(schema: SchemaIndex) -> None:
