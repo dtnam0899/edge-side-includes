@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ESI agents API
-  version: 0.1.0
+  version: 0.3.0
   description: |
     HTTP API of services/ai-agents. Internal: only services/core-backend calls it; the browser never does.
     Core sends schema metadata and column definitions, never connection strings or row values (UR-1 SR-3, SR-5).
@@ -48,7 +48,7 @@ paths:
         - Generation
       operationId: generateDsl
       summary: Map result column definitions and a visualization intent to a DSL candidate.
-      description: Input has column definitions only, no row values. Core validates the candidate and, on failure, calls again with `previousIssues` (at most 2 retries). Charts and forms are answered with `unsupported`.
+      description: Input has column definitions only, no row values. Core validates the candidate and, on failure, calls again with `previousIssues` (at most 2 retries). Tables, KPIs and charts (`EsiChart`, ADR-0009) are generated; forms are answered with `unsupported`.
       requestBody:
         required: true
         content:
@@ -192,7 +192,7 @@ components:
         - none
     VisualizationIntent:
       type: object
-      description: What the user wants to see. Only `table` and `kpi` exist in this version; charts and forms are refused with a `visualization-not-supported` problem.
+      description: 'What the user wants to see: a `table`, a `kpi`, or a `chart` (bar, line or pie; the agent picks the type from the columns and the wording, ADR-0009). Forms are refused with a `visualization-not-supported` problem.'
       required:
         - kind
       properties:
@@ -201,10 +201,12 @@ components:
           enum:
             - table
             - kpi
+            - chart
+          example: chart
         description:
           type: string
           maxLength: 2000
-          description: The user's wording, for example "total revenue as a KPI".
+          description: The user's wording, for example "total revenue as a KPI" or "revenue per month as a line chart".
     DslDocument:
       type: object
       description: 'A UI DSL document: the A2UI `updateComponents` payload plus the metadata needed to render it later (ADR-0002). It holds column keys only, never row values. The authoritative schema and validator are the published `@dtnam0899/dsl-schema` and `@dtnam0899/dsl-core` packages; this contract only carries the document.'
@@ -216,7 +218,7 @@ components:
       properties:
         catalogId:
           type: string
-          description: Exact catalogId of the pinned A2UI catalog.
+          description: 'Exact catalogId of the catalog the document uses: the pinned A2UI basic catalog (`https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json`) for tables and KPIs, or the ESI catalog (`dtnam0899.github.io:esi-catalog-v0_9-1`, the basic catalog plus `EsiChart`, ADR-0009) for a document with a chart. The allowed values are defined by `@dtnam0899/dsl-schema` (0.2.0 and later).'
           example: https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json
         protocolVersion:
           type: string
@@ -304,7 +306,7 @@ components:
           $ref: '#/components/schemas/VisualizationIntent'
         catalogId:
           type: string
-          description: The pinned A2UI catalog the DSL must use.
+          description: 'The catalog the DSL must use: the basic catalog id for `table` and `kpi`, the ESI catalog id (`dtnam0899.github.io:esi-catalog-v0_9-1`, ADR-0009) for `chart`.'
           example: https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json
         previousIssues:
           type: array
@@ -325,7 +327,7 @@ components:
           $ref: '#/components/schemas/DslDocument'
         reason:
           type: string
-          description: Why the request is unsupported (for example "charts are not available yet").
+          description: Why the request is unsupported (for example "forms are not available yet").
     ForeignKey:
       type: object
       required:

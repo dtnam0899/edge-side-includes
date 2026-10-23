@@ -13,6 +13,7 @@ SCHEMA = json.loads(
     (ROOT / "evals" / "fixtures" / "sales-schema.json").read_text(encoding="utf-8")
 )["schema"]
 CATALOG_ID = "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+CHART_CATALOG_ID = "dtnam0899.github.io:esi-catalog-v0_9-1"
 KPI = {
     "status": "generated",
     "components": [
@@ -131,7 +132,7 @@ def test_wrong_catalog_is_an_invalid_request() -> None:
 
 def test_contract_violations_are_invalid_requests() -> None:
     api, _ = client()
-    response = api.post("/dsl-generations", json={"columns": [], "intent": {"kind": "chart"}})
+    response = api.post("/dsl-generations", json={"columns": [], "intent": {"kind": "form"}})
     assert response.status_code == 400
     body = response.json()
     assert body["type"] == "urn:esi:problem:invalid-request"
@@ -172,3 +173,65 @@ def test_request_deadline_covers_every_candidate() -> None:
     assert response.status_code == 503
     assert response.json()["detail"] == "the model did not answer in time"
     assert model.calls < 6
+
+
+def chart_request(
+    description: str = "revenue per country as a bar chart", **request: object
+) -> dict:
+    return {
+        "columns": [
+            {"name": "Country", "sqlType": "nvarchar(100)", "nullable": True},
+            {"name": "Revenue", "sqlType": "decimal(18,2)", "nullable": False},
+        ],
+        "intent": {"kind": "chart", "description": description},
+        "catalogId": CHART_CATALOG_ID,
+        **request,
+    }
+
+
+BAR = {
+    "status": "generated",
+    "components": [
+        {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Revenue by country",
+            "categoryKey": "Country",
+            "series": [{"valueKey": "Revenue"}],
+            "data": {"path": "/rows"},
+        }
+    ],
+}
+
+
+def test_generate_dsl_returns_a_chart_on_the_esi_catalog() -> None:
+    api, model = client(BAR)
+    response = api.post("/dsl-generations", json=chart_request())
+    assert response.status_code == 200
+    dsl = response.json()["dsl"]
+    assert dsl["catalogId"] == CHART_CATALOG_ID
+    assert dsl["dslSchemaVersion"] == "0.2.0"
+    assert dsl["components"][0]["component"] == "EsiChart"
+    assert CHART_CATALOG_ID in model.prompts[0]
+
+
+def test_the_catalog_must_match_the_intent() -> None:
+    api, model = client(BAR, KPI)
+    chart_on_basic = api.post("/dsl-generations", json=chart_request(catalogId=CATALOG_ID))
+    kpi_on_esi = api.post("/dsl-generations", json={**dsl_request(), "catalogId": CHART_CATALOG_ID})
+    for response in (chart_on_basic, kpi_on_esi):
+        assert response.status_code == 400
+        assert response.json()["type"] == "urn:esi:problem:invalid-request"
+    assert model.prompts == []
+
+
+def test_a_chart_without_a_numeric_column_is_unsupported_without_a_model_call() -> None:
+    api, model = client(BAR)
+    request = chart_request()
+    request["columns"] = [{"name": "Country", "sqlType": "nvarchar(100)", "nullable": True}]
+    response = api.post("/dsl-generations", json=request)
+    assert response.status_code == 200
+    assert response.json()["status"] == "unsupported"
+    assert "numeric column" in response.json()["reason"]
+    assert model.prompts == []

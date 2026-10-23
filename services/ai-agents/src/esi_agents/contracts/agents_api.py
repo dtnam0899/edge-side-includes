@@ -1,4 +1,4 @@
-# Generated from @dtnam0899/esi-contracts 0.1.0 (bundled/agents-api.yaml)
+# Generated from @dtnam0899/esi-contracts 0.3.0 (bundled/agents-api.yaml)
 # by datamodel-code-generator. Do not edit: run scripts/sync-published.sh.
 
 from __future__ import annotations
@@ -84,20 +84,21 @@ class SqlOutputKind(StrEnum):
 class Kind(StrEnum):
     table = "table"
     kpi = "kpi"
+    chart = "chart"
 
 
 class VisualizationIntent(BaseModel):
     """
-    What the user wants to see. Only `table` and `kpi` exist in this version; charts and forms are refused with a `visualization-not-supported` problem.
+    What the user wants to see: a `table`, a `kpi`, or a `chart` (bar, line or pie; the agent picks the type from the columns and the wording, ADR-0009). Forms are refused with a `visualization-not-supported` problem.
     """
 
     model_config = ConfigDict(
         populate_by_name=True,
     )
-    kind: Kind
+    kind: Kind = Field(..., examples=["chart"])
     description: str | None = Field(
         None,
-        description='The user\'s wording, for example "total revenue as a KPI".',
+        description='The user\'s wording, for example "total revenue as a KPI" or "revenue per month as a line chart".',
         max_length=2000,
     )
 
@@ -113,7 +114,7 @@ class DslDocument(BaseModel):
     catalog_id: str = Field(
         ...,
         alias="catalogId",
-        description="Exact catalogId of the pinned A2UI catalog.",
+        description="Exact catalogId of the catalog the document uses: the pinned A2UI basic catalog (`https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json`) for tables and KPIs, or the ESI catalog (`dtnam0899.github.io:esi-catalog-v0_9-1`, the basic catalog plus `EsiChart`, ADR-0009) for a document with a chart. The allowed values are defined by `@dtnam0899/dsl-schema` (0.2.0 and later).",
         examples=["https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"],
     )
     protocol_version: str = Field(..., alias="protocolVersion", examples=["0.9.1"])
@@ -171,7 +172,7 @@ class DslGenerationRequest(BaseModel):
     catalog_id: str = Field(
         ...,
         alias="catalogId",
-        description="The pinned A2UI catalog the DSL must use.",
+        description="The catalog the DSL must use: the basic catalog id for `table` and `kpi`, the ESI catalog id (`dtnam0899.github.io:esi-catalog-v0_9-1`, ADR-0009) for `chart`.",
         examples=["https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"],
     )
     previous_issues: list[ValidationIssue] | None = Field(
@@ -194,7 +195,7 @@ class DslGenerationResult(BaseModel):
     dsl: DslDocument | None = None
     reason: str | None = Field(
         None,
-        description='Why the request is unsupported (for example "charts are not available yet").',
+        description='Why the request is unsupported (for example "forms are not available yet").',
     )
 
 

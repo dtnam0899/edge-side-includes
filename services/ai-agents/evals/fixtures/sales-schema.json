@@ -2,7 +2,7 @@
   "description": "Sample target database (customers, products, orders, a revenue view) as SchemaMetadata. No row values, no connection details.",
   "contract": {
     "package": "@dtnam0899/esi-contracts",
-    "version": "0.1.0",
+    "version": "0.3.0",
     "api": "agents-api",
     "shape": "SchemaMetadata"
   },

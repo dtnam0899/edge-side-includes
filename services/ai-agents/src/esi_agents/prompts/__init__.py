@@ -4,7 +4,7 @@ from importlib.resources import files
 from string import Template
 
 SQL_GENERATION = "sql_generation.v2"
-DSL_GENERATION = "dsl_generation.v1"
+DSL_GENERATION = "dsl_generation.v2"
 
 
 def render(name: str, **values: str) -> str:

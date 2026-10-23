@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "urn:esi:dsl-schema:artifact:1",
     "title": "ESI DSL artifact",
-    "description": "A stored ESI DSL artifact (ADR-0002): the A2UI v0.9 updateComponents component list plus the columns and SELECT it is bound to. It never contains row values or layout.",
+    "description": "A stored ESI DSL artifact (ADR-0002): the A2UI v0.9 updateComponents component list plus the columns and SELECT it is bound to. It never contains row values or layout. Tables and KPIs use the basic catalog; charts use the ESI catalog (ADR-0009).",
     "type": "object",
     "properties": {
         "dslSchemaVersion": {
@@ -14,8 +14,8 @@
             "description": "A2UI message version used when the artifact is rendered."
         },
         "catalogId": {
-            "const": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
-            "description": "The pinned basic catalog id, verbatim from catalog.json."
+            "enum": ["https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json", "dtnam0899.github.io:esi-catalog-v0_9-1"],
+            "description": "The pinned basic catalog id (verbatim from catalog.json), or the ESI catalog id (esi/catalog.json) for an artifact with a chart."
         },
         "columns": {
             "type": "array",
@@ -33,13 +33,31 @@
         },
         "components": {
             "type": "array",
-            "description": "The A2UI updateComponents.components payload.",
-            "minItems": 1,
-            "items": { "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/$defs/anyComponent" }
+            "description": "The A2UI updateComponents.components payload; its items are components of the artifact's catalog.",
+            "minItems": 1
         }
     },
     "required": ["dslSchemaVersion", "protocolVersion", "catalogId", "columns", "query", "components"],
     "additionalProperties": false,
+    "allOf": [
+        {
+            "if": { "properties": { "catalogId": { "const": "dtnam0899.github.io:esi-catalog-v0_9-1" } }, "required": ["catalogId"] },
+            "then": {
+                "properties": {
+                    "components": {
+                        "items": { "$ref": "urn:esi:dsl-schema:catalog:esi:1#/$defs/anyComponent" },
+                        "contains": { "type": "object", "properties": { "component": { "const": "EsiChart" } }, "required": ["component"] },
+                        "description": "An ESI catalog artifact has at least one EsiChart; tables and KPIs use the basic catalog."
+                    }
+                }
+            },
+            "else": {
+                "properties": {
+                    "components": { "items": { "$ref": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json#/$defs/anyComponent" } }
+                }
+            }
+        }
+    ],
     "$defs": {
         "ColumnDefinition": {
             "type": "object",
