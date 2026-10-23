@@ -50,6 +50,45 @@ public class ArtifactsDashboardsApiTests(ArtifactsDashboardsApiTests.Factory fac
     }
 
     [Fact]
+    public async Task A_chart_is_saved_listed_opened_and_placed_on_a_dashboard()
+    {
+        var (client, connectionId) = await ConnectAsync();
+
+        var created = await JsonAsync(await SaveChartAsync(client, connectionId, "chart", FakeAgents.BarChart("Name", "Revenue")), HttpStatusCode.Created);
+        var id = created.GetProperty("id").GetGuid();
+        var list = await JsonAsync(await client.GetAsync($"/connections/{connectionId}/artifacts", Ct));
+        var opened = await JsonAsync(await client.GetAsync($"/artifacts/{id}", Ct));
+        var page = await JsonAsync(await client.PostAsJsonAsync($"/artifacts/{id}/executions", new { page = 1 }, Ct));
+        var dashboard = (await JsonAsync(await client.PostAsJsonAsync($"/connections/{connectionId}/dashboards", new { name = "Charts" }, Ct), HttpStatusCode.Created)).GetProperty("id").GetGuid();
+        await JsonAsync(await client.PostAsJsonAsync($"/dashboards/{dashboard}/items", new { artifactId = id, layout = Layout(0, 0, 6, 5) }, Ct), HttpStatusCode.Created);
+        var item = (await JsonAsync(await client.GetAsync($"/dashboards/{dashboard}", Ct))).GetProperty("items")[0];
+
+        Assert.Equal("chart", created.GetProperty("kind").GetString());
+        Assert.Contains(list.EnumerateArray(), a => a.GetProperty("id").GetGuid() == id && a.GetProperty("kind").GetString() == "chart");
+        Assert.Equal("chart", opened.GetProperty("kind").GetString());
+        Assert.Equal("dtnam0899.github.io:esi-catalog-v0_9-1", opened.GetProperty("dsl").GetProperty("catalogId").GetString());
+        Assert.Equal("EsiChart", opened.GetProperty("dsl").GetProperty("components")[0].GetProperty("component").GetString());
+        Assert.True(page.GetProperty("rows").GetArrayLength() > 0);
+        Assert.Equal("available", item.GetProperty("status").GetString());
+        Assert.Equal("chart", item.GetProperty("artifact").GetProperty("kind").GetString());
+        Assert.Equal((0, 0, 6, 5), LayoutOf(item));
+    }
+
+    [Fact]
+    public async Task A_kind_that_does_not_match_the_dsl_is_rejected()
+    {
+        var (client, connectionId) = await ConnectAsync();
+
+        var chartAsTable = await SaveChartAsync(client, connectionId, "table", FakeAgents.BarChart("Name", "Revenue"));
+        var tableAsChart = await SaveChartAsync(client, connectionId, "chart", FakeAgents.Table("Name", "Revenue"));
+        var list = await JsonAsync(await client.GetAsync($"/connections/{connectionId}/artifacts", Ct));
+
+        Assert.Contains("kind must be chart", (await ProblemAsync(chartAsTable, HttpStatusCode.BadRequest, "invalid-request")).GetRawText());
+        Assert.Contains("kind must be table or kpi", (await ProblemAsync(tableAsChart, HttpStatusCode.BadRequest, "invalid-request")).GetRawText());
+        Assert.Equal(0, list.GetArrayLength());
+    }
+
+    [Fact]
     public async Task Dashboard_layout_is_saved_and_restored()
     {
         var (client, connectionId) = await ConnectAsync();
@@ -205,6 +244,23 @@ public class ArtifactsDashboardsApiTests(ArtifactsDashboardsApiTests.Factory fac
             dsl = FakeAgents.Table(dslColumns ?? columns),
             sql,
             columns = columns.Select(c => new { name = c, sqlType = "nvarchar(200)", nullable = false }),
+        }, Ct);
+
+    private const string RevenueSql =
+        "SELECT c.Name, SUM(l.Quantity * l.UnitPrice) AS Revenue FROM dbo.Customers AS c JOIN dbo.Orders AS o ON o.CustomerId = c.CustomerId JOIN dbo.OrderLines AS l ON l.OrderId = o.OrderId GROUP BY c.Name";
+
+    private static Task<HttpResponseMessage> SaveChartAsync(HttpClient client, Guid connectionId, string kind, JsonElement dsl) =>
+        client.PostAsJsonAsync($"/connections/{connectionId}/artifacts", new
+        {
+            name = "Revenue chart",
+            kind,
+            dsl,
+            sql = RevenueSql,
+            columns = new object[]
+            {
+                new { name = "Name", sqlType = "nvarchar(200)", nullable = false },
+                new { name = "Revenue", sqlType = "decimal(38,2)", nullable = true },
+            },
         }, Ct);
 
     private static async Task<Guid> SaveIdAsync(HttpClient client, Guid connectionId, string sql, params string[] columns) =>

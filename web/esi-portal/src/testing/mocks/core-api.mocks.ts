@@ -1,7 +1,7 @@
 /**
  * Mocked core-api responses for unit tests (P0-14, docs/process/test-data.md).
  *
- * Source: the field `example`s of the pinned contract `@dtnam0899/esi-contracts` 0.3.0 (`bundled/core-api.yaml`),
+ * Source: the field `example`s of the pinned contract `@dtnam0899/esi-contracts` 0.4.0 (`bundled/core-api.yaml`),
  * the version in `package.json` `esi.coreApiContract` and `CORE_API_CONTRACT_VERSION`. Fields without an example
  * in the contract use neutral stand-ins from the same customers/products/orders domain (marked "no contract
  * example"). Typed with the generated client, so a contract

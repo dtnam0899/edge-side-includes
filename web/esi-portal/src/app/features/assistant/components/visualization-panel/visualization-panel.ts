@@ -20,8 +20,7 @@ const KIND_LABELS: Readonly<Record<VisualizationIntent['kind'], string>> = {
 /**
  * Turns a query result into a table, KPI or chart: the request, the preview rendered with the current page's
  * rows, and saving it as an artifact. A chart draws only the current page; the renderer says so in its caption
- * and offers the same rows as a table (ADR-0009). Charts cannot be saved yet (ESI-119). Forms are refused by
- * the server.
+ * and offers the same rows as a table (ADR-0009). Forms are refused by the server.
  */
 @Component({
   selector: 'app-visualization-panel',
@@ -103,29 +102,25 @@ const KIND_LABELS: Readonly<Record<VisualizationIntent['kind'], string>> = {
             <app-dsl-view [renderer]="renderer()" [live]="live()" [retryable]="false" />
           </div>
           <div class="save" aria-live="polite">
-            @if (isChart()) {
-              <small class="hint">Saving charts as artifacts is not available yet.</small>
-            } @else {
-              @switch (save()?.status) {
-                @case ('saved') {
-                  @if (saved(); as artifact) {
-                    <span class="ok">Saved as “{{ artifact.name }}”.</span>
-                    <a [routerLink]="['artifacts', artifact.id]">Open saved visualization</a>
-                  }
+            @switch (save()?.status) {
+              @case ('saved') {
+                @if (saved(); as artifact) {
+                  <span class="ok">Saved as “{{ artifact.name }}”.</span>
+                  <a [routerLink]="['artifacts', artifact.id]">Open saved visualization</a>
                 }
-                @default {
-                  <button
-                    pButton
-                    type="button"
-                    size="small"
-                    [loading]="save()?.status === 'saving'"
-                    (click)="saveRequested.emit()"
-                  >
-                    Save as artifact
-                  </button>
-                  @if (saveProblem(); as p) {
-                    <app-problem-message [problem]="p" lead="The visualization was not saved." />
-                  }
+              }
+              @default {
+                <button
+                  pButton
+                  type="button"
+                  size="small"
+                  [loading]="save()?.status === 'saving'"
+                  (click)="saveRequested.emit()"
+                >
+                  Save as artifact
+                </button>
+                @if (saveProblem(); as p) {
+                  <app-problem-message [problem]="p" lead="The visualization was not saved." />
                 }
               }
             }
@@ -206,7 +201,6 @@ export class VisualizationPanel {
   protected readonly inputId = computed(() => `viz-input-${this.key()}`);
   protected readonly pending = computed(() => this.state()?.status === 'pending');
   protected readonly kindLabel = computed(() => KIND_LABELS[this.state()?.intent.kind ?? 'table']);
-  protected readonly isChart = computed(() => this.state()?.intent.kind === 'chart');
   protected readonly renderer = computed(() => {
     const state = this.state();
     return state?.status === 'ready' ? state.renderer : null;

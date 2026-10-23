@@ -85,6 +85,9 @@ describe('grid layout', () => {
     const items = [item('a', 0, 0, 6, 5), item('b', 6, 0, 3, 2)];
     expect(nextLayout(items, 'kpi')).toEqual({ x: 0, y: 5, width: 3, height: 2 });
     expect(nextLayout([], 'table')).toEqual({ x: 0, y: 0, width: 6, height: 5 });
+    // Charts and kinds a later contract adds (ADR-0010) get the table size.
+    expect(nextLayout([], 'chart')).toEqual({ x: 0, y: 0, width: 6, height: 5 });
+    expect(nextLayout([], 'form')).toEqual({ x: 0, y: 0, width: 6, height: 5 });
   });
 
   it('sorts in reading order and compares layouts by item', () => {

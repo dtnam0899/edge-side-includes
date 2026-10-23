@@ -41,7 +41,8 @@
   text-align: left;
 }
 
-.esi-chart-table td {
+/* Series columns (every column after the category) hold numbers: header and cells align right together. */
+.esi-chart-table .esi-chart-number {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }

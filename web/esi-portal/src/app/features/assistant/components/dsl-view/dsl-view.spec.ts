@@ -1,9 +1,13 @@
 import { TestBed } from '@angular/core/testing';
+import { ESI_CHART_LOADER, type ChartFactory } from '@dtnam0899/dsl-renderer-angular';
 
 import {
   MOCK_KPI_COLUMNS,
   MOCK_KPI_SQL,
+  mockArtifact,
+  mockChartDslDocument,
   mockDslDocument,
+  mockFullQueryPage,
   mockKpiResult,
   mockProblem,
   mockQueryResult,
@@ -68,4 +72,26 @@ describe('DslView', () => {
     expect(el.querySelector('esi-dsl-surface')).toBeNull();
     expect(el.textContent).toContain('DSL version 9.0.0');
   });
+
+  it('renders a saved chart, as a dashboard item does, with its own caption instead of the paging one', async () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: ESI_CHART_LOADER, useValue: () => Promise.resolve(fakeChart) }],
+    });
+    const result = mockFullQueryPage();
+    const artifact = mockArtifact({
+      kind: 'chart',
+      dsl: mockChartDslDocument(),
+      columns: result.columns,
+    });
+    const el = await render(
+      { status: 'ready', result, data: toSurfaceData(result) },
+      toRendererArtifact(artifact.dsl, artifact.sql, artifact.columns),
+    );
+    await vi.waitFor(() => expect(el.querySelector('esi-chart canvas[role="img"]')).not.toBeNull());
+    expect(el.textContent).toContain('First 20 of 62 rows');
+    expect(el.querySelector('.live-caption')).toBeNull();
+  });
 });
+
+/** Stands in for Chart.js: jsdom has no canvas. */
+const fakeChart: ChartFactory = () => ({ destroy: () => undefined });

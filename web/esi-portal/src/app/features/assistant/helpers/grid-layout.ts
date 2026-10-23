@@ -83,8 +83,11 @@ export function compact<T extends PlacedItem>(items: readonly T[], pinned?: stri
   return readingOrder(result);
 }
 
-/** Layout for a new item: the default size for its kind, below everything else. */
-export function nextLayout(items: readonly PlacedItem[], kind: 'table' | 'kpi'): ItemLayout {
+/**
+ * Layout for a new item: the default size for its kind, below everything else. A KPI is 3 x 2; a table, a
+ * chart (product owner, ADR-0010) and any kind this portal does not know yet are 6 x 5.
+ */
+export function nextLayout(items: readonly PlacedItem[], kind: string): ItemLayout {
   const bottom = items.reduce((max, item) => Math.max(max, item.layout.y + item.layout.height), 0);
   return kind === 'kpi'
     ? { x: 0, y: bottom, width: 3, height: 2 }

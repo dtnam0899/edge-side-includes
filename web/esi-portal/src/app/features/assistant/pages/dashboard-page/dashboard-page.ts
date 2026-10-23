@@ -21,10 +21,16 @@ import { Tag } from 'primeng/tag';
 import { finalize, map } from 'rxjs';
 
 import { ApiProblem, ArtifactSummary, toApiProblem } from '../../../../core/api';
-import { DashboardGrid, LayoutChange } from '../../components/dashboard-grid/dashboard-grid';
+import {
+  DashboardGrid,
+  GAP_PX,
+  LayoutChange,
+  ROW_HEIGHT_PX,
+} from '../../components/dashboard-grid/dashboard-grid';
 import { DslView } from '../../components/dsl-view/dsl-view';
 import { NameDialog } from '../../components/name-dialog/name-dialog';
 import { ProblemMessage } from '../../components/problem-message/problem-message';
+import { artifactKindLabel } from '../../helpers/artifact-kind';
 import { artifactStatusLabel, artifactStatusMessage } from '../../helpers/artifact-status';
 import { ArtifactsService } from '../../services/artifacts.service';
 import { ConnectionsService } from '../../services/connections.service';
@@ -34,6 +40,9 @@ import { DashboardService } from '../../services/dashboard.service';
  * A personal dashboard: saved visualizations with live data, each in its own surface and wrapper, moved and
  * resized on a grid. Every item loads on its own; the layout is saved after each change.
  */
+/** Tile header, body padding and the chart's title, caption and toggle, around the canvas. */
+const CHART_CHROME = '10rem';
+
 @Component({
   selector: 'app-dashboard-page',
   imports: [
@@ -65,7 +74,18 @@ export class DashboardPage {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly statusLabel = artifactStatusLabel;
+  protected readonly kindLabel = artifactKindLabel;
   protected readonly statusMessage = artifactStatusMessage;
+
+  /**
+   * Canvas height for a chart in a tile of `rows` grid rows, so its title, its "First 20 of N rows" caption
+   * and its "View as table" toggle (ADR-0009) stay visible without scrolling. The renderer reads
+   * `--esi-chart-height`; other visualizations ignore it.
+   */
+  protected chartHeight(rows: number): string {
+    const tile = rows * ROW_HEIGHT_PX + (rows - 1) * GAP_PX;
+    return `max(6rem, calc(${tile}px - ${CHART_CHROME}))`;
+  }
   protected readonly withdrawn = computed(
     () => this.connections.find(this.connectionId())?.consent === 'withdrawn',
   );
