@@ -99,12 +99,12 @@ export type SchemaMetadata = {
 export type SqlOutputKind = 'query' | 'stored-procedure' | 'none';
 
 /**
- * What the user wants to see. Only `table` and `kpi` exist in this version; charts and forms are refused with a `visualization-not-supported` problem.
+ * What the user wants to see: a `table`, a `kpi`, or a `chart` (bar, line or pie; the agent picks the type from the columns and the wording, ADR-0009). Forms are refused with a `visualization-not-supported` problem.
  */
 export type VisualizationIntent = {
-  kind: 'table' | 'kpi';
+  kind: 'table' | 'kpi' | 'chart';
   /**
-   * The user's wording, for example "total revenue as a KPI".
+   * The user's wording, for example "total revenue as a KPI" or "revenue per month as a line chart".
    */
   description?: string;
 };
@@ -114,7 +114,7 @@ export type VisualizationIntent = {
  */
 export type DslDocument = {
   /**
-   * Exact catalogId of the pinned A2UI catalog.
+   * Exact catalogId of the catalog the document uses: the pinned A2UI basic catalog (`https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json`) for tables and KPIs, or the ESI catalog (`dtnam0899.github.io:esi-catalog-v0_9-1`, the basic catalog plus `EsiChart`, ADR-0009) for a document with a chart. The allowed values are defined by `@dtnam0899/dsl-schema` (0.2.0 and later).
    */
   catalogId: string;
   protocolVersion: string;
@@ -475,6 +475,10 @@ export type GetConsentTermsData = {
 
 export type GetConsentTermsErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   default: Problem;
@@ -499,6 +503,10 @@ export type GetConsentAcceptanceData = {
 };
 
 export type GetConsentAcceptanceErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -531,6 +539,10 @@ export type AcceptConsentTermsData = {
 
 export type AcceptConsentTermsErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   409: Problem;
@@ -561,6 +573,10 @@ export type ListConnectionsData = {
 
 export type ListConnectionsErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   default: Problem;
@@ -589,6 +605,10 @@ export type CreateConnectionErrors = {
    * Error.
    */
   400: Problem;
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -621,6 +641,10 @@ export type DeleteConnectionData = {
 
 export type DeleteConnectionErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   404: Problem;
@@ -651,6 +675,10 @@ export type GetConnectionData = {
 };
 
 export type GetConnectionErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -687,6 +715,10 @@ export type UpdateConnectionErrors = {
    */
   400: Problem;
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -721,6 +753,10 @@ export type TestConnectionData = {
 };
 
 export type TestConnectionErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -761,6 +797,10 @@ export type WithdrawConnectionConsentData = {
 
 export type WithdrawConnectionConsentErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   404: Problem;
@@ -793,6 +833,10 @@ export type GrantConnectionConsentData = {
 };
 
 export type GrantConnectionConsentErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -830,6 +874,10 @@ export type GetConnectionSchemaData = {
 };
 
 export type GetConnectionSchemaErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -871,6 +919,10 @@ export type ListChatSessionsData = {
 
 export type ListChatSessionsErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -905,6 +957,10 @@ export type CreateChatSessionData = {
 };
 
 export type CreateChatSessionErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -941,6 +997,10 @@ export type GetChatSessionData = {
 };
 
 export type GetChatSessionErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -981,6 +1041,10 @@ export type SendChatMessageErrors = {
    */
   400: Problem;
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -988,6 +1052,10 @@ export type SendChatMessageErrors = {
    * Error.
    */
   404: Problem;
+  /**
+   * `agents-unavailable`: the AI agents service is unreachable, has no model or timed out.
+   */
+  503: Problem;
   /**
    * Error.
    */
@@ -1016,6 +1084,10 @@ export type CreateVisualizationData = {
 
 export type CreateVisualizationErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -1024,9 +1096,13 @@ export type CreateVisualizationErrors = {
    */
   404: Problem;
   /**
-   * `dsl-validation-failed` (with `issues`) after the retries, or `visualization-not-supported` (for example a chart or a form).
+   * `dsl-validation-failed` (with `issues`) after the retries, or `visualization-not-supported` (for example a form).
    */
   422: Problem;
+  /**
+   * `agents-unavailable`: the AI agents service is unreachable, has no model or timed out.
+   */
+  503: Problem;
   /**
    * Error.
    */
@@ -1055,6 +1131,10 @@ export type ExecuteQueryData = {
 };
 
 export type ExecuteQueryErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -1099,6 +1179,10 @@ export type ListScriptsData = {
 
 export type ListScriptsErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -1134,6 +1218,10 @@ export type DeleteScriptData = {
 
 export type DeleteScriptErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   404: Problem;
@@ -1164,6 +1252,10 @@ export type GetScriptData = {
 };
 
 export type GetScriptErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -1199,6 +1291,10 @@ export type ListArtifactsData = {
 };
 
 export type ListArtifactsErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -1239,6 +1335,10 @@ export type CreateArtifactErrors = {
    */
   400: Problem;
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -1278,6 +1378,10 @@ export type DeleteArtifactData = {
 
 export type DeleteArtifactErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   404: Problem;
@@ -1308,6 +1412,10 @@ export type GetArtifactData = {
 };
 
 export type GetArtifactErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -1343,6 +1451,10 @@ export type ExecuteArtifactData = {
 };
 
 export type ExecuteArtifactErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -1391,6 +1503,10 @@ export type ListDashboardsData = {
 
 export type ListDashboardsErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -1430,6 +1546,10 @@ export type CreateDashboardErrors = {
    */
   400: Problem;
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -1465,6 +1585,10 @@ export type DeleteDashboardData = {
 
 export type DeleteDashboardErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   404: Problem;
@@ -1495,6 +1619,10 @@ export type GetDashboardData = {
 };
 
 export type GetDashboardErrors = {
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
@@ -1535,6 +1663,10 @@ export type RenameDashboardErrors = {
    */
   400: Problem;
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -1574,6 +1706,10 @@ export type AddDashboardItemErrors = {
    */
   400: Problem;
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   403: Problem;
@@ -1610,6 +1746,10 @@ export type RemoveDashboardItemData = {
 
 export type RemoveDashboardItemErrors = {
   /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
+  /**
    * Error.
    */
   404: Problem;
@@ -1645,6 +1785,10 @@ export type SaveDashboardLayoutErrors = {
    * Error.
    */
   400: Problem;
+  /**
+   * `unauthenticated`: the bearer token is missing, invalid or expired.
+   */
+  401: Problem;
   /**
    * Error.
    */
