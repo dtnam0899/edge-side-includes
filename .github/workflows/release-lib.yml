@@ -71,6 +71,10 @@ jobs:
           # --first-release falls back to the manifest version when a project has no tag yet
           npx nx release version ${VERSION:+"$VERSION"} --projects="$PROJECTS" --first-release \
             --git-commit=false --git-tag=false --stage-changes=false
+      - name: Pin internal dependencies to released versions (dry run too)
+        # A subset release keeps 0.0.0 from the source manifests for internal dependencies outside the run
+        # (ESI-136); this sets them to their latest lib-<project>@v* tag and fails if one has none.
+        run: node scripts/pin-internal-deps.mjs "$PROJECTS"
       - name: Read versions and check tags
         id: versions
         run: |
