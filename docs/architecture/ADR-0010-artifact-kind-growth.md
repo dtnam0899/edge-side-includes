@@ -1,7 +1,7 @@
 ---
 id: ADR-0010
 type: adr
-status: Proposed
+status: Accepted
 date: 2026-10-23
 projects: [contracts, core, portal]
 issues: [ESI-119]
@@ -35,7 +35,7 @@ Take option 3, released as `@dtnam0899/esi-contracts` 0.4.0. Response kinds that
 - The 0.4.0 changelog says explicitly that `ArtifactSummary.kind` changed from a closed `enum` to `x-extensible-enum`, that oasdiff does not report it, and what an old client sees (below).
 - `chart` means "the document's root component is an `EsiChart`" (ESI catalog id). core rejects a create request whose `kind` does not match its DSL: `chart` needs the ESI catalog id, `table` and `kpi` need the basic catalog id (`400`, field error on `kind`).
 - core: `ArtifactKind.Chart`; every mapping between generated and domain kinds is an explicit switch that throws on an unknown value (no two-way ternaries), as ESI-114 did for intents. Dashboards need no other change: items reference artifacts.
-- portal: send `kind: chart` when saving a chart preview; labels and the default dashboard size come from one helper that knows `table`, `kpi` and `chart` and falls back to a generic label and the table size for any other value; rendering stays driven by the DSL.
+- portal: send `kind: chart` when saving a chart preview; labels and the default dashboard size come from one helper that knows `table`, `kpi` and `chart` and falls back to a generic label and the table size for any other value; rendering stays driven by the DSL. A new chart item on a dashboard gets the table size, 6 x 5 grid cells (product owner, 2026-10-23).
 - Release order: contracts 0.4.0 -> core (pins 0.4.0, accepts and returns `chart`) -> portal (pins 0.4.0, saves charts). core must be deployed before the portal offers saving.
 
 ## Consequences
@@ -51,4 +51,4 @@ Take option 3, released as `@dtnam0899/esi-contracts` 0.4.0. Response kinds that
 - portal: unit tests for saving a chart preview, the kind label and default size helper (including an unknown kind), and a chart on a dashboard; a browser check against the local stack.
 
 ## Open questions
-- Product owner: confirm the default dashboard size for a chart (proposal: the table size, 6 x 5 grid cells).
+- None. Accepted by the product owner on 2026-10-23, including the 6 x 5 default chart size on dashboards.
