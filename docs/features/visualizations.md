@@ -128,7 +128,7 @@ All three must produce the same error codes on the shared fixtures published in 
 
 ## Status and open items
 
-- Charts (ADR-0009): `lib` validates and renders `EsiChart` (`@dtnam0899/dsl-*` 0.2.0, ESI-10); core-api 0.3.0 has `intent.kind` `chart` (ESI-113); core validates chart DSL and serves chart previews (ESI-114). Agents generate charts (ESI-11); the portal sends `chart` and renders the preview in chat (ESI-12). Charts are saved as artifacts with `kind: chart` and shown on dashboards (core-api 0.4.0, ADR-0010, ESI-119). Still missing: a chart step in `infra/e2e`.
+- Charts (ADR-0009): `lib` validates and renders `EsiChart` (`@dtnam0899/dsl-*` 0.2.0, ESI-10); core-api 0.3.0 has `intent.kind` `chart` (ESI-113); core validates chart DSL and serves chart previews (ESI-114). Agents generate charts (ESI-11); the portal sends `chart` and renders the preview in chat (ESI-12). Charts are saved as artifacts with `kind: chart` and shown on dashboards (core-api 0.4.0, ADR-0010, ESI-119). The `infra/e2e` scenario covers a chart end to end: preview, table view, save and dashboard (ESI-133).
 
 - A `dslSchemaVersion` the portal does not know is shown as "migration required" and never rendered.
 - Upgrades of the pinned A2UI versions need a dedicated issue with fixture tests (ADR-0002).

@@ -2,9 +2,9 @@
 id: e2e-scenario
 type: process
 status: Active
-updated: 2026-10-18
+updated: 2026-10-23
 projects: [core, agents, portal]
-issues: [ESI-1, ESI-64, ESI-66]
+issues: [ESI-1, ESI-64, ESI-66, ESI-133]
 keywords: [phase 5, integration, end-to-end, e2e, playwright, scenario, gateway, fixture model]
 ---
 
@@ -41,11 +41,12 @@ flowchart LR
 2. Test the connection; the API never returns the connection string.
 3. Ask "Show revenue by customer"; review the generated SELECT (nothing runs yet); run it; page 1 shows rows 1–20 with 5 more, page 2 shows rows 21–25.
 4. Visualize as a table (preview bound to the current page) and save it.
-5. Ask for the total revenue, run it, visualize as a KPI (3,875) and save it.
-6. "Delete all customers": no runnable SQL comes back; a direct `DELETE` to the executions API is 422 `sql-rejected`; the customers are still there.
-7. Create a dashboard and add both saved visualizations; each item loads live data.
-8. Move the KPI with the keyboard; "Layout saved"; after a reload the layout and data are back.
-9. The dashboard API returns two items and no row values or secrets.
+5. Back on page 1, visualize the same result as a bar chart (rule `dsl-revenue-chart`): the canvas has a text alternative, the caption says "First 20 of 25 rows", "View as table" shows the same 20 rows; save it (ADR-0009, ADR-0010).
+6. Ask for the total revenue, run it, visualize as a KPI (3,875) and save it.
+7. "Delete all customers": no runnable SQL comes back; a direct `DELETE` to the executions API is 422 `sql-rejected`; the customers are still there.
+8. Create a dashboard and add the three saved visualizations; each item loads live data, and the chart keeps its caption and table toggle inside its tile.
+9. Move the KPI with the keyboard; "Layout saved"; after a reload the layout and data are back.
+10. The dashboard API returns three available items (one with `kind: chart` on the ESI catalog) and no row values or secrets.
 
 ## Run it
 

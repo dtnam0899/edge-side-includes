@@ -162,6 +162,36 @@
       }
     },
     {
+      "id": "dsl-revenue-chart",
+      "operation": "dsl",
+      "contains": [
+        "customer: ",
+        "revenue: ",
+        "chart"
+      ],
+      "output": {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Revenue by customer",
+            "categoryKey": "Customer",
+            "series": [
+              {
+                "valueKey": "Revenue",
+                "label": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    },
+    {
       "id": "dsl-total-revenue-kpi",
       "operation": "dsl",
       "contains": [
