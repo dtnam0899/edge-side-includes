@@ -4,12 +4,14 @@ import { expect, type Locator, type Page, test } from '@playwright/test';
  * Phase 5 exit gate (docs/plan/README.md): one scripted scenario from connection to dashboard, through the
  * real portal, core, agents (scripted model, infra/e2e/agents) and SQL Server. Data comes from
  * infra/e2e/fixtures/target.sql: 25 customers, customer n has revenue 10 * n + 25, total 3875.
+ * Charts (ADR-0009, ADR-0010): the same result as a bar chart of its current page, saved and on the dashboard.
  */
 
 const connectionString = process.env.E2E_TARGET_CONNECTION_STRING;
 const connectionName = 'E2E sales database';
 const tableName = 'Revenue by customer';
 const kpiName = 'Total revenue';
+const chartName = 'Revenue chart';
 const dashboardName = 'Sales overview';
 
 test.describe.configure({ mode: 'serial' });
@@ -86,6 +88,31 @@ test('a user goes from a new connection to a live dashboard', async ({ page, req
     await saveVisualization(page, answer, tableName);
   });
 
+  await test.step('visualize the first page as a chart, view it as a table and save it', async () => {
+    const answer = lastAnswer(page);
+    const result = answer.getByRole('region', { name: 'Query result' });
+    await result.getByRole('button', { name: '1', exact: true }).click();
+    await expect(result).toContainText('Rows 1–20. 5 more rows after this page.');
+
+    await answer.getByRole('button', { name: 'Chart', exact: true }).click();
+    const preview = answer.getByRole('group', { name: 'Visualization preview' });
+    // Chart.js is loaded on demand; the canvas carries the text alternative (ADR-0009).
+    const canvas = preview.getByRole('img');
+    await expect(canvas).toHaveAttribute('aria-label', /Revenue by customer\. Bar chart of 20 values/);
+    await expect(preview).toContainText('First 20 of 25 rows');
+
+    const toggle = preview.getByRole('button', { name: 'View as table' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    const table = preview.getByRole('table');
+    await expect(table.getByRole('row')).toHaveCount(21);
+    // ORDER BY Revenue DESC: customer 25 (275) first; numbers are text in the table view.
+    await expect(table.getByRole('row').nth(1)).toContainText(/Customer 25\s*275/);
+    await toggle.click();
+    await expect(canvas).toBeVisible();
+    await saveVisualization(page, answer, chartName);
+  });
+
   await test.step('ask for the total revenue and save it as a KPI', async () => {
     const answer = await ask(page, 'What is the total revenue?');
     await answer.getByRole('button', { name: 'Run query' }).click();
@@ -118,7 +145,7 @@ test('a user goes from a new connection to a live dashboard', async ({ page, req
     expect(JSON.stringify(await count.json())).toContain('25');
   });
 
-  await test.step('create a dashboard with both saved visualizations', async () => {
+  await test.step('create a dashboard with the three saved visualizations', async () => {
     await page.getByRole('tab', { name: 'Dashboards' }).click();
     await page.getByRole('button', { name: 'New dashboard' }).click();
     const dialog = page.getByRole('dialog', { name: 'New dashboard' });
@@ -132,7 +159,7 @@ test('a user goes from a new connection to a live dashboard', async ({ page, req
     await expect(page.getByRole('heading', { level: 2, name: dashboardName })).toBeVisible();
     dashboardId = page.url().match(/dashboards\/([^/?#]+)/)![1];
 
-    for (const name of [tableName, kpiName]) {
+    for (const name of [tableName, kpiName, chartName]) {
       await page.getByRole('button', { name: 'Add visualization' }).click();
       const picker = page.getByRole('dialog', { name: 'Add a saved visualization' });
       await picker.getByRole('button', { name: `Add ${name}` }).click();
@@ -145,6 +172,14 @@ test('a user goes from a new connection to a live dashboard', async ({ page, req
   await test.step('each dashboard item loads live data on its own', async () => {
     await expect(dashboardItem(page, tableName)).toContainText('Customer 25');
     await expect(dashboardItem(page, kpiName)).toContainText('3,875');
+    // The chart runs its saved SELECT (page 1) and keeps its caption and table toggle inside the tile.
+    const chart = dashboardItem(page, chartName);
+    await expect(chart.getByRole('img')).toHaveAttribute('aria-label', /Bar chart of 20 values/);
+    await expect(chart).toContainText('First 20 of 25 rows');
+    // The tile is placed below the others: bring it on screen, then the toggle must be visible without
+    // scrolling inside the tile.
+    await chart.scrollIntoViewIfNeeded();
+    await expect(chart.getByRole('button', { name: 'View as table' })).toBeInViewport();
   });
 
   await test.step('move an item with the keyboard; the layout survives a reload', async () => {
@@ -163,11 +198,15 @@ test('a user goes from a new connection to a live dashboard', async ({ page, req
     await page.screenshot({ path: 'results/dashboard.png', fullPage: true });
   });
 
-  await test.step('the API agrees: two available items, no rows stored', async () => {
+  await test.step('the API agrees: three available items, one a chart, no rows stored', async () => {
     const response = await request.get(`/api/dashboards/${dashboardId}`);
     expect(response.ok()).toBeTruthy();
     const dashboard = await response.json();
-    expect(dashboard.items).toHaveLength(2);
+    expect(dashboard.items).toHaveLength(3);
+    expect(dashboard.items.map((item: { status: string }) => item.status)).toEqual(['available', 'available', 'available']);
+    const chart = dashboard.items.find((item: { artifact: { name: string } }) => item.artifact.name === chartName);
+    expect(chart.artifact.kind).toBe('chart');
+    expect(chart.artifact.dsl.catalogId).toBe('dtnam0899.github.io:esi-catalog-v0_9-1');
     const text = JSON.stringify(dashboard);
     expect(text).not.toContain('Customer 25');
     expect(text).not.toContain('E2eReader');
