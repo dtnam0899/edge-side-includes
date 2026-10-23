@@ -6,6 +6,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Esi.Core.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Esi.Core.Application\Esi.Core.Application.csproj" />
     <ProjectReference Include="..\Esi.Core.Infrastructure\Esi.Core.Infrastructure.csproj" />
   </ItemGroup>

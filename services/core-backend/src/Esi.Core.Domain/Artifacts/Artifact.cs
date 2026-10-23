@@ -4,6 +4,9 @@ public enum ArtifactKind
 {
     Table = 0,
     Kpi = 1,
+
+    /// <summary>A document on the ESI catalog whose chart is an <c>EsiChart</c> (ADR-0009, ADR-0010).</summary>
+    Chart = 2,
 }
 
 /// <summary>
