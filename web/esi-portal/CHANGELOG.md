@@ -4,6 +4,7 @@ All notable changes are generated from Conventional Commits by the release flow.
 
 ## Unreleased
 
+- Pins `@dtnam0899/dsl-renderer-angular` 0.2.2: number column headers in a chart's "View as table" line up with their numbers (ESI-131). 0.2.1 is skipped: it was published with `0.0.0` internal dependencies (ESI-136).
 - Assistant (ESI-119): charts can be saved as artifacts (`kind: chart`, core-api 0.4.0, ADR-0010) and put on dashboards, where a new chart gets the table size (6 x 5) and its canvas is sized to the tile so the "First 20 of N rows" caption and "View as table" stay visible. Kind labels ("Table", "KPI", "Chart", and "Visualization" for a kind a later contract adds) come from one helper in the artifact list, artifact page and dashboard picker.
 - core-api client regenerated from `@dtnam0899/esi-contracts` 0.4.0: `ArtifactSummary.kind` is now `string` (open set).
 - Assistant (ESI-12): charts. A "Chart" request (`intent.kind` `chart`, core-api 0.3.0) renders `EsiChart` through `@dtnam0899/dsl-renderer-angular` 0.2.0 in the chat preview, with the renderer's "First 20 of N rows" caption and "View as table" toggle (the portal's paging caption is left out for charts). Chart.js loads in a lazy chunk on the first chart only; the initial bundle is unchanged. Charts cannot be saved as artifacts or put on dashboards yet (ESI-119). `visualization-not-supported` now covers forms only.
