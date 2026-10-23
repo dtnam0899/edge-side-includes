@@ -9,6 +9,7 @@ import {
   MOCK_ID,
   MOCK_ID_2,
   mockAnswer,
+  mockChartVisualization,
   mockChatSession,
   mockChatSessionSummary,
   mockChatTurn,
@@ -229,6 +230,24 @@ describe('ChatService', () => {
         sql: mockGeneratedSql().sql,
       });
       expect(chat.saves().get(answer.id)?.status).toBe('saved');
+    });
+
+    it('asks for a chart and renders it on the ESI catalog, but does not save it', () => {
+      const answer = ranAnswer();
+      chat.visualize(answer, { kind: 'chart', description: 'revenue per customer' });
+      const request = httpTesting().expectOne(`/api/chat-sessions/${MOCK_ID_2}/visualizations`);
+      expect(request.request.body.intent).toEqual({
+        kind: 'chart',
+        description: 'revenue per customer',
+      });
+      request.flush(mockChartVisualization());
+
+      const state = chat.visualizations().get(answer.id);
+      expect(state?.status === 'ready' && state.renderer.status).toBe('ready');
+
+      chat.saveArtifact(answer, 'Revenue per customer');
+      httpTesting().expectNone((r) => r.url.endsWith('/artifacts'));
+      expect(chat.saves().get(answer.id)).toBeUndefined();
     });
   });
 });

@@ -134,6 +134,7 @@ export const getConsentTerms = <ThrowOnError extends boolean = false>(
   options?: Options<GetConsentTermsData, ThrowOnError>,
 ): RequestResult<GetConsentTermsResponses, GetConsentTermsErrors, ThrowOnError> =>
   (options?.client ?? client).get<GetConsentTermsResponses, GetConsentTermsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/consent/terms',
     ...options,
   });
@@ -150,7 +151,11 @@ export const getConsentAcceptance = <ThrowOnError extends boolean = false>(
     GetConsentAcceptanceResponses,
     GetConsentAcceptanceErrors,
     ThrowOnError
-  >({ url: '/consent/acceptance', ...options });
+  >({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/consent/acceptance',
+    ...options,
+  });
 
 /**
  * Accept a version of the consent terms.
@@ -165,6 +170,7 @@ export const acceptConsentTerms = <ThrowOnError extends boolean = false>(
     AcceptConsentTermsErrors,
     ThrowOnError
   >({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/consent/acceptance',
     ...options,
     headers: {
@@ -182,6 +188,7 @@ export const listConnections = <ThrowOnError extends boolean = false>(
   options?: Options<ListConnectionsData, ThrowOnError>,
 ): RequestResult<ListConnectionsResponses, ListConnectionsErrors, ThrowOnError> =>
   (options?.client ?? client).get<ListConnectionsResponses, ListConnectionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections',
     ...options,
   });
@@ -195,6 +202,7 @@ export const createConnection = <ThrowOnError extends boolean = false>(
   options: Options<CreateConnectionData, ThrowOnError>,
 ): RequestResult<CreateConnectionResponses, CreateConnectionErrors, ThrowOnError> =>
   (options.client ?? client).post<CreateConnectionResponses, CreateConnectionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections',
     ...options,
     headers: {
@@ -215,7 +223,11 @@ export const deleteConnection = <ThrowOnError extends boolean = false>(
     DeleteConnectionResponses,
     DeleteConnectionErrors,
     ThrowOnError
-  >({ url: '/connections/{connectionId}', ...options });
+  >({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/connections/{connectionId}',
+    ...options,
+  });
 
 /**
  * Get one of the current user's connections.
@@ -226,6 +238,7 @@ export const getConnection = <ThrowOnError extends boolean = false>(
   options: Options<GetConnectionData, ThrowOnError>,
 ): RequestResult<GetConnectionResponses, GetConnectionErrors, ThrowOnError> =>
   (options.client ?? client).get<GetConnectionResponses, GetConnectionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}',
     ...options,
   });
@@ -239,6 +252,7 @@ export const updateConnection = <ThrowOnError extends boolean = false>(
   options: Options<UpdateConnectionData, ThrowOnError>,
 ): RequestResult<UpdateConnectionResponses, UpdateConnectionErrors, ThrowOnError> =>
   (options.client ?? client).put<UpdateConnectionResponses, UpdateConnectionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}',
     ...options,
     headers: {
@@ -256,6 +270,7 @@ export const testConnection = <ThrowOnError extends boolean = false>(
   options: Options<TestConnectionData, ThrowOnError>,
 ): RequestResult<TestConnectionResponses, TestConnectionErrors, ThrowOnError> =>
   (options.client ?? client).post<TestConnectionResponses, TestConnectionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/test',
     ...options,
   });
@@ -276,7 +291,11 @@ export const withdrawConnectionConsent = <ThrowOnError extends boolean = false>(
     WithdrawConnectionConsentResponses,
     WithdrawConnectionConsentErrors,
     ThrowOnError
-  >({ url: '/connections/{connectionId}/consent', ...options });
+  >({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/connections/{connectionId}/consent',
+    ...options,
+  });
 
 /**
  * Grant (or grant again) consent for this connection.
@@ -290,7 +309,11 @@ export const grantConnectionConsent = <ThrowOnError extends boolean = false>(
     GrantConnectionConsentResponses,
     GrantConnectionConsentErrors,
     ThrowOnError
-  >({ url: '/connections/{connectionId}/consent', ...options });
+  >({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/connections/{connectionId}/consent',
+    ...options,
+  });
 
 /**
  * Read the schema metadata of the connected database.
@@ -304,7 +327,11 @@ export const getConnectionSchema = <ThrowOnError extends boolean = false>(
     GetConnectionSchemaResponses,
     GetConnectionSchemaErrors,
     ThrowOnError
-  >({ url: '/connections/{connectionId}/schema', ...options });
+  >({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/connections/{connectionId}/schema',
+    ...options,
+  });
 
 /**
  * List the current user's chat sessions for this connection.
@@ -315,6 +342,7 @@ export const listChatSessions = <ThrowOnError extends boolean = false>(
   options: Options<ListChatSessionsData, ThrowOnError>,
 ): RequestResult<ListChatSessionsResponses, ListChatSessionsErrors, ThrowOnError> =>
   (options.client ?? client).get<ListChatSessionsResponses, ListChatSessionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/chat-sessions',
     ...options,
   });
@@ -332,6 +360,7 @@ export const createChatSession = <ThrowOnError extends boolean = false>(
     CreateChatSessionErrors,
     ThrowOnError
   >({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/chat-sessions',
     ...options,
     headers: {
@@ -349,6 +378,7 @@ export const getChatSession = <ThrowOnError extends boolean = false>(
   options: Options<GetChatSessionData, ThrowOnError>,
 ): RequestResult<GetChatSessionResponses, GetChatSessionErrors, ThrowOnError> =>
   (options.client ?? client).get<GetChatSessionResponses, GetChatSessionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/chat-sessions/{sessionId}',
     ...options,
   });
@@ -362,6 +392,7 @@ export const sendChatMessage = <ThrowOnError extends boolean = false>(
   options: Options<SendChatMessageData, ThrowOnError>,
 ): RequestResult<SendChatMessageResponses, SendChatMessageErrors, ThrowOnError> =>
   (options.client ?? client).post<SendChatMessageResponses, SendChatMessageErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/chat-sessions/{sessionId}/messages',
     ...options,
     headers: {
@@ -383,6 +414,7 @@ export const createVisualization = <ThrowOnError extends boolean = false>(
     CreateVisualizationErrors,
     ThrowOnError
   >({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/chat-sessions/{sessionId}/visualizations',
     ...options,
     headers: {
@@ -400,6 +432,7 @@ export const executeQuery = <ThrowOnError extends boolean = false>(
   options: Options<ExecuteQueryData, ThrowOnError>,
 ): RequestResult<ExecuteQueryResponses, ExecuteQueryErrors, ThrowOnError> =>
   (options.client ?? client).post<ExecuteQueryResponses, ExecuteQueryErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/executions',
     ...options,
     headers: {
@@ -417,6 +450,7 @@ export const listScripts = <ThrowOnError extends boolean = false>(
   options: Options<ListScriptsData, ThrowOnError>,
 ): RequestResult<ListScriptsResponses, ListScriptsErrors, ThrowOnError> =>
   (options.client ?? client).get<ListScriptsResponses, ListScriptsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/scripts',
     ...options,
   });
@@ -430,6 +464,7 @@ export const deleteScript = <ThrowOnError extends boolean = false>(
   options: Options<DeleteScriptData, ThrowOnError>,
 ): RequestResult<DeleteScriptResponses, DeleteScriptErrors, ThrowOnError> =>
   (options.client ?? client).delete<DeleteScriptResponses, DeleteScriptErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/scripts/{scriptId}',
     ...options,
   });
@@ -443,6 +478,7 @@ export const getScript = <ThrowOnError extends boolean = false>(
   options: Options<GetScriptData, ThrowOnError>,
 ): RequestResult<GetScriptResponses, GetScriptErrors, ThrowOnError> =>
   (options.client ?? client).get<GetScriptResponses, GetScriptErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/scripts/{scriptId}',
     ...options,
   });
@@ -456,6 +492,7 @@ export const listArtifacts = <ThrowOnError extends boolean = false>(
   options: Options<ListArtifactsData, ThrowOnError>,
 ): RequestResult<ListArtifactsResponses, ListArtifactsErrors, ThrowOnError> =>
   (options.client ?? client).get<ListArtifactsResponses, ListArtifactsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/artifacts',
     ...options,
   });
@@ -469,6 +506,7 @@ export const createArtifact = <ThrowOnError extends boolean = false>(
   options: Options<CreateArtifactData, ThrowOnError>,
 ): RequestResult<CreateArtifactResponses, CreateArtifactErrors, ThrowOnError> =>
   (options.client ?? client).post<CreateArtifactResponses, CreateArtifactErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/artifacts',
     ...options,
     headers: {
@@ -486,6 +524,7 @@ export const deleteArtifact = <ThrowOnError extends boolean = false>(
   options: Options<DeleteArtifactData, ThrowOnError>,
 ): RequestResult<DeleteArtifactResponses, DeleteArtifactErrors, ThrowOnError> =>
   (options.client ?? client).delete<DeleteArtifactResponses, DeleteArtifactErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/artifacts/{artifactId}',
     ...options,
   });
@@ -499,6 +538,7 @@ export const getArtifact = <ThrowOnError extends boolean = false>(
   options: Options<GetArtifactData, ThrowOnError>,
 ): RequestResult<GetArtifactResponses, GetArtifactErrors, ThrowOnError> =>
   (options.client ?? client).get<GetArtifactResponses, GetArtifactErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/artifacts/{artifactId}',
     ...options,
   });
@@ -512,6 +552,7 @@ export const executeArtifact = <ThrowOnError extends boolean = false>(
   options: Options<ExecuteArtifactData, ThrowOnError>,
 ): RequestResult<ExecuteArtifactResponses, ExecuteArtifactErrors, ThrowOnError> =>
   (options.client ?? client).post<ExecuteArtifactResponses, ExecuteArtifactErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/artifacts/{artifactId}/executions',
     ...options,
     headers: {
@@ -529,6 +570,7 @@ export const listDashboards = <ThrowOnError extends boolean = false>(
   options: Options<ListDashboardsData, ThrowOnError>,
 ): RequestResult<ListDashboardsResponses, ListDashboardsErrors, ThrowOnError> =>
   (options.client ?? client).get<ListDashboardsResponses, ListDashboardsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/dashboards',
     ...options,
   });
@@ -542,6 +584,7 @@ export const createDashboard = <ThrowOnError extends boolean = false>(
   options: Options<CreateDashboardData, ThrowOnError>,
 ): RequestResult<CreateDashboardResponses, CreateDashboardErrors, ThrowOnError> =>
   (options.client ?? client).post<CreateDashboardResponses, CreateDashboardErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/connections/{connectionId}/dashboards',
     ...options,
     headers: {
@@ -559,6 +602,7 @@ export const deleteDashboard = <ThrowOnError extends boolean = false>(
   options: Options<DeleteDashboardData, ThrowOnError>,
 ): RequestResult<DeleteDashboardResponses, DeleteDashboardErrors, ThrowOnError> =>
   (options.client ?? client).delete<DeleteDashboardResponses, DeleteDashboardErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/dashboards/{dashboardId}',
     ...options,
   });
@@ -572,6 +616,7 @@ export const getDashboard = <ThrowOnError extends boolean = false>(
   options: Options<GetDashboardData, ThrowOnError>,
 ): RequestResult<GetDashboardResponses, GetDashboardErrors, ThrowOnError> =>
   (options.client ?? client).get<GetDashboardResponses, GetDashboardErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/dashboards/{dashboardId}',
     ...options,
   });
@@ -585,6 +630,7 @@ export const renameDashboard = <ThrowOnError extends boolean = false>(
   options: Options<RenameDashboardData, ThrowOnError>,
 ): RequestResult<RenameDashboardResponses, RenameDashboardErrors, ThrowOnError> =>
   (options.client ?? client).put<RenameDashboardResponses, RenameDashboardErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/dashboards/{dashboardId}',
     ...options,
     headers: {
@@ -602,6 +648,7 @@ export const addDashboardItem = <ThrowOnError extends boolean = false>(
   options: Options<AddDashboardItemData, ThrowOnError>,
 ): RequestResult<AddDashboardItemResponses, AddDashboardItemErrors, ThrowOnError> =>
   (options.client ?? client).post<AddDashboardItemResponses, AddDashboardItemErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/dashboards/{dashboardId}/items',
     ...options,
     headers: {
@@ -622,7 +669,11 @@ export const removeDashboardItem = <ThrowOnError extends boolean = false>(
     RemoveDashboardItemResponses,
     RemoveDashboardItemErrors,
     ThrowOnError
-  >({ url: '/dashboards/{dashboardId}/items/{itemId}', ...options });
+  >({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/dashboards/{dashboardId}/items/{itemId}',
+    ...options,
+  });
 
 /**
  * Save the position and size of every item after drag or resize.
@@ -637,6 +688,7 @@ export const saveDashboardLayout = <ThrowOnError extends boolean = false>(
     SaveDashboardLayoutErrors,
     ThrowOnError
   >({
+    security: [{ scheme: 'bearer', type: 'http' }],
     url: '/dashboards/{dashboardId}/layout',
     ...options,
     headers: {

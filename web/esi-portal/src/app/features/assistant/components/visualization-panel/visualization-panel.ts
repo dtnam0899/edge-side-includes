@@ -11,9 +11,17 @@ import type { LiveData } from '../../services/live-data';
 import { DslView } from '../dsl-view/dsl-view';
 import { ProblemMessage } from '../problem-message/problem-message';
 
+const KIND_LABELS: Readonly<Record<VisualizationIntent['kind'], string>> = {
+  table: 'table',
+  kpi: 'KPI',
+  chart: 'chart',
+};
+
 /**
- * Turns a query result into a table or KPI: the request, the preview rendered with the current page's rows,
- * and saving it as an artifact. Charts and forms are refused by the server; a table or KPI is offered instead.
+ * Turns a query result into a table, KPI or chart: the request, the preview rendered with the current page's
+ * rows, and saving it as an artifact. A chart draws only the current page; the renderer says so in its caption
+ * and offers the same rows as a table (ADR-0009). Charts cannot be saved yet (ESI-119). Forms are refused by
+ * the server.
  */
 @Component({
   selector: 'app-visualization-panel',
@@ -55,11 +63,22 @@ import { ProblemMessage } from '../problem-message/problem-message';
           >
             KPI
           </button>
+          <button
+            pButton
+            type="button"
+            size="small"
+            [outlined]="true"
+            [disabled]="pending()"
+            (click)="ask('chart')"
+          >
+            Chart
+          </button>
         </div>
         <small class="hint">
           Only column names and types are sent, never rows. A KPI shows a value from the first row,
           so ask for SQL that computes the total (for example SUM) rather than relying on the
-          visible page.
+          visible page. A chart (bar, line or pie) draws only the current page of up to 20 rows, so
+          ask for SQL that groups the data first.
         </small>
       </div>
 
@@ -84,25 +103,29 @@ import { ProblemMessage } from '../problem-message/problem-message';
             <app-dsl-view [renderer]="renderer()" [live]="live()" [retryable]="false" />
           </div>
           <div class="save" aria-live="polite">
-            @switch (save()?.status) {
-              @case ('saved') {
-                @if (saved(); as artifact) {
-                  <span class="ok">Saved as “{{ artifact.name }}”.</span>
-                  <a [routerLink]="['artifacts', artifact.id]">Open saved visualization</a>
+            @if (isChart()) {
+              <small class="hint">Saving charts as artifacts is not available yet.</small>
+            } @else {
+              @switch (save()?.status) {
+                @case ('saved') {
+                  @if (saved(); as artifact) {
+                    <span class="ok">Saved as “{{ artifact.name }}”.</span>
+                    <a [routerLink]="['artifacts', artifact.id]">Open saved visualization</a>
+                  }
                 }
-              }
-              @default {
-                <button
-                  pButton
-                  type="button"
-                  size="small"
-                  [loading]="save()?.status === 'saving'"
-                  (click)="saveRequested.emit()"
-                >
-                  Save as artifact
-                </button>
-                @if (saveProblem(); as p) {
-                  <app-problem-message [problem]="p" lead="The visualization was not saved." />
+                @default {
+                  <button
+                    pButton
+                    type="button"
+                    size="small"
+                    [loading]="save()?.status === 'saving'"
+                    (click)="saveRequested.emit()"
+                  >
+                    Save as artifact
+                  </button>
+                  @if (saveProblem(); as p) {
+                    <app-problem-message [problem]="p" lead="The visualization was not saved." />
+                  }
                 }
               }
             }
@@ -182,9 +205,8 @@ export class VisualizationPanel {
   protected readonly headingId = computed(() => `viz-heading-${this.key()}`);
   protected readonly inputId = computed(() => `viz-input-${this.key()}`);
   protected readonly pending = computed(() => this.state()?.status === 'pending');
-  protected readonly kindLabel = computed(() =>
-    this.state()?.intent.kind === 'kpi' ? 'KPI' : 'table',
-  );
+  protected readonly kindLabel = computed(() => KIND_LABELS[this.state()?.intent.kind ?? 'table']);
+  protected readonly isChart = computed(() => this.state()?.intent.kind === 'chart');
   protected readonly renderer = computed(() => {
     const state = this.state();
     return state?.status === 'ready' ? state.renderer : null;

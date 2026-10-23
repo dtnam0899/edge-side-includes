@@ -11,10 +11,12 @@ import type { ColumnDefinition, DslDocument, QueryResult } from '../../../core/a
 /**
  * core-api carries a `DslDocument` whose `dslSchemaVersion` is the `@dtnam0899/dsl-schema` package version
  * that validated it; the renderer validates the stored artifact format (`DSL_SCHEMA_VERSION`). This maps the
- * package versions this portal can render to their artifact format.
+ * package versions this portal can render to their artifact format. 0.2.0 adds the ESI catalog with `EsiChart`
+ * (ADR-0009) and keeps artifact format 1, so documents written with 0.1.0 render unchanged.
  */
 const ARTIFACT_FORMAT_BY_PACKAGE_VERSION: Readonly<Record<string, typeof DSL_SCHEMA_VERSION>> = {
   '0.1.0': DSL_SCHEMA_VERSION,
+  '0.2.0': DSL_SCHEMA_VERSION,
 };
 
 export type RendererArtifact =
