@@ -174,17 +174,19 @@ components:
     VisualizationIntent:
       type: object
       description: >-
-        What the user wants to see. Only `table` and `kpi` exist in this version; charts and forms are refused
-        with a `visualization-not-supported` problem.
+        What the user wants to see: a `table`, a `kpi`, or a `chart` (bar, line or pie; the agent picks the
+        type from the columns and the wording, ADR-0009). Forms are refused with a `visualization-not-supported`
+        problem.
       required: [kind]
       properties:
         kind:
           type: string
-          enum: [table, kpi]
+          enum: [table, kpi, chart]
+          example: chart
         description:
           type: string
           maxLength: 2000
-          description: The user's wording, for example "total revenue as a KPI".
+          description: The user's wording, for example "total revenue as a KPI" or "revenue per month as a line chart".
     DslDocument:
       type: object
       description: >-
@@ -196,7 +198,11 @@ components:
       properties:
         catalogId:
           type: string
-          description: Exact catalogId of the pinned A2UI catalog.
+          description: >-
+            Exact catalogId of the catalog the document uses: the pinned A2UI basic catalog
+            (`https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json`) for tables and KPIs, or the ESI
+            catalog (`dtnam0899.github.io:esi-catalog-v0_9-1`, the basic catalog plus `EsiChart`, ADR-0009) for a
+            document with a chart. The allowed values are defined by `@dtnam0899/dsl-schema` (0.2.0 and later).
           example: https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json
         protocolVersion:
           type: string
