@@ -12,7 +12,7 @@
         <thead>
           <tr>
             @for (header of chart.table.headers; track $index) {
-              <th scope="col">{{ header }}</th>
+              <th scope="col" [class.esi-chart-number]="!$first">{{ header }}</th>
             }
           </tr>
         </thead>
@@ -23,7 +23,7 @@
                 @if ($first) {
                   <th scope="row">{{ cell }}</th>
                 } @else {
-                  <td>{{ cell }}</td>
+                  <td class="esi-chart-number">{{ cell }}</td>
                 }
               }
             </tr>
