@@ -107,7 +107,7 @@ describe('VisualizationPanel', () => {
     expect(button('Save as artifact')).toBeDefined();
   });
 
-  it('renders a chart preview with the page caption and a table view, without saving', async () => {
+  it('renders a chart preview with the page caption and a table view, and offers saving', async () => {
     const result = mockFullQueryPage();
     const visualization = mockChartVisualization();
     const { fixture, el, button } = await render(
@@ -142,8 +142,7 @@ describe('VisualizationPanel', () => {
     expect(table.querySelectorAll('tbody tr')).toHaveLength(20);
     expect(table.textContent).toContain('Customer 1');
 
-    expect(button('Save as artifact')).toBeUndefined();
-    expect(el.textContent).toContain('Saving charts as artifacts is not available yet.');
+    expect(button('Save as artifact')).toBeDefined();
   });
 
   it('names the chart while it is being created', async () => {

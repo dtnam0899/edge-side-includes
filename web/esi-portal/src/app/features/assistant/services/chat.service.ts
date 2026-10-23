@@ -266,8 +266,8 @@ export class ChatService {
   }
 
   /**
-   * Saves a ready table or KPI with the answer's SELECT as an artifact of this connection. Charts cannot be
-   * saved: core-api has no artifact kind `chart` yet (ESI-119).
+   * Saves a ready visualization with the answer's SELECT as an artifact of this connection. The artifact kind is
+   * the requested kind; core checks that it matches the DSL (ADR-0010).
    */
   saveArtifact(message: ChatMessage, name: string): void {
     const state = this.visualizations().get(message.id);
@@ -275,15 +275,11 @@ export class ChatService {
     if (state?.status !== 'ready' || !sql) {
       return;
     }
-    const kind = state.intent.kind;
-    if (kind === 'chart') {
-      return;
-    }
     this.setSave(message.id, { status: 'saving' });
     this.artifactsApi
       .create(this.connectionId, {
         name,
-        kind,
+        kind: state.intent.kind,
         dsl: state.visualization.dsl,
         sql,
         columns: state.visualization.columns,
