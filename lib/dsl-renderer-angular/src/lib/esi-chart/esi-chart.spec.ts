@@ -109,6 +109,16 @@ describe('EsiChart', () => {
     expect(charts.live).toHaveLength(1);
   });
 
+  it('aligns each series header with its numbers and keeps the category column as text', async () => {
+    const { artifact, result } = VALID_FIXTURES['chart-bar'];
+    const fixture = await render(artifact, result);
+    toggle(fixture)?.click();
+    await settle(fixture);
+    const numeric = (cells: NodeListOf<Element>) => [...cells].map((cell) => cell.classList.contains('esi-chart-number'));
+    expect(numeric(element(fixture).querySelectorAll('thead th'))).toEqual([false, true, true]);
+    expect(numeric(element(fixture).querySelectorAll('tbody tr:first-child > *'))).toEqual([false, true, true]);
+  });
+
   it.each([
     ['chart-pie-too-many-slices', 'more than a pie chart can show'],
     ['chart-pie-negative', 'cannot show negative values'],
