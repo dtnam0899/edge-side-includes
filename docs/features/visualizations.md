@@ -20,7 +20,7 @@ After a query ran, the user asks for a table or a KPI. The assistant produces a 
 | KPI | `Card` with `Text` bound to a value via `formatNumber` or `formatCurrency`, plus a label `Text` |
 | Chart | `EsiChart` (bar, line, pie) on the ESI catalog ([ADR-0009](../architecture/ADR-0009-chart-component-and-library.md)); drawn from the current page with a "First 20 of N rows" caption and a "View as table" toggle |
 
-Forms are not supported in this version; the assistant says so (`visualization-not-supported`) instead of producing something else. Charts can be previewed in chat but not saved as artifacts or put on dashboards yet (ESI-119).
+Forms are not supported in this version; the assistant says so (`visualization-not-supported`) instead of producing something else. Charts are previewed in chat and can be saved as artifacts and put on dashboards like tables and KPIs (ADR-0010, ESI-119).
 
 ## Flow
 
@@ -128,7 +128,7 @@ All three must produce the same error codes on the shared fixtures published in 
 
 ## Status and open items
 
-- Charts (ADR-0009): `lib` validates and renders `EsiChart` (`@dtnam0899/dsl-*` 0.2.0, ESI-10); core-api 0.3.0 has `intent.kind` `chart` (ESI-113); core validates chart DSL and serves chart previews (ESI-114). Agents generate charts (ESI-11); the portal sends `chart` and renders the preview in chat (ESI-12). Still missing: saving charts as artifacts and showing them on dashboards, which needs a core-api change to the artifact `kind` (ESI-119), and a chart step in `infra/e2e`.
+- Charts (ADR-0009): `lib` validates and renders `EsiChart` (`@dtnam0899/dsl-*` 0.2.0, ESI-10); core-api 0.3.0 has `intent.kind` `chart` (ESI-113); core validates chart DSL and serves chart previews (ESI-114). Agents generate charts (ESI-11); the portal sends `chart` and renders the preview in chat (ESI-12). Charts are saved as artifacts with `kind: chart` and shown on dashboards (core-api 0.4.0, ADR-0010, ESI-119). Still missing: a chart step in `infra/e2e`.
 
 - A `dslSchemaVersion` the portal does not know is shown as "migration required" and never rendered.
 - Upgrades of the pinned A2UI versions need a dedicated issue with fixture tests (ADR-0002).
