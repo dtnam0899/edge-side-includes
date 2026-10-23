@@ -37,7 +37,7 @@ export type ExecutionState =
   | { readonly status: 'success'; readonly result: ResultPage; readonly raw: QueryResult }
   | { readonly status: 'failure'; readonly pageNumber: number; readonly problem: ApiProblem };
 
-/** A table or KPI requested for one answer's result. Only `ready` has a validated document. */
+/** A table, KPI or chart requested for one answer's result. Only `ready` has a validated document. */
 export type VisualizationState =
   | { readonly status: 'pending'; readonly intent: VisualizationIntent }
   | {
@@ -229,7 +229,7 @@ export class ChatService {
   }
 
   /**
-   * Asks core for a table or KPI for an answer whose query ran: only the result's column definitions are
+   * Asks core for a table, KPI or chart for an answer whose query ran: only the result's column definitions are
    * sent, never rows. The preview renders with the rows of the current page.
    */
   visualize(message: ChatMessage, intent: VisualizationIntent): void {
@@ -265,18 +265,25 @@ export class ChatService {
       });
   }
 
-  /** Saves a ready visualization with the answer's SELECT as an artifact of this connection. */
+  /**
+   * Saves a ready table or KPI with the answer's SELECT as an artifact of this connection. Charts cannot be
+   * saved: core-api has no artifact kind `chart` yet (ESI-119).
+   */
   saveArtifact(message: ChatMessage, name: string): void {
     const state = this.visualizations().get(message.id);
     const sql = message.generatedSql?.sql;
     if (state?.status !== 'ready' || !sql) {
       return;
     }
+    const kind = state.intent.kind;
+    if (kind === 'chart') {
+      return;
+    }
     this.setSave(message.id, { status: 'saving' });
     this.artifactsApi
       .create(this.connectionId, {
         name,
-        kind: state.intent.kind,
+        kind,
         dsl: state.visualization.dsl,
         sql,
         columns: state.visualization.columns,

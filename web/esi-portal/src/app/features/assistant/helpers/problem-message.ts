@@ -25,9 +25,9 @@ export function problemMessage(problem: ApiProblem): string {
         problem.detail,
       );
     case 'visualization-not-supported':
-      return 'Charts and forms are not supported yet. Ask for a table or a KPI instead.';
+      return 'Forms are not supported yet. Ask for a table, a KPI or a chart instead.';
     case 'dsl-validation-failed':
-      return 'The assistant could not produce a valid visualization. Try again, or describe the table or KPI differently.';
+      return 'The assistant could not produce a valid visualization. Try again, or describe the visualization differently.';
     case 'artifact-unavailable':
       return 'This saved visualization cannot run: its connection was deleted or its consent withdrawn.';
     case 'not-found':

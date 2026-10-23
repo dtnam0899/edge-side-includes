@@ -2,6 +2,11 @@
 
 All notable changes are generated from Conventional Commits by the release flow. Do not edit released sections by hand.
 
+## 0.4.0
+
+- core-api: artifacts can be charts (ADR-0010, ESI-119). `CreateArtifactRequest.kind` adds `chart` (additive); core rejects a `kind` that does not match the DSL's catalog with 400 (`chart` = ESI catalog, `table`/`kpi` = basic catalog).
+- core-api: `ArtifactSummary.kind` (artifact list, get, create and every dashboard item's `artifact`) changes from the closed `enum: [table, kpi]` to the open set `x-extensible-enum: [table, kpi, chart]`. **Widening that oasdiff does not report:** a client generated from 0.3.0 may now receive `chart` and must not assume only `table` or `kpi`. Clients must handle unknown values (generic label; render from `dsl`). Generated TypeScript (`@hey-api/openapi-ts`) types the response field as `string`.
+
 ## 0.3.0
 
 - Shared: `VisualizationIntent.kind` adds `chart` (additive). The agent picks bar, line or pie from the columns and the wording (ADR-0009); forms are still refused with `visualization-not-supported`.

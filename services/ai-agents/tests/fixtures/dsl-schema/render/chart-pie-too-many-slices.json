@@ -1,0 +1,100 @@
+{
+    "description": "A valid pie chart whose result has 10 rows; more than 8 slices cannot be drawn, so the renderer shows the table instead.",
+    "artifact": {
+        "dslSchemaVersion": 1,
+        "protocolVersion": "v0.9",
+        "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1",
+        "columns": [
+            {
+                "name": "segment",
+                "type": "string"
+            },
+            {
+                "name": "customers",
+                "type": "number"
+            }
+        ],
+        "query": {
+            "sql": "SELECT Segment AS segment, COUNT(*) AS customers FROM dbo.Customers GROUP BY Segment ORDER BY customers DESC"
+        },
+        "components": [
+            {
+                "id": "root",
+                "component": "EsiChart",
+                "chartType": "pie",
+                "title": "Customers by segment",
+                "categoryKey": "segment",
+                "series": [
+                    {
+                        "valueKey": "customers",
+                        "label": "Customers"
+                    }
+                ],
+                "data": {
+                    "path": "/rows"
+                }
+            }
+        ]
+    },
+    "result": {
+        "columns": [
+            {
+                "name": "segment",
+                "type": "string"
+            },
+            {
+                "name": "customers",
+                "type": "number"
+            }
+        ],
+        "rows": [
+            {
+                "segment": "Segment 1",
+                "customers": 11
+            },
+            {
+                "segment": "Segment 2",
+                "customers": 12
+            },
+            {
+                "segment": "Segment 3",
+                "customers": 13
+            },
+            {
+                "segment": "Segment 4",
+                "customers": 14
+            },
+            {
+                "segment": "Segment 5",
+                "customers": 15
+            },
+            {
+                "segment": "Segment 6",
+                "customers": 16
+            },
+            {
+                "segment": "Segment 7",
+                "customers": 17
+            },
+            {
+                "segment": "Segment 8",
+                "customers": 18
+            },
+            {
+                "segment": "Segment 9",
+                "customers": 19
+            },
+            {
+                "segment": "Segment 10",
+                "customers": 20
+            }
+        ],
+        "page": {
+            "page": 1,
+            "pageSize": 20,
+            "totalRows": 10,
+            "remaining": 0
+        }
+    },
+    "expectedChartFallback": "too-many-slices"
+}

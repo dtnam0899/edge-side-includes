@@ -10,8 +10,19 @@ import {
 } from '../../../../testing/mocks/core-api.mocks';
 import { toColumnType, toRendererArtifact, toSurfaceData } from './dsl-adapter';
 
+const SQL_TYPES: Record<string, string> = {
+  number: 'decimal(18,2)',
+  boolean: 'bit',
+  date: 'date',
+  datetime: 'datetime2(7)',
+  string: 'nvarchar(100)',
+};
+
 /** A shared dsl-schema fixture in the shape core returns it. */
-function asCore(name: string): { dsl: DslDocument; sql: string; columns: ColumnDefinition[] } {
+function asCore(
+  name: string,
+  dslSchemaVersion = '0.2.0',
+): { dsl: DslDocument; sql: string; columns: ColumnDefinition[] } {
   const artifact = VALID_FIXTURES[name].artifact as {
     catalogId: string;
     components: Record<string, unknown>[];
@@ -22,13 +33,13 @@ function asCore(name: string): { dsl: DslDocument; sql: string; columns: ColumnD
     dsl: {
       catalogId: artifact.catalogId,
       protocolVersion: 'v0.9',
-      dslSchemaVersion: '0.1.0',
+      dslSchemaVersion,
       components: artifact.components,
     },
     sql: artifact.query.sql,
     columns: artifact.columns.map((c) => ({
       name: c.name,
-      sqlType: c.type === 'number' ? 'decimal(18,2)' : 'nvarchar(100)',
+      sqlType: SQL_TYPES[c.type],
       nullable: true,
     })),
   };
@@ -54,15 +65,23 @@ describe('dsl adapter', () => {
     ).toEqual(['string', 'string', 'string', 'string']);
   });
 
-  it.each(['table', 'kpi'])(
+  it.each(['table', 'kpi', 'chart-bar', 'chart-line', 'chart-pie'])(
     'turns the shared %s fixture, as core returns it, into an artifact dsl-core accepts',
     (name) => {
       const { dsl, sql, columns } = asCore(name);
       const renderer = toRendererArtifact(dsl, sql, columns);
       expect(renderer.status).toBe('ready');
       expect(renderer.status === 'ready' && validateArtifact(renderer.artifact).errors).toEqual([]);
+      expect(renderer.status === 'ready' && renderer.artifact.columns).toEqual(
+        (VALID_FIXTURES[name].artifact as { columns: unknown }).columns,
+      );
     },
   );
+
+  it('still renders tables and KPIs saved with dsl-schema 0.1.0', () => {
+    const { dsl, sql, columns } = asCore('table', '0.1.0');
+    expect(toRendererArtifact(dsl, sql, columns).status).toBe('ready');
+  });
 
   it('reports a DSL version this portal cannot render instead of passing it on', () => {
     expect(

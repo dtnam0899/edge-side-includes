@@ -1,0 +1,35 @@
+{
+    "description": "An artifact on the ESI catalog without an EsiChart; tables and KPIs use the basic catalog.",
+    "artifact": {
+        "dslSchemaVersion": 1,
+        "protocolVersion": "v0.9",
+        "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1",
+        "columns": [
+            {
+                "name": "total",
+                "type": "number"
+            }
+        ],
+        "query": {
+            "sql": "SELECT SUM(amount) AS total FROM sales"
+        },
+        "components": [
+            {
+                "id": "root",
+                "component": "Text",
+                "text": {
+                    "call": "formatNumber",
+                    "args": {
+                        "value": {
+                            "path": "/rows/0/total"
+                        }
+                    },
+                    "returnType": "string"
+                }
+            }
+        ]
+    },
+    "expectedErrors": [
+        "schema"
+    ]
+}

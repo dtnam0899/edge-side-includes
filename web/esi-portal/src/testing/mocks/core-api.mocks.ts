@@ -1,7 +1,7 @@
 /**
  * Mocked core-api responses for unit tests (P0-14, docs/process/test-data.md).
  *
- * Source: the field `example`s of the pinned contract `@dtnam0899/esi-contracts` 0.1.0 (`bundled/core-api.yaml`),
+ * Source: the field `example`s of the pinned contract `@dtnam0899/esi-contracts` 0.3.0 (`bundled/core-api.yaml`),
  * the version in `package.json` `esi.coreApiContract` and `CORE_API_CONTRACT_VERSION`. Fields without an example
  * in the contract use neutral stand-ins from the same customers/products/orders domain (marked "no contract
  * example"). Typed with the generated client, so a contract
@@ -184,14 +184,14 @@ export function mockProblem(
 
 /**
  * DSL document in the shape core returns (`DslDocument`): the `catalogId` example; `protocolVersion` and
- * `dslSchemaVersion` as core validates them ("v0.9" and the dsl-schema package version "0.1.0"; the contract's
+ * `dslSchemaVersion` as core validates them ("v0.9" and the dsl-schema package version "0.2.0"; the contract's
  * field example "0.9.1" is not what core accepts). Components: a KPI over `Revenue`.
  */
 export function mockDslDocument(overrides: Partial<DslDocument> = {}): DslDocument {
   return {
     catalogId: 'https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json',
     protocolVersion: 'v0.9',
-    dslSchemaVersion: '0.1.0',
+    dslSchemaVersion: '0.2.0',
     components: [
       { id: 'root', component: 'Card', child: 'kpi-column' },
       { id: 'kpi-column', component: 'Column', children: ['kpi-label', 'kpi-value'] },
@@ -211,6 +211,28 @@ export function mockDslDocument(overrides: Partial<DslDocument> = {}): DslDocume
   };
 }
 
+/** ESI catalog id (`DslDocument.catalogId` description, ADR-0009): the basic catalog plus `EsiChart`. */
+export const MOCK_ESI_CATALOG_ID = 'dtnam0899.github.io:esi-catalog-v0_9-1';
+
+/** A bar chart over the `Name` and `Revenue` columns of `mockQueryResult` (no contract example). */
+export function mockChartDslDocument(overrides: Partial<DslDocument> = {}): DslDocument {
+  return mockDslDocument({
+    catalogId: MOCK_ESI_CATALOG_ID,
+    components: [
+      {
+        id: 'root',
+        component: 'EsiChart',
+        chartType: 'bar',
+        title: 'Revenue per customer',
+        categoryKey: 'Name',
+        series: [{ valueKey: 'Revenue', label: 'Revenue' }],
+        data: { path: '/rows' },
+      },
+    ],
+    ...overrides,
+  });
+}
+
 export const MOCK_KPI_COLUMNS: ColumnDefinition[] = [
   { name: 'Revenue', sqlType: 'decimal(18,2)', nullable: true },
 ];
@@ -227,6 +249,10 @@ export function mockKpiResult(): QueryResult {
 
 export function mockVisualization(overrides: Partial<Visualization> = {}): Visualization {
   return { dsl: mockDslDocument(), columns: MOCK_KPI_COLUMNS, ...overrides };
+}
+
+export function mockChartVisualization(overrides: Partial<Visualization> = {}): Visualization {
+  return { dsl: mockChartDslDocument(), columns: mockQueryResult().columns, ...overrides };
 }
 
 export function mockArtifact(overrides: Partial<Artifact> = {}): Artifact {

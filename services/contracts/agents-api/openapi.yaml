@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ESI agents API
-  version: 0.3.0
+  version: 0.4.0
   description: |
     HTTP API of services/ai-agents. Internal: only services/core-backend calls it; the browser never does.
     Core sends schema metadata and column definitions, never connection strings or row values (UR-1 SR-3, SR-5).

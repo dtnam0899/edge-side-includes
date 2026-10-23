@@ -39,6 +39,7 @@
             "allowedCommonJsDependencies": [
               "@dtnam0899/dsl-core",
               "@dtnam0899/dsl-schema",
+              "@dtnam0899/ui-tokens",
               "validate-color"
             ]
           },
