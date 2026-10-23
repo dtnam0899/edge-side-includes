@@ -3,7 +3,7 @@
 # versions pinned in published-packages.json:
 #   @dtnam0899/esi-contracts -> src/Esi.Core.Api/Contracts/CoreApi.g.cs (core-api DTOs)
 #                               src/Esi.Core.Infrastructure/Agents/AgentsApi.g.cs (agents-api client)
-#   @dtnam0899/dsl-schema    -> src/Esi.Core.Infrastructure/Dsl/Schema/ (A2UI v0.9.1 catalog and common types)
+#   @dtnam0899/dsl-schema    -> src/Esi.Core.Infrastructure/Dsl/Schema/ (A2UI v0.9.1 catalog and common types, ESI catalog)
 #                               tests/Esi.Core.UnitTests/Fixtures/dsl-schema/ (shared valid/invalid fixtures)
 # Each target records its source in a PUBLISHED.json / header. Generated and vendored files are never edited.
 # Usage (from services/core-backend): NODE_AUTH_TOKEN=$(gh auth token) scripts/sync-published.sh
@@ -62,7 +62,9 @@ FIXTURE_DIR=tests/Esi.Core.UnitTests/Fixtures/dsl-schema
 rm -rf "$SCHEMA_DIR" "$FIXTURE_DIR" && mkdir -p "$SCHEMA_DIR" "$FIXTURE_DIR"
 cp "$WORK/dsl-schema/package/src/a2ui/v0_9_1/catalog.json" "$WORK/dsl-schema/package/src/a2ui/v0_9_1/common_types.json" \
    "$WORK/dsl-schema/package/src/a2ui/v0_9_1/PROVENANCE.md" "$SCHEMA_DIR/"
-published "src/a2ui/v0_9_1" > "$SCHEMA_DIR/PUBLISHED.json"
+# The ESI catalog (ADR-0009: the basic catalog by $ref plus EsiChart), renamed next to the basic catalog.
+cp "$WORK/dsl-schema/package/src/esi/catalog.json" "$SCHEMA_DIR/esi-catalog.json"
+published "src/a2ui/v0_9_1, src/esi/catalog.json" > "$SCHEMA_DIR/PUBLISHED.json"
 cp -R "$WORK/dsl-schema/package/src/fixtures/valid" "$WORK/dsl-schema/package/src/fixtures/invalid" "$FIXTURE_DIR/"
 published "src/fixtures" > "$FIXTURE_DIR/PUBLISHED.json"
 echo "Synced esi-contracts $CONTRACTS and dsl-schema $DSL_SCHEMA"

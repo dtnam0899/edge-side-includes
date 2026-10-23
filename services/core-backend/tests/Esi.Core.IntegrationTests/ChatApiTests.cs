@@ -84,6 +84,43 @@ public class ChatApiTests(ChatApiTests.Factory factory, TargetDatabase target) :
     }
 
     [Fact]
+    public async Task Charts_use_the_esi_catalog_and_are_checked_against_the_column_types()
+    {
+        var (client, connectionId) = await ConnectAsync();
+        var session = await CreateSessionAsync(client, connectionId);
+        factory.Agents.Dsl.Clear();
+        // Name is nvarchar, so a series on it breaks ADR-0009; the retry plots the decimal Revenue column.
+        factory.Agents.Dsl.Enqueue(() => new DslGeneration(false, FakeAgents.BarChart("Name", "Name"), null));
+        factory.Agents.Dsl.Enqueue(() => new DslGeneration(false, FakeAgents.BarChart("Name", "Revenue"), null));
+        var before = factory.Agents.DslCalls.Count;
+
+        var result = await JsonAsync(await client.PostAsJsonAsync($"/chat-sessions/{session}/visualizations", Request("chart"), Ct));
+
+        var calls = factory.Agents.DslCalls.Skip(before).ToArray();
+        Assert.Equal(2, calls.Length);
+        Assert.All(calls, c => Assert.Equal(("chart", "dtnam0899.github.io:esi-catalog-v0_9-1"), (c.Kind, c.CatalogId)));
+        Assert.Contains(calls[1].PreviousIssues, i => i.Code == "chart-column-type" && i.Path == "/components/0/series/0/valueKey");
+        var dsl = result.GetProperty("dsl");
+        Assert.Equal("dtnam0899.github.io:esi-catalog-v0_9-1", dsl.GetProperty("catalogId").GetString());
+        Assert.Equal("EsiChart", dsl.GetProperty("components")[0].GetProperty("component").GetString());
+    }
+
+    [Fact]
+    public async Task Tables_and_kpis_still_use_the_basic_catalog()
+    {
+        var (client, connectionId) = await ConnectAsync();
+        var session = await CreateSessionAsync(client, connectionId);
+        factory.Agents.Dsl.Clear();
+        factory.Agents.Dsl.Enqueue(() => new DslGeneration(false, FakeAgents.Table("Name", "Revenue"), null));
+        var before = factory.Agents.DslCalls.Count;
+
+        (await client.PostAsJsonAsync($"/chat-sessions/{session}/visualizations", Request("table"), Ct)).EnsureSuccessStatusCode();
+
+        var call = Assert.Single(factory.Agents.DslCalls.Skip(before));
+        Assert.Equal("https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json", call.CatalogId);
+    }
+
+    [Fact]
     public async Task Invalid_dsl_after_the_retries_and_unsupported_requests_are_errors()
     {
         var (client, connectionId) = await ConnectAsync();
@@ -95,14 +132,14 @@ public class ChatApiTests(ChatApiTests.Factory factory, TargetDatabase target) :
         }
 
         var invalid = await client.PostAsJsonAsync($"/chat-sessions/{session}/visualizations", Request("table"), Ct);
-        factory.Agents.Dsl.Enqueue(() => new DslGeneration(true, null, "Charts are not available yet; a table or a KPI is."));
+        factory.Agents.Dsl.Enqueue(() => new DslGeneration(true, null, "Forms are not available yet; a table, a KPI or a chart is."));
         var unsupported = await client.PostAsJsonAsync($"/chat-sessions/{session}/visualizations", Request("kpi"), Ct);
 
         var problem = await ProblemAsync(invalid, (HttpStatusCode)422, "dsl-validation-failed");
         Assert.Equal("unknown-column", problem.GetProperty("issues")[0].GetProperty("code").GetString());
         Assert.StartsWith("/components/", problem.GetProperty("issues")[0].GetProperty("path").GetString(), StringComparison.Ordinal);
         var refused = await ProblemAsync(unsupported, (HttpStatusCode)422, "visualization-not-supported");
-        Assert.Equal("Charts are not available yet; a table or a KPI is.", refused.GetProperty("detail").GetString());
+        Assert.Equal("Forms are not available yet; a table, a KPI or a chart is.", refused.GetProperty("detail").GetString());
     }
 
     [Fact]

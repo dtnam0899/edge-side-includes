@@ -53,7 +53,13 @@ public sealed partial class HttpAgentsClient(IAgentsApiClient client, AgentsOpti
             Columns = [.. columns.Select(c => new ColumnDefinition { Name = c.Name, SqlType = c.SqlType, Nullable = c.Nullable })],
             Intent = new VisualizationIntent
             {
-                Kind = intentKind == "kpi" ? VisualizationIntentKind.Kpi : VisualizationIntentKind.Table,
+                Kind = intentKind switch
+                {
+                    "table" => VisualizationIntentKind.Table,
+                    "kpi" => VisualizationIntentKind.Kpi,
+                    "chart" => VisualizationIntentKind.Chart,
+                    _ => throw new ArgumentOutOfRangeException(nameof(intentKind), intentKind, "Not a visualization kind of the agents contract."),
+                },
                 Description = intentDescription,
             },
             CatalogId = catalogId,

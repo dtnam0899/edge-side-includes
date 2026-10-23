@@ -1,0 +1,51 @@
+{
+    "description": "EsiChart in an artifact that names the basic catalog.",
+    "artifact": {
+        "dslSchemaVersion": 1,
+        "protocolVersion": "v0.9",
+        "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json",
+        "columns": [
+            {
+                "name": "region",
+                "type": "string"
+            },
+            {
+                "name": "revenue",
+                "type": "number"
+            },
+            {
+                "name": "cost",
+                "type": "number"
+            }
+        ],
+        "query": {
+            "sql": "SELECT region, SUM(amount) AS revenue, SUM(cost) AS cost FROM sales GROUP BY region ORDER BY region"
+        },
+        "components": [
+            {
+                "id": "root",
+                "component": "EsiChart",
+                "chartType": "bar",
+                "title": "Revenue and cost by region",
+                "categoryKey": "region",
+                "series": [
+                    {
+                        "valueKey": "revenue",
+                        "label": "Revenue"
+                    },
+                    {
+                        "valueKey": "cost",
+                        "label": "Cost"
+                    }
+                ],
+                "stacked": true,
+                "data": {
+                    "path": "/rows"
+                }
+            }
+        ]
+    },
+    "expectedErrors": [
+        "unknown-component"
+    ]
+}

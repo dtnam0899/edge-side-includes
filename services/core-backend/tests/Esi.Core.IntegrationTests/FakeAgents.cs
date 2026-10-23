@@ -13,7 +13,7 @@ public sealed class FakeAgents : IAgentsClient
 {
     public ConcurrentQueue<(string Question, SchemaMetadata Schema, IReadOnlyList<ConversationTurn> History)> SqlCalls { get; } = new();
 
-    public ConcurrentQueue<(IReadOnlyList<ResultColumn> Columns, string Kind, IReadOnlyList<DslIssue> PreviousIssues)> DslCalls { get; } = new();
+    public ConcurrentQueue<(IReadOnlyList<ResultColumn> Columns, string Kind, string CatalogId, IReadOnlyList<DslIssue> PreviousIssues)> DslCalls { get; } = new();
 
     public Func<string, SqlGeneration> Sql { get; set; } = _ => new SqlGeneration(Domain.Chat.SqlKind.Query, "SELECT Name FROM dbo.Customers", "Lists customers.", ["dbo.Customers"], null);
 
@@ -36,9 +36,31 @@ public sealed class FakeAgents : IAgentsClient
         IReadOnlyList<ResultColumn> columns, string intentKind, string? intentDescription, string catalogId,
         IReadOnlyList<DslIssue> previousIssues, CancellationToken cancellationToken)
     {
-        DslCalls.Enqueue((columns, intentKind, previousIssues));
+        DslCalls.Enqueue((columns, intentKind, catalogId, previousIssues));
         return Task.FromResult(Dsl.Count > 0 ? Dsl.Dequeue()() : new DslGeneration(true, null, "nothing scripted"));
     }
+
+    /// <summary>A bar chart (ADR-0009) on the ESI catalog: one series per value column, data bound to /rows.</summary>
+    public static JsonElement BarChart(string categoryKey, params string[] valueKeys) =>
+        JsonSerializer.SerializeToElement(new
+        {
+            catalogId = "dtnam0899.github.io:esi-catalog-v0_9-1",
+            protocolVersion = "v0.9",
+            dslSchemaVersion = "0.2.0",
+            components = new object[]
+            {
+                new
+                {
+                    id = "root",
+                    component = "EsiChart",
+                    chartType = "bar",
+                    title = "Revenue per customer",
+                    categoryKey,
+                    series = valueKeys.Select(v => new { valueKey = v }).ToArray(),
+                    data = new { path = "/rows" },
+                },
+            },
+        });
 
     /// <summary>A table over the given columns: Column > header Row + List template Row with relative paths.</summary>
     public static JsonElement Table(params string[] columns)

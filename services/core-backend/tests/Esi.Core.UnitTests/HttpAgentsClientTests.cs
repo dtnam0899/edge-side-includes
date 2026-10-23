@@ -42,17 +42,31 @@ public class HttpAgentsClientTests
     public async Task Generate_dsl_maps_generated_and_unsupported_results()
     {
         var generated = new Handler(HttpStatusCode.OK, """{"status":"generated","dsl":{"catalogId":"c","protocolVersion":"v0.9","dslSchemaVersion":"0.1.0","components":[{"id":"root","component":"Text","text":"x"}]}}""");
-        var unsupported = new Handler(HttpStatusCode.OK, """{"status":"unsupported","reason":"charts are not available yet"}""");
+        var unsupported = new Handler(HttpStatusCode.OK, """{"status":"unsupported","reason":"forms are not available yet"}""");
         ResultColumn[] columns = [new("Name", "nvarchar(200)", false)];
 
         var dsl = await Client(generated).GenerateDslAsync(columns, "kpi", "total", "c", [], Ct);
-        var refused = await Client(unsupported).GenerateDslAsync(columns, "table", "a pie chart", "c", [], Ct);
+        var refused = await Client(unsupported).GenerateDslAsync(columns, "table", "a sign-up form", "c", [], Ct);
 
         Assert.False(dsl.Unsupported);
         Assert.Equal("root", dsl.Dsl!.Value.GetProperty("components")[0].GetProperty("id").GetString());
         Assert.Equal("kpi", JsonDocument.Parse(generated.Body!).RootElement.GetProperty("intent").GetProperty("kind").GetString());
         Assert.True(refused.Unsupported);
-        Assert.Equal("charts are not available yet", refused.Reason);
+        Assert.Equal("forms are not available yet", refused.Reason);
+    }
+
+    [Fact]
+    public async Task Generate_dsl_sends_a_chart_intent_with_the_esi_catalog_and_never_maps_an_unknown_kind_to_a_table()
+    {
+        var generated = new Handler(HttpStatusCode.OK, """{"status":"unsupported","reason":"x"}""");
+        ResultColumn[] columns = [new("Revenue", "decimal(38,2)", true)];
+
+        await Client(generated).GenerateDslAsync(columns, "chart", "revenue as a bar chart", "dtnam0899.github.io:esi-catalog-v0_9-1", [], Ct);
+
+        var body = JsonDocument.Parse(generated.Body!).RootElement;
+        Assert.Equal("chart", body.GetProperty("intent").GetProperty("kind").GetString());
+        Assert.Equal("dtnam0899.github.io:esi-catalog-v0_9-1", body.GetProperty("catalogId").GetString());
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => Client(generated).GenerateDslAsync(columns, "form", null, "c", [], Ct));
     }
 
     [Fact]

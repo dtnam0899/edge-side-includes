@@ -75,7 +75,7 @@ public sealed class ArtifactService(
             throw EsiProblem.SqlRejected(sqlCheck.Issues);
         }
 
-        var dslIssues = dslValidator.Validate(document, [.. columns.Select(c => c.Name)]);
+        var dslIssues = dslValidator.Validate(document, DslColumnTypes.From(columns));
         if (dslIssues.Count > 0)
         {
             throw EsiProblem.DslValidationFailed(dslIssues);
