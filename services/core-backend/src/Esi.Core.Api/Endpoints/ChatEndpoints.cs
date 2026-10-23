@@ -42,7 +42,15 @@ internal static class ChatEndpoints
         chat.MapPost("/chat-sessions/{sessionId:guid}/visualizations", async (Guid sessionId, CreateVisualizationRequest? request, VisualizationService service, CancellationToken ct) =>
             {
                 var columns = request?.Columns?.Select(c => new ResultColumn(c.Name, c.SqlType, c.Nullable)).ToList();
-                var kind = request?.Intent is null ? null : request.Intent.Kind == VisualizationIntentKind.Kpi ? "kpi" : "table";
+                var kind = request?.Intent?.Kind switch
+                {
+                    null => null,
+                    VisualizationIntentKind.Table => "table",
+                    VisualizationIntentKind.Kpi => "kpi",
+                    VisualizationIntentKind.Chart => "chart",
+                    // A value this contract version does not name is refused by the service, never mapped to a table.
+                    var other => other.ToString(),
+                };
                 var dsl = await service.CreateAsync(sessionId, columns, kind, request?.Intent?.Description, ct);
                 return Results.Ok(new Visualization { Dsl = dsl.Deserialize<DslDocument>()!, Columns = request!.Columns });
             })

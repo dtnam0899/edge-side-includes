@@ -1,5 +1,5 @@
 {
   "package": "@dtnam0899/dsl-schema",
-  "version": "0.1.0",
-  "source": "src/a2ui/v0_9_1"
+  "version": "0.2.0",
+  "source": "src/a2ui/v0_9_1, src/esi/catalog.json"
 }
