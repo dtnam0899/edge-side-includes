@@ -127,7 +127,7 @@ All three must produce the same error codes on the shared fixtures published in 
 
 ## Status and open items
 
-- Charts (ADR-0009): `lib` validates and renders `EsiChart` since ESI-10 (not released yet); agents (ESI-11), contracts (ESI-113), core (ESI-114) and the portal (ESI-12) still refuse charts with `visualization-not-supported` until they pin the new versions.
+- Charts (ADR-0009): `lib` validates and renders `EsiChart` (`@dtnam0899/dsl-*` 0.2.0, ESI-10); core-api 0.3.0 has `intent.kind` `chart` (ESI-113); core validates chart DSL and serves chart previews (ESI-114). Still missing: agents generating charts (ESI-11), the portal sending `chart` and rendering it (ESI-12), and saving charts as artifacts, which needs a core-api change to the artifact `kind` (ESI-119).
 
 - A `dslSchemaVersion` the portal does not know is shown as "migration required" and never rendered.
 - Upgrades of the pinned A2UI versions need a dedicated issue with fixture tests (ADR-0002).
