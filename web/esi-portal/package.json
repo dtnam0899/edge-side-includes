@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "esi": {
-    "coreApiContract": "0.3.0"
+    "coreApiContract": "0.4.0"
   },
   "scripts": {
     "ng": "ng",

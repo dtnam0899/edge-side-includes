@@ -500,7 +500,7 @@ export const listArtifacts = <ThrowOnError extends boolean = false>(
 /**
  * Save a DSL artifact with the SELECT it is bound to.
  *
- * Core validates the SELECT (ADR-0004) and the DSL (ADR-0002) before saving; the DSL must bind only to the given columns. No row data and no connection secret is stored.
+ * Core validates the SELECT (ADR-0004) and the DSL (ADR-0002) before saving; the DSL must bind only to the given columns. `kind` must match the DSL (ADR-0010): `chart` needs the ESI catalog id (a document with an `EsiChart`), `table` and `kpi` need the basic catalog id; a mismatch answers 400 with a field error on `kind`. No row data and no connection secret is stored.
  */
 export const createArtifact = <ThrowOnError extends boolean = false>(
   options: Options<CreateArtifactData, ThrowOnError>,

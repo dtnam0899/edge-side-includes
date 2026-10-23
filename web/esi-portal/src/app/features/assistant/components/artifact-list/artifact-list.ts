@@ -5,6 +5,7 @@ import { ButtonDirective } from 'primeng/button';
 import { Tag } from 'primeng/tag';
 
 import type { ArtifactSummary } from '../../../../core/api';
+import { artifactKindLabel } from '../../helpers/artifact-kind';
 import { artifactStatusLabel } from '../../helpers/artifact-status';
 
 /** Saved visualizations of a connection; each opens with live data. */
@@ -24,7 +25,7 @@ import { artifactStatusLabel } from '../../helpers/artifact-status';
             <div class="main">
               <a [routerLink]="['artifacts', artifact.id]" class="name">{{ artifact.name }}</a>
               <div class="meta">
-                <p-tag severity="secondary" [value]="artifact.kind === 'kpi' ? 'KPI' : 'Table'" />
+                <p-tag severity="secondary" [value]="kindLabel(artifact.kind)" />
                 @if (artifact.status !== 'available') {
                   <p-tag severity="warn" [value]="statusLabel(artifact.status)" />
                 }
@@ -98,4 +99,5 @@ export class ArtifactList {
   readonly remove = output<ArtifactSummary>();
 
   protected readonly statusLabel = artifactStatusLabel;
+  protected readonly kindLabel = artifactKindLabel;
 }

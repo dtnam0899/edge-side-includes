@@ -21,6 +21,7 @@ import { Tag } from 'primeng/tag';
 import { ApiProblem, toApiProblem } from '../../../../core/api';
 import { DslView } from '../../components/dsl-view/dsl-view';
 import { ProblemMessage } from '../../components/problem-message/problem-message';
+import { artifactKindLabel } from '../../helpers/artifact-kind';
 import { artifactStatusLabel, artifactStatusMessage } from '../../helpers/artifact-status';
 import { ArtifactViewService } from '../../services/artifact-view.service';
 import { ConnectionsService } from '../../services/connections.service';
@@ -54,7 +55,7 @@ import { ConnectionsService } from '../../services/connections.service';
           <div>
             <h2>{{ artifact.name }}</h2>
             <p class="meta">
-              <p-tag severity="secondary" [value]="artifact.kind === 'kpi' ? 'KPI' : 'Table'" />
+              <p-tag severity="secondary" [value]="kindLabel(artifact.kind)" />
               Saved {{ artifact.createdAt | date: 'medium' }}
             </p>
           </div>
@@ -172,6 +173,7 @@ export class ArtifactPage {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly statusLabel = artifactStatusLabel;
+  protected readonly kindLabel = artifactKindLabel;
   protected readonly statusMessage = artifactStatusMessage;
   protected readonly page = signal(1);
   protected readonly deleteProblem = signal<ApiProblem | null>(null);

@@ -324,7 +324,10 @@ export type ArtifactSummary = {
   id: Id;
   connectionId: Id;
   name: string;
-  kind: 'table' | 'kpi';
+  /**
+   * What the artifact shows: `table`, `kpi` or `chart` (ADR-0009). An open set (ADR-0010): later versions may add values without a major version, so clients must handle a value they do not know (for example with a generic label); rendering depends only on `dsl`.
+   */
+  kind: string;
   status: ArtifactStatus;
   createdAt: string;
 };
@@ -343,7 +346,10 @@ export type Artifact = ArtifactSummary & {
 
 export type CreateArtifactRequest = {
   name: string;
-  kind: 'table' | 'kpi';
+  /**
+   * `table`, `kpi` or `chart`; must match `dsl` (ADR-0010): `chart` for a document on the ESI catalog, `table` or `kpi` for one on the basic catalog.
+   */
+  kind: 'table' | 'kpi' | 'chart';
   dsl: DslDocument;
   sql: string;
   columns: Array<ColumnDefinition>;

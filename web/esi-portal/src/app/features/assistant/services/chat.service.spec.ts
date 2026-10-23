@@ -9,6 +9,7 @@ import {
   MOCK_ID,
   MOCK_ID_2,
   mockAnswer,
+  mockArtifact,
   mockChartVisualization,
   mockChatSession,
   mockChatSessionSummary,
@@ -232,7 +233,7 @@ describe('ChatService', () => {
       expect(chat.saves().get(answer.id)?.status).toBe('saved');
     });
 
-    it('asks for a chart and renders it on the ESI catalog, but does not save it', () => {
+    it('asks for a chart, renders it on the ESI catalog and saves it as a chart', () => {
       const answer = ranAnswer();
       chat.visualize(answer, { kind: 'chart', description: 'revenue per customer' });
       const request = httpTesting().expectOne(`/api/chat-sessions/${MOCK_ID_2}/visualizations`);
@@ -246,8 +247,26 @@ describe('ChatService', () => {
       expect(state?.status === 'ready' && state.renderer.status).toBe('ready');
 
       chat.saveArtifact(answer, 'Revenue per customer');
-      httpTesting().expectNone((r) => r.url.endsWith('/artifacts'));
-      expect(chat.saves().get(answer.id)).toBeUndefined();
+      const save = httpTesting().expectOne({
+        method: 'POST',
+        url: `/api/connections/${MOCK_ID}/artifacts`,
+      });
+      expect(save.request.body).toEqual({
+        name: 'Revenue per customer',
+        kind: 'chart',
+        dsl: mockChartVisualization().dsl,
+        sql: mockGeneratedSql().sql,
+        columns: mockChartVisualization().columns,
+      });
+      save.flush(
+        mockArtifact({
+          name: 'Revenue per customer',
+          kind: 'chart',
+          dsl: mockChartVisualization().dsl,
+          columns: mockChartVisualization().columns,
+        }),
+      );
+      expect(chat.saves().get(answer.id)?.status).toBe('saved');
     });
   });
 });

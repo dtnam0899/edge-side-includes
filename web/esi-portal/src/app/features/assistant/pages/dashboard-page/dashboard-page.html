@@ -114,6 +114,7 @@
     </div>
   } @else {
     <app-dsl-view
+      [style.--esi-chart-height]="chartHeight(item.layout.height)"
       [renderer]="item.renderer"
       [live]="board.live().get(item.id) ?? null"
       (retry)="board.runItem(item.id)"
@@ -134,14 +135,15 @@
     <app-problem-message [problem]="problem" />
   } @else if (!addable().length) {
     <p class="muted">
-      No saved visualizations to add. Run a query in the chat, ask for a table or KPI, and save it.
+      No saved visualizations to add. Run a query in the chat, ask for a table, KPI or chart, and
+      save it.
     </p>
   } @else {
     <ul class="picker">
       @for (artifact of addable(); track artifact.id) {
         <li>
           <span class="name">{{ artifact.name }}</span>
-          <p-tag severity="secondary" [value]="artifact.kind === 'kpi' ? 'KPI' : 'Table'" />
+          <p-tag severity="secondary" [value]="kindLabel(artifact.kind)" />
           <button
             pButton
             type="button"

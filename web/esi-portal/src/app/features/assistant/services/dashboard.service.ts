@@ -42,7 +42,7 @@ export interface DashboardItemView {
   readonly layout: ItemLayout;
   readonly status: DashboardItem['status'];
   readonly title: string;
-  readonly kind: 'table' | 'kpi' | null;
+  readonly kind: string | null;
   readonly renderer: RendererArtifact | null;
 }
 
