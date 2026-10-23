@@ -22,7 +22,7 @@ internal static class ArtifactEndpoints
                 var created = await service.CreateAsync(
                     connectionId,
                     request?.Name,
-                    request is null ? null : request.Kind == CreateArtifactRequestKind.Kpi ? "kpi" : "table",
+                    request is null ? null : RequestKind(request.Kind),
                     request?.Dsl is null ? null : JsonSerializer.SerializeToElement(request.Dsl),
                     request?.Sql,
                     request?.Columns?.Select(c => new ResultColumn(c.Name, c.SqlType, c.Nullable)).ToList(),
@@ -111,7 +111,7 @@ internal static class ArtifactEndpoints
         Id = view.Artifact.Id,
         ConnectionId = view.Artifact.ConnectionId,
         Name = view.Artifact.Name,
-        Kind = Kind(view),
+        Kind = Kind(view.Artifact.Kind),
         Status = Status(view.Status),
         CreatedAt = view.Artifact.CreatedAt,
     };
@@ -121,7 +121,7 @@ internal static class ArtifactEndpoints
         Id = view.Artifact.Id,
         ConnectionId = view.Artifact.ConnectionId,
         Name = view.Artifact.Name,
-        Kind = Kind(view),
+        Kind = Kind(view.Artifact.Kind),
         Status = Status(view.Status),
         CreatedAt = view.Artifact.CreatedAt,
         Dsl = view.Dsl.Deserialize<DslDocument>()!,
@@ -129,8 +129,24 @@ internal static class ArtifactEndpoints
         Columns = [.. view.Columns.Select(c => new ColumnDefinition { Name = c.Name, SqlType = c.SqlType, Nullable = c.Nullable })],
     };
 
-    private static ArtifactSummaryKind Kind(ArtifactView view) =>
-        view.Artifact.Kind == Model.Artifacts.ArtifactKind.Kpi ? ArtifactSummaryKind.Kpi : ArtifactSummaryKind.Table;
+    // Explicit mappings (ADR-0010): a kind is never silently turned into a table.
+    private static string RequestKind(CreateArtifactRequestKind kind) => kind switch
+    {
+        CreateArtifactRequestKind.Table => "table",
+        CreateArtifactRequestKind.Kpi => "kpi",
+        CreateArtifactRequestKind.Chart => "chart",
+        // A value this contract version does not name is refused by the service.
+        var other => other.ToString(),
+    };
+
+    /// <summary>The response kind is an open set in the contract (ADR-0010); core only ever returns the kinds it stores.</summary>
+    internal static string Kind(Model.Artifacts.ArtifactKind kind) => kind switch
+    {
+        Model.Artifacts.ArtifactKind.Table => "table",
+        Model.Artifacts.ArtifactKind.Kpi => "kpi",
+        Model.Artifacts.ArtifactKind.Chart => "chart",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown artifact kind."),
+    };
 
     private static Contracts.ArtifactStatus Status(Application.Artifacts.ArtifactStatus status) => status switch
     {

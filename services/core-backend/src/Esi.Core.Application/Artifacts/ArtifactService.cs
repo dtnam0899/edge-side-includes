@@ -50,7 +50,8 @@ public sealed class ArtifactService(
         {
             "table" => ArtifactKind.Table,
             "kpi" => ArtifactKind.Kpi,
-            _ => throw EsiProblem.InvalidRequest(("kind", "Must be table or kpi.")),
+            "chart" => ArtifactKind.Chart,
+            _ => throw EsiProblem.InvalidRequest(("kind", "Must be table, kpi or chart.")),
         };
         if (dsl is not { ValueKind: JsonValueKind.Object } document)
         {
@@ -79,6 +80,15 @@ public sealed class ArtifactService(
         if (dslIssues.Count > 0)
         {
             throw EsiProblem.DslValidationFailed(dslIssues);
+        }
+
+        // The kind must say what the document renders (ADR-0010): a chart is exactly a document on the ESI catalog.
+        var isChartDocument = document.GetProperty("catalogId").GetString() == dslValidator.ChartCatalogId;
+        if (isChartDocument != (artifactKind == ArtifactKind.Chart))
+        {
+            throw EsiProblem.InvalidRequest(("kind", isChartDocument
+                ? "The DSL is a chart (ESI catalog); kind must be chart."
+                : "The DSL uses the basic catalog; kind must be table or kpi."));
         }
 
         var artifact = new Artifact(
