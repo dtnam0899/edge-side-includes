@@ -1,6 +1,6 @@
 {
   "name": "@dtnam0899/esi-contracts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "OpenAPI contracts between ESI components (spec files only).",
   "license": "UNLICENSED",
   "private": false,

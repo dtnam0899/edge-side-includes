@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ESI core API
-  version: 0.2.0
+  version: 0.3.0
   description: |
     HTTP API of services/core-backend, used by the assistant module of web/esi-portal (UR-1, SR-1..SR-9).
 
@@ -24,7 +24,7 @@ info:
     statement is not a single read-only SELECT; `issues` explains why), `execution-failed` (422, SQL Server
     error), `execution-timeout` (504), `invalid-result-columns` (422, empty or duplicate column names),
     `dsl-validation-failed` (422, the generated DSL stayed invalid after the retries; `issues` lists the
-    findings), `visualization-not-supported` (422, for example a chart or a form), `artifact-unavailable`
+    findings), `visualization-not-supported` (422, for example a form), `artifact-unavailable`
     (409, its connection was deleted or its consent withdrawn), `agents-unavailable` (503, the AI agents
     service is unreachable, has no model or timed out; nothing is stored), `not-found` (404).
 security:
@@ -448,7 +448,7 @@ paths:
         '422':
           description: >-
             `dsl-validation-failed` (with `issues`) after the retries, or `visualization-not-supported` (for
-            example a chart or a form).
+            example a form).
           content:
             application/problem+json:
               schema:

@@ -2,6 +2,12 @@
 
 All notable changes are generated from Conventional Commits by the release flow. Do not edit released sections by hand.
 
+## 0.3.0
+
+- Shared: `VisualizationIntent.kind` adds `chart` (additive). The agent picks bar, line or pie from the columns and the wording (ADR-0009); forms are still refused with `visualization-not-supported`.
+- Shared: `DslDocument.catalogId` documents both catalog ids: the basic catalog for tables and KPIs, and the ESI catalog `dtnam0899.github.io:esi-catalog-v0_9-1` (basic catalog plus `EsiChart`) for documents with a chart. The allowed values come from `@dtnam0899/dsl-schema` 0.2.0; the field stays a free string.
+- agents-api: `generateDsl` generates charts; `DslGenerationRequest.catalogId` is the ESI catalog id for `chart`. core-api: `visualization-not-supported` now covers forms only.
+
 ## 0.2.0
 
 - core-api: global `bearerAuth` security scheme (HTTP bearer, JWT; ADR-0006, status Proposed). Every operation documents 401 `unauthenticated` (shared `UnauthenticatedResponse`, RFC 9457 `Problem`). Health endpoints are not in the contract, so no operation opts out of security.
