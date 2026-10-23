@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: ESI core API
-  version: 0.3.0
+  version: 0.4.0
   description: |
     HTTP API of services/core-backend, used by the assistant module of web/esi-portal (UR-1, SR-1..SR-9).
 
@@ -594,7 +594,9 @@ paths:
       summary: Save a DSL artifact with the SELECT it is bound to.
       description: >-
         Core validates the SELECT (ADR-0004) and the DSL (ADR-0002) before saving; the DSL must bind only to the
-        given columns. No row data and no connection secret is stored.
+        given columns. `kind` must match the DSL (ADR-0010): `chart` needs the ESI catalog id (a document with an
+        `EsiChart`), `table` and `kpi` need the basic catalog id; a mismatch answers 400 with a field error on
+        `kind`. No row data and no connection secret is stored.
       requestBody:
         required: true
         content:
@@ -1279,7 +1281,11 @@ components:
           type: string
         kind:
           type: string
-          enum: [table, kpi]
+          description: >-
+            What the artifact shows: `table`, `kpi` or `chart` (ADR-0009). An open set (ADR-0010): later versions
+            may add values without a major version, so clients must handle a value they do not know (for example
+            with a generic label); rendering depends only on `dsl`.
+          x-extensible-enum: [table, kpi, chart]
         status:
           $ref: '#/components/schemas/ArtifactStatus'
         createdAt:
@@ -1311,7 +1317,10 @@ components:
           maxLength: 200
         kind:
           type: string
-          enum: [table, kpi]
+          description: >-
+            `table`, `kpi` or `chart`; must match `dsl` (ADR-0010): `chart` for a document on the ESI catalog,
+            `table` or `kpi` for one on the basic catalog.
+          enum: [table, kpi, chart]
         dsl:
           $ref: '#/components/schemas/DslDocument'
         sql:
