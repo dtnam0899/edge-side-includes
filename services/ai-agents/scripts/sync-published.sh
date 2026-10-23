@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Refresh the vendored files from the published packages pinned in published-packages.json:
 # vendor/esi-contracts (bundled agents-api spec), src/esi_agents/contracts/agents_api.py (generated models),
-# src/esi_agents/dsl/schema (A2UI + ESI artifact schemas) and tests/fixtures/dsl-schema (shared DSL fixtures).
+# src/esi_agents/dsl/schema (A2UI + ESI artifact schemas, ESI catalog) and tests/fixtures/dsl-schema (shared DSL fixtures).
 # Needs Docker and NODE_AUTH_TOKEN with read:packages (`export NODE_AUTH_TOKEN=$(gh auth token)`).
 set -euo pipefail
 cd "$(dirname "$0")/.."

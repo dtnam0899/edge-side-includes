@@ -1,0 +1,152 @@
+{
+    "description": "Line chart inside a Column with a basic Text; the result has 45 rows, so the chart shows the first 20.",
+    "artifact": {
+        "dslSchemaVersion": 1,
+        "protocolVersion": "v0.9",
+        "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1",
+        "columns": [
+            {
+                "name": "month",
+                "type": "date"
+            },
+            {
+                "name": "revenue",
+                "type": "number"
+            }
+        ],
+        "query": {
+            "sql": "SELECT DATEFROMPARTS(YEAR(order_date), MONTH(order_date), 1) AS month, SUM(amount) AS revenue FROM sales GROUP BY DATEFROMPARTS(YEAR(order_date), MONTH(order_date), 1) ORDER BY month"
+        },
+        "components": [
+            {
+                "id": "root",
+                "component": "Column",
+                "children": [
+                    "intro",
+                    "chart"
+                ]
+            },
+            {
+                "id": "intro",
+                "component": "Text",
+                "text": "Monthly revenue",
+                "variant": "h3"
+            },
+            {
+                "id": "chart",
+                "component": "EsiChart",
+                "chartType": "line",
+                "title": "Revenue per month",
+                "categoryKey": "month",
+                "series": [
+                    {
+                        "valueKey": "revenue"
+                    }
+                ],
+                "data": {
+                    "path": "/rows"
+                }
+            }
+        ]
+    },
+    "result": {
+        "columns": [
+            {
+                "name": "month",
+                "type": "date"
+            },
+            {
+                "name": "revenue",
+                "type": "number"
+            }
+        ],
+        "rows": [
+            {
+                "month": "2025-01-01",
+                "revenue": 1037.5
+            },
+            {
+                "month": "2025-02-01",
+                "revenue": 1075.0
+            },
+            {
+                "month": "2025-03-01",
+                "revenue": 1112.5
+            },
+            {
+                "month": "2025-04-01",
+                "revenue": 1150.0
+            },
+            {
+                "month": "2025-05-01",
+                "revenue": 1187.5
+            },
+            {
+                "month": "2025-06-01",
+                "revenue": 1225.0
+            },
+            {
+                "month": "2025-07-01",
+                "revenue": 1262.5
+            },
+            {
+                "month": "2025-08-01",
+                "revenue": 1300.0
+            },
+            {
+                "month": "2025-09-01",
+                "revenue": 1337.5
+            },
+            {
+                "month": "2025-10-01",
+                "revenue": 1375.0
+            },
+            {
+                "month": "2025-11-01",
+                "revenue": 1412.5
+            },
+            {
+                "month": "2025-12-01",
+                "revenue": 1450.0
+            },
+            {
+                "month": "2026-01-01",
+                "revenue": 1487.5
+            },
+            {
+                "month": "2026-02-01",
+                "revenue": 1525.0
+            },
+            {
+                "month": "2026-03-01",
+                "revenue": 1562.5
+            },
+            {
+                "month": "2026-04-01",
+                "revenue": 1600.0
+            },
+            {
+                "month": "2026-05-01",
+                "revenue": 1637.5
+            },
+            {
+                "month": "2026-06-01",
+                "revenue": 1675.0
+            },
+            {
+                "month": "2026-07-01",
+                "revenue": 1712.5
+            },
+            {
+                "month": "2026-08-01",
+                "revenue": 1750.0
+            }
+        ],
+        "page": {
+            "page": 1,
+            "pageSize": 20,
+            "totalRows": 45,
+            "remaining": 25
+        }
+    }
+}

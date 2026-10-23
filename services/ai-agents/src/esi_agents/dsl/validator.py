@@ -1,9 +1,10 @@
-"""Validation of ESI DSL artifacts, mirroring ``@dtnam0899/dsl-core`` (ADR-0002).
+"""Validation of ESI DSL artifacts, mirroring ``@dtnam0899/dsl-core`` 0.2.0 (ADR-0002, ADR-0009).
 
 Order: the A2UI v0.9.1 JSON Schema through the ESI artifact envelope schema, then the ESI rules
-(unique ids, ``root``, catalog components and functions only, child references exist, bound paths
-name given columns, no HTML or script URLs, no row data). Error codes are those of ``dsl-core``;
-the published fixtures in ``tests/fixtures/dsl-schema`` (the shared corpus) prove that both agree.
+(unique ids, ``root``, components and functions of the artifact's catalog only, child references
+exist, bound paths name given columns, no HTML or script URLs, no row data) and, on the ESI catalog,
+the chart rules. Error codes are those of ``dsl-core``; the published fixtures in
+``tests/fixtures/dsl-schema`` (the shared corpus) prove that both agree.
 """
 
 import json
@@ -26,6 +27,7 @@ SCHEMA_FILES = (
     "common_types.json",
     "server_to_client.json",
     "artifact.schema.json",
+    "esi-catalog.json",
 )
 # common_types.json and server_to_client.json refer to the catalog as `catalog.json` next to them.
 CATALOG_ALIAS_ID = "https://a2ui.org/specification/v0_9/catalog.json"
@@ -34,6 +36,8 @@ ROWS_PATH = "/rows"
 PAGE_PATH = "/page"
 PAGE_FIELDS = ("page", "pageSize", "totalRows", "remaining")
 ROW_DATA_KEYS = ("rows", "data", "dataModel", "values", "updateDataModel")
+CHART_COMPONENT = "EsiChart"
+MAX_CHART_SERIES = 4
 _UNSAFE_CONTENT = (
     re.compile(r"<\s*[a-z!/?]", re.IGNORECASE),
     re.compile(r"\b(?:javascript|vbscript)\s*:", re.IGNORECASE),
@@ -55,8 +59,24 @@ class DslIssue:
 
 
 @dataclass(frozen=True)
+class Catalog:
+    """A catalog's ``catalogId``, schema ``$id`` and the names of its components and functions."""
+
+    catalog_id: str
+    schema_id: str
+    components: frozenset[str]
+    functions: frozenset[str]
+
+    @classmethod
+    def read(cls, doc: dict[str, Json]) -> "Catalog":
+        return cls(
+            doc["catalogId"], doc["$id"], frozenset(doc["components"]), frozenset(doc["functions"])
+        )
+
+
+@dataclass(frozen=True)
 class PinnedSchema:
-    """The vendored ``@dtnam0899/dsl-schema`` files."""
+    """The vendored ``@dtnam0899/dsl-schema`` files: the basic catalog and the ESI catalog."""
 
     package_version: str
     catalog_id: str
@@ -64,6 +84,18 @@ class PinnedSchema:
     components: frozenset[str]
     functions: frozenset[str]
     registry: Registry
+    basic: Catalog
+    esi: Catalog
+
+    @property
+    def chart_catalog_id(self) -> str:
+        """The ESI catalog id (basic catalog plus ``EsiChart``), used by chart documents."""
+        return self.esi.catalog_id
+
+    def catalog_of(self, artifact: Json) -> Catalog:
+        """The artifact's catalog; an unknown id (a schema error) falls back to the basic one."""
+        is_esi = isinstance(artifact, dict) and artifact.get("catalogId") == self.esi.catalog_id
+        return self.esi if is_esi else self.basic
 
 
 def pointer(*segments: str | int) -> str:
@@ -82,13 +114,16 @@ def pinned_schema() -> PinnedSchema:
     resources.append(
         (CATALOG_ALIAS_ID, Resource.from_contents({**catalog, "$id": CATALOG_ALIAS_ID}))
     )
+    basic = Catalog.read(catalog)
     return PinnedSchema(
         package_version=published["version"],
-        catalog_id=catalog["catalogId"],
+        catalog_id=basic.catalog_id,
         artifact_id=docs["artifact.schema.json"]["$id"],
-        components=frozenset(catalog["components"]),
-        functions=frozenset(catalog["functions"]),
+        components=basic.components,
+        functions=basic.functions,
         registry=Registry().with_resources(resources),
+        basic=basic,
+        esi=Catalog.read(docs["esi-catalog.json"]),
     )
 
 
@@ -109,16 +144,31 @@ def validate_artifact(artifact: Json) -> list[DslIssue]:
         else []
     )
     raw_columns = artifact.get("columns")
-    columns = [
-        c["name"]
+    typed_columns = {
+        c["name"]: c.get("type")
         for c in (raw_columns if isinstance(raw_columns, list) else [])
         if isinstance(c, dict) and isinstance(c.get("name"), str)
+    }
+    columns = list(typed_columns)
+    schema = pinned_schema()
+    catalog = schema.catalog_of(artifact)
+    esi = [
+        *_row_data(artifact),
+        *_component_rules(components, catalog),
+        *_unsafe_content(components),
     ]
-    esi = [*_row_data(artifact), *_component_rules(components), *_unsafe_content(components)]
-    return [*_schema_errors(artifact, components), *esi, *_bindings(components, columns)]
+    charts = _charts(components, typed_columns) if catalog is schema.esi else []
+    return [
+        *_schema_errors(artifact, components, catalog),
+        *esi,
+        *_bindings(components, columns),
+        *charts,
+    ]
 
 
-def _schema_errors(artifact: dict[str, Json], components: list[dict[str, Json]]) -> list[DslIssue]:
+def _schema_errors(
+    artifact: dict[str, Json], components: list[dict[str, Json]], catalog: Catalog
+) -> list[DslIssue]:
     schema = pinned_schema()
     issues: list[DslIssue] = []
     reported: set[int] = set()
@@ -139,11 +189,13 @@ def _schema_errors(artifact: dict[str, Json], components: list[dict[str, Json]])
         name = component.get("component")
         if (
             not isinstance(name, str)
-            or name not in schema.components
-            or _has_unknown_function(component)
+            or name not in catalog.components
+            or _has_unknown_function(component, catalog)
         ):
             continue  # reported by the ESI rules
-        ref = f"{schema.catalog_id}#/components/{name}"
+        # Basic components through the basic catalog, EsiChart through the ESI catalog.
+        owner = schema.basic if name in schema.basic.components else schema.esi
+        ref = f"{owner.schema_id}#/components/{name}"
         for inner in _validator(ref).iter_errors(component):
             at = f"/components/{index}" + pointer(*inner.absolute_path)
             issues.append(DslIssue("schema", f"{at} {inner.message}", at, str(component.get("id"))))
@@ -186,8 +238,8 @@ def _calls(component: dict[str, Json]) -> Iterator[tuple[str, Segments]]:
             yield node["call"], segments
 
 
-def _has_unknown_function(component: dict[str, Json]) -> bool:
-    return any(call not in pinned_schema().functions for call, _ in _calls(component))
+def _has_unknown_function(component: dict[str, Json], catalog: Catalog) -> bool:
+    return any(call not in catalog.functions for call, _ in _calls(component))
 
 
 @dataclass(frozen=True)
@@ -234,8 +286,7 @@ def child_references(component: dict[str, Json]) -> list[ChildReference]:
     return refs
 
 
-def _component_rules(components: list[dict[str, Json]]) -> list[DslIssue]:
-    schema = pinned_schema()
+def _component_rules(components: list[dict[str, Json]], catalog: Catalog) -> list[DslIssue]:
     issues: list[DslIssue] = []
     ids: set[str] = set()
     for index, component in enumerate(components):
@@ -252,21 +303,21 @@ def _component_rules(components: list[dict[str, Json]]) -> list[DslIssue]:
                 )
             ids.add(cid)
         name = component.get("component")
-        if isinstance(name, str) and name not in schema.components:
+        if isinstance(name, str) and name not in catalog.components:
             issues.append(
                 DslIssue(
                     "unknown-component",
-                    f'"{name}" is not a component of the pinned basic catalog',
+                    f'"{name}" is not a component of the artifact\'s catalog',
                     pointer("components", index, "component"),
                     str(cid),
                 )
             )
         for call, segments in _calls(component):
-            if call not in schema.functions:
+            if call not in catalog.functions:
                 issues.append(
                     DslIssue(
                         "unknown-function",
-                        f'"{call}" is not a function of the pinned basic catalog',
+                        f'"{call}" is not a function of the artifact\'s catalog',
                         pointer("components", index, *segments, "call"),
                         str(cid),
                     )
@@ -313,9 +364,12 @@ def _bound_paths(
 ) -> list[tuple[str, Segments]]:
     """Every ``{path}`` binding, plus plain paths interpolated by ``formatString``."""
     bindings: list[tuple[str, Segments]] = []
+    chart = component.get("component") == CHART_COMPONENT
     for node, segments in walk(component):
         if segments and segments[0] == "children":
             continue  # template path, checked with the template
+        if chart and segments and segments[0] == "data":
+            continue  # chart data, checked by the chart rules
         if not isinstance(node, dict):
             continue
         if isinstance(node.get("path"), str) and len(node) == 1:
@@ -431,4 +485,97 @@ def _bindings(components: list[dict[str, Json]], columns: list[str]) -> list[Dsl
                         cid,
                     )
                 )
+    return issues
+
+
+def _charts(components: list[dict[str, Json]], columns: dict[str, Json]) -> list[DslIssue]:
+    """The chart rules of ADR-0009 (dsl-core ``analyzeCharts``).
+
+    ``data`` is ``{"path": "/rows"}``, the category and series columns exist, series columns are
+    numbers and the category is not boolean, 1 to 4 unique series, one series for pie, and
+    ``stacked`` only on a bar chart. Shapes the catalog schema rejects are left to the schema.
+    """
+    return [
+        issue
+        for index, component in enumerate(components)
+        if component.get("component") == CHART_COMPONENT
+        for issue in _chart(component, index, columns)
+    ]
+
+
+def _chart(component: dict[str, Json], index: int, columns: dict[str, Json]) -> list[DslIssue]:
+    """The chart rules for the ``EsiChart`` at ``/components/<index>``."""
+    issues: list[DslIssue] = []
+    cid = str(component.get("id"))
+
+    def issue(code: str, message: str, *segments: str | int) -> None:
+        issues.append(DslIssue(code, message, pointer("components", index, *segments), cid))
+
+    data = component.get("data")
+    if isinstance(data, dict) and isinstance(data.get("path"), str) and data["path"] != ROWS_PATH:
+        issue(
+            "unknown-path",
+            f'Chart data must be bound to "{ROWS_PATH}", not "{data["path"]}"',
+            "data",
+            "path",
+        )
+
+    def type_of(name: str, *segments: str | int) -> Json:
+        if name not in columns:
+            issue(
+                "unknown-column",
+                f'Chart column "{name}" is not in the column definitions',
+                *segments,
+            )
+            return None
+        return columns[name]
+
+    category = component.get("categoryKey")
+    if isinstance(category, str) and type_of(category, "categoryKey") == "boolean":
+        issue(
+            "chart-column-type",
+            f'The category column "{category}" is boolean; use a string, date, datetime or '
+            "number column",
+            "categoryKey",
+        )
+
+    chart_type = component.get("chartType")
+    series = component.get("series")
+    if isinstance(series, list):
+        if not series or len(series) > MAX_CHART_SERIES:
+            issue(
+                "chart-series",
+                f"A chart has 1 to {MAX_CHART_SERIES} series, not {len(series)}",
+                "series",
+            )
+        elif chart_type == "pie" and len(series) > 1:
+            issue(
+                "chart-series", f"A pie chart has exactly one series, not {len(series)}", "series"
+            )
+        seen: set[str] = set()
+        for at, item in enumerate(series):
+            key = item.get("valueKey") if isinstance(item, dict) else None
+            if not isinstance(key, str):
+                continue
+            if key in seen:
+                issue(
+                    "chart-series",
+                    f'The column "{key}" is used by more than one series',
+                    "series",
+                    at,
+                    "valueKey",
+                )
+            seen.add(key)
+            column_type = type_of(key, "series", at, "valueKey")
+            if column_type is not None and column_type != "number":
+                issue(
+                    "chart-column-type",
+                    f'The series column "{key}" is {column_type}; series must be number columns',
+                    "series",
+                    at,
+                    "valueKey",
+                )
+
+    if "stacked" in component and chart_type != "bar":
+        issue("chart-series", f'"stacked" is only for bar charts, not {chart_type}', "stacked")
     return issues

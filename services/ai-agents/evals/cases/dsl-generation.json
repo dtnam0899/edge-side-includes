@@ -151,7 +151,7 @@
       {
         "kind": "equals",
         "path": "/response/dsl/dslSchemaVersion",
-        "value": "0.1.0"
+        "value": "0.2.0"
       },
       {
         "kind": "equals",
@@ -263,7 +263,7 @@
       {
         "kind": "equals",
         "path": "/response/dsl/dslSchemaVersion",
-        "value": "0.1.0"
+        "value": "0.2.0"
       },
       {
         "kind": "equals",
@@ -419,16 +419,6 @@
         "value": "unsupported"
       },
       {
-        "kind": "contains",
-        "path": "/response/reason",
-        "value": "Charts are not available"
-      },
-      {
-        "kind": "contains",
-        "path": "/response/reason",
-        "value": "table or as a KPI"
-      },
-      {
         "kind": "absent",
         "path": "/response/dsl"
       },
@@ -436,6 +426,16 @@
         "kind": "equals",
         "path": "/modelCalls",
         "value": 0
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "asks for a chart"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "Ask for a chart"
       }
     ],
     "real_checks": [
@@ -3211,7 +3211,7 @@
       {
         "kind": "equals",
         "path": "/response/dsl/dslSchemaVersion",
-        "value": "0.1.0"
+        "value": "0.2.0"
       },
       {
         "kind": "equals",
@@ -3389,7 +3389,7 @@
       {
         "kind": "equals",
         "path": "/response/dsl/dslSchemaVersion",
-        "value": "0.1.0"
+        "value": "0.2.0"
       },
       {
         "kind": "contains",
@@ -3557,7 +3557,7 @@
       {
         "kind": "equals",
         "path": "/response/dsl/dslSchemaVersion",
-        "value": "0.1.0"
+        "value": "0.2.0"
       },
       {
         "kind": "contains",
@@ -3599,6 +3599,1000 @@
         "kind": "not_contains",
         "path": "/prompts",
         "value": "Password="
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-bar-valid",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        },
+        {
+          "name": "Cost",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "revenue and cost per country as a bar chart"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Revenue and cost by country",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue",
+                "label": "Revenue"
+              },
+              {
+                "valueKey": "Cost",
+                "label": "Cost"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "dtnam0899.github.io:esi-catalog-v0_9-1"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.2.0"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/components/0/component",
+        "value": "EsiChart"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/components/0/chartType",
+        "value": "bar"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 1
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "dtnam0899.github.io:esi-catalog-v0_9-1"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "EsiChart"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "Country: nvarchar(100)"
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-line-for-a-date-category",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Month",
+          "sqlType": "date",
+          "nullable": false
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "revenue per month"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Month",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "line",
+            "title": "Revenue per month",
+            "categoryKey": "Month",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "dtnam0899.github.io:esi-catalog-v0_9-1"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.2.0"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/components/0/chartType",
+        "value": "line"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 2
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "intent-mismatch"
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "dtnam0899.github.io:esi-catalog-v0_9-1"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "EsiChart"
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-pie-for-shares",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Segment",
+          "sqlType": "nvarchar(50)",
+          "nullable": true
+        },
+        {
+          "name": "Customers",
+          "sqlType": "int",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "share of customers by segment"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "pie",
+            "title": "Customers by segment",
+            "categoryKey": "Segment",
+            "series": [
+              {
+                "valueKey": "Customers"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "dtnam0899.github.io:esi-catalog-v0_9-1"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.2.0"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/components/0/chartType",
+        "value": "pie"
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "dtnam0899.github.io:esi-catalog-v0_9-1"
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "EsiChart"
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-pie-not-asked-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Segment",
+          "sqlType": "nvarchar(50)",
+          "nullable": true
+        },
+        {
+          "name": "Customers",
+          "sqlType": "int",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "customers by segment"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "pie",
+            "title": "Chart",
+            "categoryKey": "Segment",
+            "series": [
+              {
+                "valueKey": "Customers"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "pie",
+            "title": "Chart",
+            "categoryKey": "Segment",
+            "series": [
+              {
+                "valueKey": "Customers"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "pie",
+            "title": "Chart",
+            "categoryKey": "Segment",
+            "series": [
+              {
+                "valueKey": "Customers"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "intent-mismatch"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 3
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-non-numeric-series-retried",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        },
+        {
+          "name": "Cost",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "revenue per country as bars"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Revenue",
+            "series": [
+              {
+                "valueKey": "Country"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 200
+      },
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "generated"
+      },
+      {
+        "kind": "valid_dsl",
+        "path": "/response/dsl"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/catalogId",
+        "value": "dtnam0899.github.io:esi-catalog-v0_9-1"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/dslSchemaVersion",
+        "value": "0.2.0"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 2
+      },
+      {
+        "kind": "contains",
+        "path": "/prompts",
+        "value": "chart-column-type"
+      },
+      {
+        "kind": "equals",
+        "path": "/response/dsl/components/0/series/0/valueKey",
+        "value": "Revenue"
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-pie-two-series-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        },
+        {
+          "name": "Cost",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "revenue and cost per country as a pie"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "pie",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              },
+              {
+                "valueKey": "Cost"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "pie",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              },
+              {
+                "valueKey": "Cost"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "pie",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              },
+              {
+                "valueKey": "Cost"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "chart-series"
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-with-a-list-rejected",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        },
+        {
+          "name": "Cost",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "revenue per country as a bar chart"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "chart",
+              "rows"
+            ]
+          },
+          {
+            "id": "chart",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "rows",
+            "component": "List",
+            "children": {
+              "componentId": "row",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "chart",
+              "rows"
+            ]
+          },
+          {
+            "id": "chart",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "rows",
+            "component": "List",
+            "children": {
+              "componentId": "row",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          }
+        ]
+      },
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "Column",
+            "children": [
+              "chart",
+              "rows"
+            ]
+          },
+          {
+            "id": "chart",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "rows",
+            "component": "List",
+            "children": {
+              "componentId": "row",
+              "path": "/rows"
+            }
+          },
+          {
+            "id": "row",
+            "component": "Text",
+            "text": {
+              "path": "Country"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/status",
+        "value": 422
+      },
+      {
+        "kind": "contains",
+        "path": "/response/issueCodes",
+        "value": "intent-mismatch"
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-without-a-numeric-column-unsupported",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "City",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "cities per country as a chart"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "City"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "numeric column"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 0
+      },
+      {
+        "kind": "absent",
+        "path": "/response/dsl"
+      }
+    ],
+    "real_checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 0
+      }
+    ]
+  },
+  {
+    "id": "dsl-chart-form-wording-refused",
+    "agent": "dsl",
+    "request": {
+      "columns": [
+        {
+          "name": "Country",
+          "sqlType": "nvarchar(100)",
+          "nullable": true
+        },
+        {
+          "name": "Revenue",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        },
+        {
+          "name": "Cost",
+          "sqlType": "decimal(18,2)",
+          "nullable": false
+        }
+      ],
+      "intent": {
+        "kind": "chart",
+        "description": "a form to enter revenue per country"
+      },
+      "catalogId": "dtnam0899.github.io:esi-catalog-v0_9-1"
+    },
+    "stub_outputs": [
+      {
+        "status": "generated",
+        "components": [
+          {
+            "id": "root",
+            "component": "EsiChart",
+            "chartType": "bar",
+            "title": "Chart",
+            "categoryKey": "Country",
+            "series": [
+              {
+                "valueKey": "Revenue"
+              }
+            ],
+            "data": {
+              "path": "/rows"
+            }
+          }
+        ]
+      }
+    ],
+    "checks": [
+      {
+        "kind": "equals",
+        "path": "/response/status",
+        "value": "unsupported"
+      },
+      {
+        "kind": "contains",
+        "path": "/response/reason",
+        "value": "Forms are not supported"
+      },
+      {
+        "kind": "equals",
+        "path": "/modelCalls",
+        "value": 0
       }
     ]
   }

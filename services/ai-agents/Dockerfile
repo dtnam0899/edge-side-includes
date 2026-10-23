@@ -24,6 +24,7 @@ RUN --mount=type=secret,id=npm_token,env=NODE_AUTH_TOKEN \
  && mkdir -p /out/vendor/esi-contracts /out/src/esi_agents/dsl/schema /out/tests/fixtures/dsl-schema \
  && cp contracts/package/bundled/agents-api.yaml /out/vendor/esi-contracts/ \
  && cp dsl/package/src/a2ui/v0_9_1/*.json dsl/package/src/esi/artifact.schema.json /out/src/esi_agents/dsl/schema/ \
+ && cp dsl/package/src/esi/catalog.json /out/src/esi_agents/dsl/schema/esi-catalog.json \
  && cp -r dsl/package/src/fixtures/valid dsl/package/src/fixtures/invalid dsl/package/src/fixtures/render \
       /out/tests/fixtures/dsl-schema/ \
  && for p in contracts:/out/vendor/esi-contracts dsl:/out/src/esi_agents/dsl/schema; do \

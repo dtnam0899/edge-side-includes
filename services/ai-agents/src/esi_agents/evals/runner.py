@@ -57,8 +57,9 @@ def _valid_dsl(document: object, case: "Case") -> bool:
     request = case.request or {}
     columns = [(c["name"], c["sqlType"]) for c in request.get("columns", [])]
     intent = request.get("intent", {}).get("kind", "")
+    description = request.get("intent", {}).get("description")
     components = document.get("components") if isinstance(document, dict) else None
-    return not validate_candidate(components, columns, intent)
+    return not validate_candidate(components, columns, intent, description)
 
 
 def resolve(value: object, path: str) -> object:
