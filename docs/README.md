@@ -23,6 +23,7 @@ Entry point for humans and AI agents. Read this first, then open only the file y
 | What is the UI DSL? | [dsl/](./dsl/README.md) (A2UI v0.9 basic catalog, pinned versions, component selection; source of truth is `lib/dsl-schema`) |
 | Registry, tokens, repository variables, branch protection? | [process/github-setup.md](./process/github-setup.md) |
 | How is the free demo hosted and set up (Vercel, Azure, Neon, Auth0, Gemini)? | `infra/azure/README.md`, `infra/vercel/README.md`, `infra/auth0/README.md`; decisions ADR-0005..ADR-0008 |
+| I am new: in what order do I learn config, CI/CD, release and deployment? | [onboarding/](./onboarding/README.md) (learning path for freshers, Vietnamese) |
 | Where does test data live? | [process/test-data.md](./process/test-data.md) |
 | How do I work in one project? | that project's `CLAUDE.md` (`services/*`, `web/esi-portal`, `lib`) |
 | Repo-wide rules (independence, Docker, versioning, workflow) | root [CLAUDE.md](../CLAUDE.md) and `.claude/skills/esi-project-standards/SKILL.md` |
@@ -35,6 +36,7 @@ docs/
   features/            implemented features: flows, API, rules, verification, status
   requirements/        UR/SR analysis, flows, decisions, issue drafts (source: GitHub tickets)
   process/             standard process from UR to tasks, gates, templates
+  onboarding/          learning path for new developers (config, CI/CD, release, deployment)
   plan/                roadmap and per-phase task lists with dependencies
   architecture/        ADRs (one decision per file, numbered ADR-NNNN)
   api/                 API docs (generated or summarized from published contracts)
