@@ -22,6 +22,7 @@ One decision per file: `ADR-NNNN-short-title.md`. Breaking changes to a contract
 | [ADR-0007](./ADR-0007-model-provider.md) | Model provider for the agents: Gemini API free tier (demo) | Accepted | agents | ESI-89, demo deployment (ADR-0005) |
 | [ADR-0008](./ADR-0008-app-database-postgresql.md) | App database on PostgreSQL (target databases stay SQL Server) | Proposed | core | ESI-94 |
 | [ADR-0009](./ADR-0009-chart-component-and-library.md) | Chart component and library: `EsiChart` on Chart.js in a custom A2UI catalog | Proposed | lib, contracts, core, agents, portal | ESI-10, ESI-11, ESI-12 |
+| [ADR-0010](./ADR-0010-artifact-kind-growth.md) | Artifact `kind` grows through `x-extensible-enum` in responses (charts can be saved) | Proposed | contracts, core, portal | ESI-119 |
 
 ADR-0005, ADR-0006 and ADR-0008 are still `Proposed` although ESI-72, ESI-85..ESI-87 and ESI-94 implement them (each PR says so); a human accepts them by changing the status in a PR.
 
