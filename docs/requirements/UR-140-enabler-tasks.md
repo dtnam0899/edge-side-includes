@@ -34,7 +34,7 @@ Covers UR-140 Decisions 1-7. Depends on: none. ADRs: ADR-0011, ADR-0012, ADR-001
 - Tech lead reviews and accepts (or amends) ADR-0011 (Keycloak, shared realm + Organizations), ADR-0012 (Oracle VM, Cloudflare Worker), ADR-0013 (Role Grant Service) by changing their status in a PR.
 - Mark ADR-0006 `Superseded by ADR-0011`; update the ADR index.
 - Root `CLAUDE.md`: add `services/idp` (`idp`), `services/role-grant` (`grants`), `services/edge-gateway` (`edge`) to the project table and the project codes.
-- Resolve UR-140 Open question 1 (public hostname) or record it as a blocker of E5.
+- UR-140 Open question 1 (public hostname) is resolved by Decision 10: free DuckDNS hostname with Caddy.
 
 ## Out of scope
 - Any code or infra change.
@@ -110,12 +110,12 @@ Covers SR-3. Depends on: E1. ADRs: ADR-0012.
 Analysis: docs/requirements/UR-140-keycloak-idp-sso.md. Plan: docs/plan/README.md.
 
 ## E5 | esi | Wire the IdP stack on the Oracle Always Free VM
-Covers SR-13 (NFR-04, NFR-05, NFR-13, OPS-02, OPS-05, OPS-10). Depends on: E2, E3; UR-140 Open question 1 resolved. ADRs: ADR-0012.
+Covers SR-13 (NFR-04, NFR-05, NFR-13, OPS-02, OPS-05, OPS-10). Depends on: E2, E3. ADRs: ADR-0012 (hostname: UR-140 Decision 10).
 
 ## Scope
 - `infra/oracle/README.md`: create the Always Free A1 VM within the current entitlement, Docker install, firewall (only TLS open), how to check the monthly OCPU and memory hours.
 - `infra/oracle/compose.yaml` referencing only published images (`esi-idp`, `esi-role-grant`, pinned `postgres`), env file outside the repo, volumes.
-- Public TLS endpoint for Keycloak by the mechanism chosen in E1 (named tunnel or reverse proxy).
+- Public TLS endpoint: DuckDNS subdomain, Caddy reverse proxy with Let's Encrypt through the DuckDNS DNS-01 challenge (custom Caddy build with the DuckDNS plugin, certificate storage on a persistent volume, DuckDNS token in the VM env file); only port 443 open; `KC_HOSTNAME` set to the public URL.
 - Daily `pg_dump` to free object storage and a documented restore.
 - Laptop fallback: the same compose file behind a tunnel.
 

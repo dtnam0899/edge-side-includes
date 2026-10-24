@@ -30,7 +30,7 @@ Oracle VM (`infra/oracle/`)
 - One Always Free A1 VM (ARM64), sized within the current entitlement, running `docker compose` that references only published images: `ghcr.io/dtnam0899/esi-idp:<version>`, `ghcr.io/dtnam0899/esi-role-grant:<version>`, and a pinned `postgres` image. Images are built multi-arch (amd64 and arm64) by the release workflow.
 - One PostgreSQL instance, separate databases or schemas and users for Keycloak and Role Grant Service.
 - Keycloak runs in production mode with a pre-built (`kc.sh build`) image, heap limited by environment variables, health and metrics enabled on the management port only.
-- Exposure: only Keycloak's public endpoints are reachable from the Internet, over TLS. The mechanism (Cloudflare named tunnel with a domain, or a reverse proxy with a certificate for a free hostname) is Open question 1; no port other than TLS is open.
+- Exposure: only Keycloak's public endpoints are reachable from the Internet, over TLS. Hostname: a free DuckDNS subdomain (`<name>.duckdns.org`, product owner 2026-10-24, UR-140 Decision 10). Caddy runs on the VM as reverse proxy in front of Keycloak and Role Grant Service, with a Let's Encrypt certificate obtained through the DuckDNS DNS-01 challenge (token in the VM env file), so port 80 stays closed and only 443 is open. Keycloak runs with `KC_HOSTNAME` set to that URL and `KC_PROXY_HEADERS=xforwarded`. A Vercel rewrite (no TLS on the Vercel-to-VM leg) and a Cloudflare quick tunnel (hostname changes on every start, test-only per [Cloudflare](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/)) were rejected.
 - Secrets (database passwords, Keycloak admin bootstrap, Role Grant service-account secret, Cloudflare API token for KV writes) live in an env file on the VM outside the repo, written from GitHub environment secrets or by hand; never committed.
 - Daily `pg_dump` to free object storage (OCI Object Storage or Cloudflare R2), with a restore test; fallback: the same compose file runs on a laptop behind a tunnel.
 
@@ -54,5 +54,5 @@ Edge (`services/edge-gateway`, Cloudflare Worker)
 - Backup job writes a dump daily; a restore into a fresh container passes the realm smoke test.
 
 ## Open questions
-- Public hostname and TLS mechanism for Keycloak: buy a domain, or use a free hostname service (UR-140 Open question 1).
+- Resolved 2026-10-24: free DuckDNS hostname with Caddy (UR-140 Decision 10). Moving to an own domain later changes the issuer URL; do it before real users exist.
 - Region of the Oracle VM relative to Azure (latency of token refresh is not critical; JWKS is cached).

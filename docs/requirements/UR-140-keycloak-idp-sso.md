@@ -127,7 +127,7 @@ sequenceDiagram
 1. **Supersedes ADR-0006 (Auth0).** Core already uses only the standard JWT bearer handler (`ESI_CORE_Auth__Authority`, `ESI_CORE_Auth__Audience`), so the switch is configuration plus a user re-link. The portal's `AuthSession` abstraction (`src/app/core/auth/`) isolates the Auth0 SDK; only its implementation and `AppConfig.auth` change. ADR-0011.
 2. **Keycloak does not fit Azure Container Apps free.** Keycloak must stay up (sessions, JWKS, login) and needs roughly 0.5-1 GB RAM (estimate, `TBD` measured); the ACA free grant is about 66 h a month at demo size (ADR-0005). Hence Oracle Always Free for the IdP stack only. ADR-0012.
 3. **Oracle changed Always Free limits without notice in 2026** (A1 halved to 2 OCPU / 12 GB, reported by [InfoQ](https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/)); keep the stack runnable on a laptop through the same compose file as a fallback.
-4. **Public hostname for Keycloak needs a DNS name.** A Cloudflare named tunnel or a TLS certificate both need a hostname; a domain usually costs a yearly fee, which conflicts with "free only". Open question 1.
+4. **Public hostname for Keycloak needs a DNS name.** A Cloudflare named tunnel or a TLS certificate both need a hostname; a domain usually costs a yearly fee, which conflicts with "free only". Resolved by Decision 10 (free DuckDNS hostname).
 5. **Edge placement without a custom domain:** the portal's Vercel rewrite for `/api/*` can point at the Worker's `workers.dev` URL instead of core, so the Worker sits in front of core with no domain. Core keeps validating tokens (defense in depth, ADR-0012).
 6. **Cloudflare Workers Free limits:** 100,000 requests a day and 10 ms CPU per request ([Cloudflare](https://developers.cloudflare.com/workers/platform/pricing/)); JWT verification with WebCrypto and a cached JWKS fits; the Worker must not call Keycloak per request.
 7. **Workers KV is eventually consistent** (about a minute), which meets the 5-minute demo revocation target (NFR-03) but not a 1-minute production target.
@@ -147,10 +147,11 @@ sequenceDiagram
 7. 2026-10-24 (product owner): Role Grant Service is a separate .NET service with its own schema, writing role mappings to Keycloak through the Admin API, plus a thin Keycloak event-listener SPI. Its API is a design-first contract `grants-api` in `services/contracts`. ADR-0013.
 8. 2026-10-24 (product owner): file issues for every phase now, not only the first one (deviation from "later phases are filed when the MVP is stable", `docs/process/README.md` stage 5).
 9. SAML stays out of the filed scope; it is added only when a legacy system needs it.
+10. 2026-10-24 (product owner): use a free hostname service for now. Keycloak is published as a DuckDNS subdomain (`<name>.duckdns.org`) with Caddy as reverse proxy on the VM, getting a Let's Encrypt certificate through the DuckDNS DNS-01 challenge; only port 443 is open. A Vercel rewrite was considered and rejected: the Vercel-to-VM leg would carry passwords and tokens without TLS, and the issuer hostname would depend on a static-hosting proxy. A Cloudflare quick tunnel was rejected: its hostname changes on every start and Cloudflare documents it as test-only. Moving to an own domain later changes the issuer URL (users and clients re-configure).
 
 ## Open questions
 
-1. Public hostname for Keycloak (and the tunnel): buy a cheap domain on Cloudflare, or use a free hostname service? Blocks E5. Owner: product owner.
+1. ~~Public hostname for Keycloak~~ Resolved 2026-10-24: free DuckDNS hostname with Caddy and Let's Encrypt (Decision 10).
 2. Should core scope its data by tenant (connections, chats, dashboards per tenant), or stay per user? Not blocking this UR. Owner: product owner.
 3. Exact Keycloak version to pin (latest 26.x at scaffold time, `TBD`), and whether Organizations need any feature flag in that version. Resolved in E2.
 4. Which roles count as "sensitive" (two approvers) and who approves by default in a new tenant. Needed by D14. Owner: product owner.
