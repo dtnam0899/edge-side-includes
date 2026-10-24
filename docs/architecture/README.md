@@ -1,7 +1,7 @@
 ---
 id: adr-index
 type: index
-updated: 2026-10-23
+updated: 2026-10-24
 keywords: [adr, architecture decision record, decisions, template]
 ---
 
@@ -23,6 +23,9 @@ One decision per file: `ADR-NNNN-short-title.md`. Breaking changes to a contract
 | [ADR-0008](./ADR-0008-app-database-postgresql.md) | App database on PostgreSQL (target databases stay SQL Server) | Proposed | core | ESI-94 |
 | [ADR-0009](./ADR-0009-chart-component-and-library.md) | Chart component and library: `EsiChart` on Chart.js in a custom A2UI catalog | Proposed | lib, contracts, core, agents, portal | ESI-10, ESI-11, ESI-12 |
 | [ADR-0010](./ADR-0010-artifact-kind-growth.md) | Artifact `kind` grows through `x-extensible-enum` in responses (charts can be saved) | Accepted | contracts, core, portal | ESI-119 |
+| [ADR-0011](./ADR-0011-identity-provider-keycloak.md) | Identity provider: self-hosted Keycloak, shared realm + Organizations (supersedes ADR-0006 once accepted) | Proposed | idp, core, portal, esi | UR-140 (ESI-140) |
+| [ADR-0012](./ADR-0012-idp-hosting-and-edge.md) | IdP hosting on Oracle Always Free and token checks in a Cloudflare Worker | Proposed | idp, grants, edge, portal, esi | UR-140 (ESI-140) |
+| [ADR-0013](./ADR-0013-role-grant-service.md) | Role Grant Service: a separate .NET service that writes to Keycloak | Proposed | grants, idp, contracts, portal | UR-140 (ESI-140) |
 
 ADR-0005, ADR-0006 and ADR-0008 are still `Proposed` although ESI-72, ESI-85..ESI-87 and ESI-94 implement them (each PR says so); a human accepts them by changing the status in a PR.
 

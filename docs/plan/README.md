@@ -2,10 +2,10 @@
 id: plan-index
 type: plan
 status: Draft
-updated: 2026-10-23
-projects: [contracts, lib, core, agents, portal]
-issues: [ESI-1, ESI-10, ESI-11, ESI-12, ESI-13, ESI-14, ESI-15, ESI-16, ESI-17, ESI-18, ESI-19, ESI-20, ESI-64, ESI-72, ESI-85, ESI-86, ESI-87, ESI-89, ESI-94, ESI-97, ESI-111]
-keywords: [roadmap, phases, order, dependencies, release order, UR-1, next task]
+updated: 2026-10-24
+projects: [contracts, lib, core, agents, portal, idp, grants, edge]
+issues: [ESI-1, ESI-10, ESI-11, ESI-12, ESI-13, ESI-14, ESI-15, ESI-16, ESI-17, ESI-18, ESI-19, ESI-20, ESI-64, ESI-72, ESI-85, ESI-86, ESI-87, ESI-89, ESI-94, ESI-97, ESI-111, ESI-140]
+keywords: [roadmap, phases, order, dependencies, release order, UR-1, UR-140, keycloak, next task]
 ---
 
 # Build plan for UR-1 (BI AI Assistant)
@@ -67,3 +67,57 @@ flowchart LR
 ## Out of scope for UR-1 phase 1
 
 Forms, charts (phase 7), streaming chat answers (next version), shared dashboards, executing stored procedures, database engines other than SQL Server, snapshots of data (data is always live).
+
+## UR-140 Keycloak identity provider (ESI-140)
+
+Derived from [UR-140](../requirements/UR-140-keycloak-idp-sso.md); tasks in [UR-140-enabler-tasks.md](../requirements/UR-140-enabler-tasks.md) (E1..E5) and [UR-140-issue-drafts.md](../requirements/UR-140-issue-drafts.md) (D1..D23). Status 2026-10-24: filed as ESI-141..ESI-168 (sub-issues of ESI-140); first task ESI-141 (E1). Map: E<k> = ESI-(140+k), D<k> = ESI-(145+k). Phases are prefixed `I` to keep them apart from UR-1's phases.
+
+| Phase | Goal | Tasks | Needs | Exit gate |
+|-------|------|-------|-------|-----------|
+| I1 | Foundation: ADRs accepted, three new projects scaffolded, Oracle VM wired | E1 -> E2, E3, E4 -> E5 | none | ADR-0011..0013 accepted; `idp`, `grants`, `edge` build and test in Docker; Keycloak reachable over TLS on the VM |
+| I2 | SSO baseline, Auth0 retired | D1 -> D2, D3, D4 -> D5 | I1 | Demo signs in through Keycloak; `/api` passes the Worker; no Auth0 left |
+| I3 | Multi-tenant | D6, D7 -> D8 -> D9 | I2 | A tenant is created by one call; cross-tenant tests pass |
+| I4 | Rich role grants | D10 -> D11 -> D12, D13, D14, D15, D16 -> D17, D18 | I3 | Time-bound, approved and delegated grants work; expiry blocks access at the edge; drift is detected |
+| I5 | Hardening and federation | D19, D20, D21 | I3 | MFA per tenant, brokering by email domain, branded login in vi and en |
+| I6 | Operations and end-to-end | D22, D23 | I2 (D22), I4 (D23) | Alerts and runbook in place; the IdP e2e scenario passes |
+
+```mermaid
+flowchart LR
+  E1[E1 ADRs accepted] --> E2[E2 idp scaffold]
+  E1 --> E3[E3 grants scaffold]
+  E1 --> E4[E4 edge scaffold]
+  E2 --> E5[E5 Oracle VM]
+  E3 --> E5
+  E2 --> D1[D1 realm as code]
+  D1 --> D2[D2 edge JWT]
+  E4 --> D2
+  D1 --> D3[D3 core Keycloak]
+  D1 --> D4[D4 portal OIDC]
+  D2 --> D5[D5 route via Worker, retire Auth0]
+  D3 --> D5
+  D4 --> D5
+  E5 --> D5
+  E1 --> D6[D6 grants-api tenants]
+  D1 --> D7[D7 tenant and role claims]
+  D6 --> D8[D8 tenant onboarding]
+  D7 --> D8
+  E3 --> D8
+  D8 --> D9[D9 portal tenants]
+  D6 --> D10[D10 grants-api grants]
+  D8 --> D11[D11 direct grants]
+  D10 --> D11
+  D2 --> D13[D13 edge revocation]
+  D11 --> D12[D12 expiry]
+  D13 --> D12
+  D11 --> D14[D14 approvals]
+  D11 --> D15[D15 bulk and delegation]
+  D11 --> D16[D16 event-listener SPI]
+  D16 --> D17[D17 reconciliation]
+  D14 --> D18[D18 portal grants]
+  D7 --> D19[D19 MFA]
+  D7 --> D20[D20 brokering]
+  D1 --> D21[D21 theme]
+  E5 --> D22[D22 observability]
+  D5 --> D23[D23 e2e]
+  D12 --> D23
+```
