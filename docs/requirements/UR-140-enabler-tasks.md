@@ -115,7 +115,8 @@ Covers SR-13 (NFR-04, NFR-05, NFR-13, OPS-02, OPS-05, OPS-10). Depends on: E2, E
 ## Scope
 - `infra/oracle/README.md`: create the Always Free A1 VM within the current entitlement, Docker install, firewall (only TLS open), how to check the monthly OCPU and memory hours.
 - `infra/oracle/compose.yaml` referencing only published images (`esi-idp`, `esi-role-grant`, pinned `postgres`), env file outside the repo, volumes.
-- Public TLS endpoint: DuckDNS subdomain, Caddy reverse proxy with Let's Encrypt through the DuckDNS DNS-01 challenge (custom Caddy build with the DuckDNS plugin, certificate storage on a persistent volume, DuckDNS token in the VM env file); only port 443 open; `KC_HOSTNAME` set to the public URL.
+- Public TLS endpoint: DuckDNS subdomain, official Caddy image as reverse proxy with Let's Encrypt through the TLS-ALPN-01 challenge on port 443 (certificate storage on a persistent volume); only port 443 open; `KC_HOSTNAME` set to the public URL.
+- Turn the draft guide `infra/oracle/README.md` into the verified one (it already holds the manual steps and the compose template).
 - Daily `pg_dump` to free object storage and a documented restore.
 - Laptop fallback: the same compose file behind a tunnel.
 
