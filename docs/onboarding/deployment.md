@@ -14,6 +14,8 @@ Phần tiếp theo của [onboarding](./README.md) (mục 5 trước đây). C�
 
 Đây là bản **tổng quan có dẫn đường**; từng lệnh đầy đủ nằm ở [infra/azure](../../infra/azure/README.md), [infra/vercel](../../infra/vercel/README.md), [infra/auth0](../../infra/auth0/README.md). Khi khác nhau, tài liệu gốc đúng. Vận hành sau khi dựng (bật/tắt demo, tra lỗi, xoá hết): [README mục 6](./README.md#6-vận-hành-hằng-ngày-và-xử-lý-sự-cố).
 
+> UR-140 thay Auth0 bằng Keycloak tự host (ADR-0011, Proposed). Phần dựng IdP mới nằm ở [idp-setup.md](./idp-setup.md); phần Auth0 dưới đây còn đúng cho tới khi ESI-150 xong.
+
 ESI là dự án cá nhân, phi thương mại; mục tiêu hiện tại là **demo trên free tier** (ADR-0005). Mọi lựa chọn hạ tầng phải miễn phí; nếu thứ gì có thể tốn tiền, phải ghi rõ trước khi đề xuất.
 
 > Trạng thái ADR: ADR-0005 (hosting), ADR-0006 (Auth0), ADR-0008 (Postgres) vẫn là `Proposed` dù đã được triển khai; ADR-0007 (Gemini) đã `Accepted`. Xem [architecture/README.md](../architecture/README.md).

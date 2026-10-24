@@ -24,6 +24,7 @@ Tài liệu này sắp xếp lại kiến thức của dự án theo **thứ t�
 | 3 | [CI](#3-ci-github-actions-chạy-gì-khi-bạn-mở-pr) | Hiểu vì sao PR đỏ/xanh và đọc log | 1 giờ |
 | 4 | [Versioning và release](#4-versioning-và-release-cd-phần-publish) | Biết một version đi từ `develop` tới registry thế nào | 2 giờ |
 | 5 | [Deployment bản demo](./deployment.md) | Hiểu và dựng lại demo trên Vercel + Azure + Neon + Auth0 | 1-2 ngày |
+| 5b | [Dựng IdP Keycloak](./idp-setup.md) | Dựng Keycloak, Role Grant Service trên VM Oracle và Worker Cloudflare cho UR-140 | 1 ngày |
 | 6 | [Vận hành và xử lý sự cố](#6-vận-hành-hằng-ngày-và-xử-lý-sự-cố) | Bật/tắt demo, đọc log, tra lỗi thường gặp | 1 giờ |
 | 7 | [Quyết định kiến trúc và tài liệu](#7-đọc-tiếp-ở-đâu) | Biết tìm "vì sao" ở đâu | tuỳ |
 
